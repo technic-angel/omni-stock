@@ -1,0 +1,25 @@
+Environments
+
+.env
+
+Dependencies
+
+venv/
+pycache/
+*.pyc
+
+Docker
+
+*.log
+.docker-build-tmp
+
+Python
+
+*.egg-info
+.python-version
+.pytest_cache
+
+Operating System specific (Mac, Windows, Linux)
+
+.DS_Store
+Thumbs.db

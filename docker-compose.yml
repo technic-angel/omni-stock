@@ -1,0 +1,60 @@
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:16-alpine
+    container_name: omni_stock_db
+    restart: always
+    environment:
+      # These variables pull from the .env file defined below
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # Persist data outside the container
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      # Expose port for local debugging/tools (optional, but helpful)
+      - "5432:5432"
+    # *** FIX 1: RESTORE CRITICAL HEALTHCHECK ***
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env
+
+  # 2. Core API Service (Django)
+  core_api:
+    build:
+      context: ./core_api
+      dockerfile: Dockerfile
+    container_name: omni_stock_core_api
+    # *** FIX 2: Use sh -c wrapper for robust command execution ***
+    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      # Syncs your local code changes into the container instantly
+      - ./core_api:/usr/src/app
+    ports:
+      - "8000:8000"
+    environment:
+      # Pass database config to Django for connection
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db # IMPORTANT: Use the service name defined above
+      # *** FIX 3: Use the environment variable for POSTGRES_PORT ***
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DEBUG: True # Added DEBUG back for completeness from earlier version
+    depends_on:
+      # Ensures the database service starts before the API attempts to connect
+      db:
+        condition: service_healthy # Depends on the healthcheck above
+    # Load environment variables from a local .env file
+    env_file:
+      - .env
+
+# Docker Volumes for persistent data storage
+volumes:
+  postgres_data:
