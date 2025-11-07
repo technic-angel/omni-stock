@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third-party Apps
-    # 'rest_framework', # Add later for DRF setup
-    # Local Apps (Phase 2)
-    # 'collectibles', 
+    'rest_framework',
+    # Local Apps 
+    'collectibles', 
 ]
 
 MIDDLEWARE = [
