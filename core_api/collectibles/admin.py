@@ -28,7 +28,7 @@ class CollectibleAdmin(admin.ModelAdmin):
             'fields': ('user', 'name', 'sku'),
         }),
         ('Inventory & Location', {
-            'fields': ('location', 'quantity', 'image', 'image_thumbnail'),  # Include thumbnail for preview
+            'fields': ('location', 'quantity', 'image'),  # Removed image_thumbnail from fieldset
             'classes': ('collapse',),
         }),
         ('Pricing & Financials', {
