@@ -47,7 +47,8 @@ class CollectibleAdmin(admin.ModelAdmin):
     # Ensure the 'user' field is automatically set to the current user
     def save_model(self, request, obj, form, change):
         if not obj.pk:  # Only on creation
-            obj.user = request.user
+            if not obj.user:
+                obj.user = request.user
         super().save_model(request, obj, form, change)
 
 
