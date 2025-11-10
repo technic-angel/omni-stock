@@ -29,7 +29,6 @@ class CollectibleAdmin(admin.ModelAdmin):
         }),
         ('Inventory & Location', {
             'fields': ('location', 'quantity', 'image'),  # Removed image_thumbnail from fieldset
-            'classes': ('collapse',),
         }),
         ('Pricing & Financials', {
             'fields': ('intake_price', 'current_price', 'projected_price'),
