@@ -68,11 +68,16 @@ INSTALLED_APPS = [
     # Third-party Apps
     'rest_framework',
     'rest_framework_simplejwt', 
+    # Third-party utilities
+    'corsheaders',
+    'admin_thumbnails',
     # Local Apps 
     'collectibles', 
 ]
 
 MIDDLEWARE = [
+    # CORS middleware should be placed as high as possible
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -81,6 +86,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS: allow requests from frontend during development. For production,
+# set specific origins via CORS_ALLOWED_ORIGINS.
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'omni_stock.urls'
 
