@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Collectible
-import admin_thumbnails # Import the package we just installed
+import admin_thumbnails  # For generating thumbnail previews in the admin interface
 
 # Define the custom Admin class for the Collectible model
 @admin_thumbnails.thumbnail('image')  # Apply the thumbnail decorator to the 'image' field
