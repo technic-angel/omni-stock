@@ -15,9 +15,31 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include # Import 'include'
+from django.conf import settings
+from django.conf.urls.static import static
+
+# SimpleJWT views for token obtain/refresh/verify
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Add your API paths here later: path('api/v1/', include('api.urls')),
+     # --- API Endpoints ---
+    # Link the app-level URLs to the /api/v1/collectibles/ path
+    # Ensure the prefix ends with a trailing slash so included routes
+    # are mounted at `/api/v1/...`, e.g. `/api/v1/collectibles/`.
+    path('api/v1/', include('collectibles.urls')),
+    # JWT token endpoints under /api/v1/auth/
+    path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Add your API paths here later: path('api/v1/auth/', include('auth.urls')),
 ]
+
+# Serving Media Files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
