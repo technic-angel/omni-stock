@@ -68,11 +68,16 @@ INSTALLED_APPS = [
     # Third-party Apps
     'rest_framework',
     'rest_framework_simplejwt', 
+    # Third-party utilities
+    'corsheaders',
+    'admin_thumbnails',
     # Local Apps 
     'collectibles', 
 ]
 
 MIDDLEWARE = [
+    # CORS middleware should be placed as high as possible
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -81,6 +86,16 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS: allow requests from frontend during development. For production,
+# set specific origins via CORS_ALLOWED_ORIGINS.
+# Allow only local frontend (e.g., React at localhost:3000) during development
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+# Alternatively, to allow all localhost ports, use:
+# CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
 
 ROOT_URLCONF = 'omni_stock.urls'
 
