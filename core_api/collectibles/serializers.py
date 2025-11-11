@@ -1,18 +1,26 @@
 from rest_framework import serializers
-from .models import Collectible
+from .models import Collectible, CardDetails
+
+
+class CardDetailsSerializer(serializers.ModelSerializer):
+    """Serializer for the CardDetails nested object."""
+
+    class Meta:
+        model = CardDetails
+        fields = [
+            'psa_grade', 'condition', 'external_ids', 'last_estimated_at',
+            'language', 'release_date', 'print_run', 'market_region', 'notes',
+        ]
+
 
 class CollectibleSerializer(serializers.ModelSerializer):
     """
     Serializer for the Collectible model.
-    Handles converting Collectible objects to JSON and validating/converting
-    incoming JSON data back into Collectible objects.
+    Includes a read-only nested `card_details` representation.
     """
+    card_details = CardDetailsSerializer(read_only=True)
+
     class Meta:
-        # Specifies the model this serializer works with
         model = Collectible
-        # 'fields = '__all__'' includes all fields from the Collectible model
-        # which is ideal for a basic CRUD API.
         fields = '__all__'
-        # The 'read_only_fields' are fields that should only be included in
-        # responses (GET) and ignored during creation or updates (POST, PUT).
         read_only_fields = ('last_updated',)
