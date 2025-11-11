@@ -3,7 +3,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("collectibles", "0005_add_carddetails_btree_indexes"),
+        ("collectibles", "0004_add_carddetails_indexes"),
     ]
 
     operations = [
