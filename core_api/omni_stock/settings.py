@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     # Third-party utilities
     'corsheaders',
     'admin_thumbnails',
+    'drf_spectacular',
     # Local Apps 
     'collectibles', 
 ]
@@ -181,8 +182,15 @@ REST_FRAMEWORK = {
     # We will change this to IsAuthenticated later in the roadmap (P3.4)
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+
+    # Use drf-spectacular for schema generation when installed
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
 }
+
+# Optional drf-spectacular settings can be added here if needed later
+# SPECTACULAR_SETTINGS = {
+# }
 
 SIMPLE_JWT = {
     # JWT lifespan settings
