@@ -1,8 +1,16 @@
 from django.contrib import admin
-from .models import Collectible
+from .models import Collectible, CardDetails
 import admin_thumbnails  # For generating thumbnail previews in the admin interface
 
-# Define the custom Admin class for the Collectible model
+
+# Inline admin for CardDetails so it appears on the Collectible edit page
+class CardDetailsInline(admin.StackedInline):
+    model = CardDetails
+    can_delete = False
+    verbose_name = 'Card Details'
+    extra = 0
+
+
 @admin_thumbnails.thumbnail('image')  # Apply the thumbnail decorator to the 'image' field
 class CollectibleAdmin(admin.ModelAdmin):
     # Fields to display in the main list view
@@ -42,6 +50,7 @@ class CollectibleAdmin(admin.ModelAdmin):
 
     # Set read-only fields (thumbnail is generated)
     readonly_fields = ('last_updated', 'image_thumbnail',)
+    inlines = (CardDetailsInline,)
 
     # Ensure the 'user' field is automatically set to the current user
     def save_model(self, request, obj, form, change):

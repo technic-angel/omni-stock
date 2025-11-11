@@ -37,3 +37,7 @@ class CardDetailsFactory(factory.django.DjangoModelFactory):
         model = CardDetails
 
     collectible = factory.SubFactory(CollectibleFactory)
+    language = factory.Faker('language_name')
+    release_date = factory.Faker('date')
+    print_run = factory.Sequence(lambda n: f'Print run {n}')
+    market_region = factory.Faker('country')
