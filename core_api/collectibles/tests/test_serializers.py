@@ -2,7 +2,7 @@ import pytest
 
 from collectibles.serializers import CollectibleSerializer
 from collectibles.models import Collectible
-from .factories import CollectibleFactory
+from collectibles.tests.factories import CollectibleFactory
 
 
 @pytest.mark.django_db

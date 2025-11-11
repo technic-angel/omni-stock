@@ -12,7 +12,7 @@ def test_collectible_viewset_list_and_create():
     client = APIClient()
 
     # create a couple of items
-    from .factories import CollectibleFactory, UserFactory
+    from collectibles.tests.factories import CollectibleFactory, UserFactory
     CollectibleFactory.create(name="View Card 1", sku="VIEW-001")
     CollectibleFactory.create(name="View Card 2", sku="VIEW-002")
 
