@@ -3,7 +3,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("collectibles", "0004_add_carddetails_indexes"),
+        ("collectibles", "0003_vendor_carddetails_userprofile_collectible_vendor"),
     ]
 
     operations = [
