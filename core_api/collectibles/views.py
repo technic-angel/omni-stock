@@ -33,10 +33,25 @@ class CollectibleViewSet(viewsets.ModelViewSet):
         # Prefer vendor scoping when the user is attached to a vendor profile.
         profile = getattr(user, 'profile', None)
         if profile is not None and profile.vendor is not None:
-            return base_qs.filter(vendor=profile.vendor).order_by('name')
+            scoped = base_qs.filter(vendor=profile.vendor)
+        else:
+            # Fallback: return items explicitly owned by the user
+            scoped = base_qs.filter(user=user)
 
-        # Fallback: return items explicitly owned by the user
-        return base_qs.filter(user=user).order_by('name')
+        # Apply simple query-parameter filtering for nested CardDetails fields.
+        # We intentionally implement this here (instead of adding django-filter
+        # as a dependency) to keep the behavior minimal and explicit for tests.
+        params = self.request.query_params
+        lang = params.get('language')
+        if lang:
+            scoped = scoped.filter(card_details__language__iexact=lang)
+        region = params.get('market_region')
+        if region:
+            scoped = scoped.filter(card_details__market_region__iexact=region)
+
+        return scoped.order_by('name')
+
+        
 
     def perform_create(self, serializer):
         """Ensure the created Collectible is associated with the authenticated user
