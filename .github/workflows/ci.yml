@@ -134,19 +134,19 @@ jobs:
                 run: |
                   # Use coverage xml to determine coverage percent and write it to coverage.txt
                   python - <<'PY'
-        import xml.etree.ElementTree as ET, sys
-        try:
-            tree = ET.parse('coverage.xml')
-            root = tree.getroot()
-            cov = float(root.get('line-rate', '0')) * 100
-        except Exception:
-            print('Could not parse coverage.xml')
-            cov = 0.0
-        print(f'Coverage: {cov:.2f}%')
-        open('coverage.txt','w').write(f'{cov:.2f}')
-        if cov < 60.0:
-            sys.exit('Coverage below 60%')
-        PY
+    import xml.etree.ElementTree as ET, sys
+    try:
+        tree = ET.parse('coverage.xml')
+        root = tree.getroot()
+        cov = float(root.get('line-rate', '0')) * 100
+    except Exception:
+        print('Could not parse coverage.xml')
+        cov = 0.0
+    print(f'Coverage: {cov:.2f}%')
+    open('coverage.txt','w').write(f'{cov:.2f}')
+    if cov < 60.0:
+        sys.exit('Coverage below 60%')
+    PY
 
               - name: Comment PR with coverage
                 if: github.event_name == 'pull_request'
