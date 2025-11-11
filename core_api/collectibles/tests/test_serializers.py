@@ -2,12 +2,13 @@ import pytest
 
 from collectibles.serializers import CollectibleSerializer
 from collectibles.models import Collectible
+from .factories import CollectibleFactory
 
 
 @pytest.mark.django_db
 def test_collectible_serializer_roundtrip():
     # Create an instance and serialize it
-    c = Collectible.objects.create(name="Serializer Card", sku="SER-001", quantity=2)
+    c = CollectibleFactory.create(name="Serializer Card", sku="SER-001", quantity=2)
     data = CollectibleSerializer(c).data
 
     assert data["sku"] == "SER-001"
