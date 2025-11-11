@@ -2,6 +2,7 @@ import pytest
 
 from collectibles.models import Vendor, Collectible, CardDetails
 from collectibles.tests.factories import VendorFactory, CollectibleFactory, CardDetailsFactory
+from types import SimpleNamespace
 
 
 @pytest.mark.django_db
@@ -48,12 +49,10 @@ def test_carddetails_str_saved_collectible_missing_sku():
     c = CollectibleFactory.create(name="NoSKU Card", sku="NSKU-001")
     cd = CardDetailsFactory.create(collectible=c)
 
-    # Simulate a runtime collectible object lacking a sku attribute
-    try:
-        delattr(c, 'sku')
-    except Exception:
-        # If deletion isn't possible for some reason, set it to None in-memory
-        setattr(c, 'sku', None)
+    # Simulate a runtime collectible object lacking a sku attribute by
+    # replacing the related object in-memory with a simple object that
+    # does not expose `sku`.
+    cd.collectible = SimpleNamespace()
 
-    # Ensure the instance still resolves to the CardDetails PK
+    # Ensure the instance falls back to the CardDetails PK
     assert str(cd) == f"CardDetails for {cd.pk}"
