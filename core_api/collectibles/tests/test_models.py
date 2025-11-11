@@ -50,9 +50,11 @@ def test_carddetails_str_saved_collectible_missing_sku():
     cd = CardDetailsFactory.create(collectible=c)
 
     # Simulate a runtime collectible object lacking a sku attribute by
-    # replacing the related object in-memory with a simple object that
-    # does not expose `sku`.
-    cd.collectible = SimpleNamespace()
+    # setting the related-object cache to a simple object that does not
+    # expose `sku`. We set the field cache directly to avoid descriptor
+    # type checks when assigning a non-model instance.
+    cache_name = CardDetails._meta.get_field('collectible').get_cache_name()
+    setattr(cd, cache_name, SimpleNamespace())
 
     # Ensure the instance falls back to the CardDetails PK
     assert str(cd) == f"CardDetails for {cd.pk}"
