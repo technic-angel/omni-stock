@@ -53,6 +53,8 @@ class CollectibleViewSet(viewsets.ModelViewSet):
         posted_vendor = serializer.validated_data.get('vendor')
         if vendor is not None and posted_vendor is not None and posted_vendor != vendor:
             raise PermissionDenied("You cannot create a Collectible for another vendor.")
+        if vendor is None and posted_vendor is not None:
+            raise PermissionDenied("You are not allowed to create a Collectible for a vendor.")
 
         # Force-associate the object with the user and vendor (if present).
         if vendor is not None:
