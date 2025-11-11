@@ -7,7 +7,7 @@ from .serializers import CollectibleSerializer
 class CollectibleViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Collectible items to be viewed or edited.
 
-    Behaviour additions:
+    Behavior additions:
     - The list endpoint is scoped to the authenticated user's vendor (if present on their profile).
     - When creating a Collectible, the server sets the `user` and `vendor` based on the
       authenticated user's profile. Attempts to create a Collectible for another vendor
@@ -17,7 +17,6 @@ class CollectibleViewSet(viewsets.ModelViewSet):
     serializer_class = CollectibleSerializer
 
     # keep a default ordering; queryset is resolved from get_queryset
-    ordering = ['name']
 
     def get_queryset(self):
         """Return collectibles scoped to the requesting user's vendor or user account.
@@ -53,6 +52,8 @@ class CollectibleViewSet(viewsets.ModelViewSet):
         posted_vendor = serializer.validated_data.get('vendor')
         if vendor is not None and posted_vendor is not None and posted_vendor != vendor:
             raise PermissionDenied("You cannot create a Collectible for another vendor.")
+        if vendor is None and posted_vendor is not None:
+            raise PermissionDenied("You are not allowed to create a Collectible for a vendor.")
 
         # Force-associate the object with the user and vendor (if present).
         if vendor is not None:
