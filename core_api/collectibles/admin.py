@@ -1,34 +1,36 @@
 from django.contrib import admin
-from .models import Collectible
-import admin_thumbnails # Import the package we just installed
+import admin_thumbnails
 
-# Define the custom Admin class for the Collectible model
-@admin_thumbnails.thumbnail('image')  # Apply the thumbnail decorator to the 'image' field
+from .models import Collectible, Vendor, UserProfile, CardDetails
+
+
+class CardDetailsInline(admin.StackedInline):
+    model = CardDetails
+    extra = 0
+    can_delete = False
+
+
+@admin_thumbnails.thumbnail('image')
 class CollectibleAdmin(admin.ModelAdmin):
-    # Fields to display in the main list view
     list_display = (
         'name',
         'sku',
-        'image_thumbnail',  # decorator creates '<field>_thumbnail'
+        'image_thumbnail',
         'quantity',
         'current_price',
         'user',
         'last_updated',
     )
 
-    # Fields that can be searched
     search_fields = ('name', 'sku', 'description', 'location')
+    list_filter = ('vendor', 'user', 'location', 'last_updated')
 
-    # Fields to use as filters on the right sidebar
-    list_filter = ('user', 'location', 'last_updated')
-
-    # Fields to display in the edit form, grouped logically
     fieldsets = (
         ('Owner & Identification', {
-            'fields': ('user', 'name', 'sku'),
+            'fields': ('vendor', 'user', 'name', 'sku'),
         }),
         ('Inventory & Location', {
-            'fields': ('location', 'quantity', 'image', 'image_thumbnail'),  # Include thumbnail for preview
+            'fields': ('location', 'quantity', 'image', 'image_thumbnail'),
             'classes': ('collapse',),
         }),
         ('Pricing & Financials', {
@@ -41,15 +43,15 @@ class CollectibleAdmin(admin.ModelAdmin):
         })
     )
 
-    # Set read-only fields (thumbnail is generated)
     readonly_fields = ('last_updated', 'image_thumbnail',)
+    inlines = [CardDetailsInline]
 
-    # Ensure the 'user' field is automatically set to the current user
     def save_model(self, request, obj, form, change):
-        if not obj.pk:  # Only on creation
+        if not obj.pk:
             obj.user = request.user
         super().save_model(request, obj, form, change)
 
 
-# Register the model with the custom Admin class
 admin.site.register(Collectible, CollectibleAdmin)
+admin.site.register(Vendor)
+admin.site.register(UserProfile)

@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt', 
     # Third-party utilities
     'corsheaders',
+    'drf_spectacular',
     'admin_thumbnails',
     # Local Apps 
     'collectibles', 
@@ -176,6 +177,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
+}
+
+# Use drf-spectacular to generate an OpenAPI schema for the API.
+# This enables schema-first development and TypeScript client generation later.
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Omni Stock API',
+    'DESCRIPTION': 'OpenAPI schema for Omni Stock (development)',
+    'VERSION': '1.0.0',
 }
 
 SIMPLE_JWT = {

@@ -25,6 +25,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+# drf-spectacular schema + docs views
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,6 +40,9 @@ urlpatterns = [
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     # Add your API paths here later: path('api/v1/auth/', include('auth.urls')),
+    # OpenAPI schema and docs (development)
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
 
 # Serving Media Files during development
