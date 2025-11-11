@@ -54,7 +54,8 @@ def test_carddetails_str_saved_collectible_missing_sku():
     # expose `sku`. We set the field cache directly to avoid descriptor
     # type checks when assigning a non-model instance.
     cache_name = CardDetails._meta.get_field('collectible').get_cache_name()
-    setattr(cd, cache_name, SimpleNamespace())
+    # Set directly into the instance __dict__ to bypass the related descriptor.
+    cd.__dict__[cache_name] = SimpleNamespace()
 
     # Ensure the instance falls back to the CardDetails PK
     assert str(cd) == f"CardDetails for {cd.pk}"
