@@ -30,8 +30,22 @@ class CardDetails(models.Model):
         verbose_name_plural = "Card Details"
 
     def __str__(self):
-        sku = getattr(self.collectible, 'sku', None)
-        return f"CardDetails for {sku or self.pk}"
+        # Defensive stringification: prefer the related collectible SKU when present,
+        # fall back to the CardDetails PK, and finally show a clear unsaved marker.
+        from django.core.exceptions import ObjectDoesNotExist
+
+        try:
+            sku = getattr(self.collectible, 'sku', None)
+        except ObjectDoesNotExist:
+            sku = None
+
+        if sku:
+            return f"CardDetails for {sku}"
+
+        if self.pk:
+            return f"CardDetails for {self.pk}"
+
+        return "CardDetails (unsaved)"
 
     def get_external_ids(self):
         """Return external_ids as a dict if possible, otherwise empty dict."""
