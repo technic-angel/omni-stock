@@ -16,14 +16,14 @@ def test_collectible_viewset_list_and_create():
     Collectible.objects.create(name="View Card 2", sku="VIEW-002", quantity=2)
 
     url = "/api/v1/collectibles/"
-    resp = client.get(url)
-    assert resp.status_code == 200
-    assert len(resp.json()) >= 2
-
-    # authenticated create
+    # API requires authentication by default; authenticate a test user
     User = get_user_model()
     user = User.objects.create_user(username="tester", password="pass")
     client.force_authenticate(user=user)
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert len(resp.json()) >= 2
 
     payload = {"name": "Created via API", "sku": "VIEW-003", "quantity": 3}
     resp = client.post(url, payload, format='json')
