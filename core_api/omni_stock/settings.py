@@ -90,7 +90,13 @@ MIDDLEWARE = [
 
 # CORS: allow requests from frontend during development. For production,
 # set specific origins via CORS_ALLOWED_ORIGINS.
-CORS_ALLOW_ALL_ORIGINS = True
+# Allow only local frontend (e.g., React at localhost:3000) during development
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+# Alternatively, to allow all localhost ports, use:
+# CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
 
 ROOT_URLCONF = 'omni_stock.urls'
 
