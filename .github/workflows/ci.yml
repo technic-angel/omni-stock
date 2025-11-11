@@ -13,9 +13,9 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11"]
 
-    # expose the Codecov token as an env var so expressions can safely reference it
-    env:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    # NOTE: avoid mapping secrets at the job-level (some linters reject that).
+    # We'll export the secret to the runner env in a dedicated step before the upload
+    # so later steps can safely reference `env.CODECOV_TOKEN` in `if` expressions.
 
     services:
       postgres:
@@ -122,6 +122,13 @@ jobs:
               repo: context.repo.repo,
               body,
             });
+
+      - name: Export CODECOV_TOKEN to env
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "CODECOV_TOKEN=${CODECOV_TOKEN}" >> $GITHUB_ENV
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage to Codecov
         if: ${{ env.CODECOV_TOKEN != '' }}
