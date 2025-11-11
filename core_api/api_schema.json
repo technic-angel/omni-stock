@@ -378,13 +378,71 @@
     },
     "components": {
         "schemas": {
+            "CardDetails": {
+                "type": "object",
+                "description": "Serializer for the CardDetails nested object.",
+                "properties": {
+                    "psa_grade": {
+                        "type": "string",
+                        "format": "decimal",
+                        "pattern": "^-?\\d{0,2}(?:\\.\\d{0,1})?$",
+                        "nullable": true,
+                        "description": "Numeric grade, e.g. 8.5 or 10.0"
+                    },
+                    "condition": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Human-readable condition (e.g., Mint, Near Mint).",
+                        "maxLength": 50
+                    },
+                    "external_ids": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "JSON string of external IDs (portable across DBs)"
+                    },
+                    "last_estimated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "language": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "release_date": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "print_run": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Optional print run or edition info.",
+                        "maxLength": 100
+                    },
+                    "market_region": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 100
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Internal notes about the card"
+                    }
+                }
+            },
             "Collectible": {
                 "type": "object",
-                "description": "Serializer for the Collectible model.\nHandles converting Collectible objects to JSON and validating/converting\nincoming JSON data back into Collectible objects.",
+                "description": "Serializer for the Collectible model.\n\nSupports writable nested `card_details` payloads. The nested handling is\nintentionally explicit and minimal: create/update will handle a provided\n`card_details` object by creating or updating the related CardDetails row.",
                 "properties": {
                     "id": {
                         "type": "integer",
                         "readOnly": true
+                    },
+                    "card_details": {
+                        "$ref": "#/components/schemas/CardDetails"
                     },
                     "name": {
                         "type": "string",
@@ -460,11 +518,14 @@
             },
             "PatchedCollectible": {
                 "type": "object",
-                "description": "Serializer for the Collectible model.\nHandles converting Collectible objects to JSON and validating/converting\nincoming JSON data back into Collectible objects.",
+                "description": "Serializer for the Collectible model.\n\nSupports writable nested `card_details` payloads. The nested handling is\nintentionally explicit and minimal: create/update will handle a provided\n`card_details` object by creating or updating the related CardDetails row.",
                 "properties": {
                     "id": {
                         "type": "integer",
                         "readOnly": true
+                    },
+                    "card_details": {
+                        "$ref": "#/components/schemas/CardDetails"
                     },
                     "name": {
                         "type": "string",
