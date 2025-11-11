@@ -17,7 +17,6 @@ class CollectibleViewSet(viewsets.ModelViewSet):
     serializer_class = CollectibleSerializer
 
     # keep a default ordering; queryset is resolved from get_queryset
-    ordering = ['name']
 
     def get_queryset(self):
         """Return collectibles scoped to the requesting user's vendor or user account.
