@@ -1,7 +1,7 @@
 import pytest
 
 from collectibles.models import Vendor, Collectible, CardDetails
-from .factories import VendorFactory, CollectibleFactory, CardDetailsFactory
+from collectibles.tests.factories import VendorFactory, CollectibleFactory, CardDetailsFactory
 
 
 @pytest.mark.django_db
