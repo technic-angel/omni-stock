@@ -7,7 +7,7 @@ from .serializers import CollectibleSerializer
 class CollectibleViewSet(viewsets.ModelViewSet):
     """API endpoint that allows Collectible items to be viewed or edited.
 
-    Behaviour additions:
+    Behavior additions:
     - The list endpoint is scoped to the authenticated user's vendor (if present on their profile).
     - When creating a Collectible, the server sets the `user` and `vendor` based on the
       authenticated user's profile. Attempts to create a Collectible for another vendor
