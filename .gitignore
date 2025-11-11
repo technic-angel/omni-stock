@@ -23,3 +23,7 @@ Operating System specific (Mac, Windows, Linux)
 
 .DS_Store
 Thumbs.db
+
+# Local-only planning docs (do not commit)
+docs/local-master-plan.md
+docs/local/**

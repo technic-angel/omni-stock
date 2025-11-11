@@ -132,17 +132,34 @@ jobs:
 
               - name: Fail if coverage below threshold
                 run: |
-                  # Use coverage xml to determine coverage percent (fallback simple check)
+                  # Use coverage xml to determine coverage percent and write it to coverage.txt
                   python - <<'PY'
-        import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as ET, sys
         try:
             tree = ET.parse('coverage.xml')
             root = tree.getroot()
-            coverage = float(root.get('line-rate', '0')) * 100
+            cov = float(root.get('line-rate', '0')) * 100
         except Exception:
             print('Could not parse coverage.xml')
-            coverage = 0.0
-        print(f'Coverage: {coverage:.2f}%')
-        if coverage < 50.0:
-            raise SystemExit('Coverage below 50%')
+            cov = 0.0
+        print(f'Coverage: {cov:.2f}%')
+        open('coverage.txt','w').write(f'{cov:.2f}')
+        if cov < 60.0:
+            sys.exit('Coverage below 60%')
         PY
+
+              - name: Comment PR with coverage
+                if: github.event_name == 'pull_request'
+                uses: actions/github-script@v6
+                with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                    const fs = require('fs');
+                    const cov = fs.readFileSync('coverage.txt','utf8');
+                    const body = `Automated coverage report: **${cov}%**\n\nThreshold: 60%`;
+                    github.rest.issues.createComment({
+                      issue_number: context.payload.pull_request.number,
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      body,
+                    });
