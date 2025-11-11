@@ -163,3 +163,12 @@ jobs:
                       repo: context.repo.repo,
                       body,
                     });
+
+              - name: Upload coverage to Codecov
+                if: secrets.CODECOV_TOKEN != ''
+                uses: codecov/codecov-action@v4
+                with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+                  files: coverage.xml
+                  flags: unittests
+                  fail_ci_if_error: true
