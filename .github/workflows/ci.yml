@@ -13,6 +13,43 @@ permissions:
   issues: write
 
 jobs:
+  openapi-check:
+    name: OpenAPI baseline check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-3.11-${{ hashFiles('**/core_api/requirements*.txt') }}
+
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r core_api/requirements-dev.txt
+
+      - name: Generate current OpenAPI schema
+        run: |
+          python core_api/manage.py spectacular --format openapi-json > generated_schema.json
+
+      - name: Check for schema drift
+        run: |
+          set -e
+          if ! git diff --no-index --quiet core_api/api_schema.json generated_schema.json; then
+            echo "\nOpenAPI schema differs from committed baseline. Please update core_api/api_schema.json (and api_schema.json) and explain the change in the PR description or add the 'schema-change' label.\n"
+            git --no-pager diff --no-index -- core_api/api_schema.json generated_schema.json || true
+            exit 1
+          fi
+
   backend-tests:
     runs-on: ubuntu-latest
     strategy:
