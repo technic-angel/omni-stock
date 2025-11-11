@@ -11,14 +11,17 @@ from collectibles.models import Collectible
 def test_collectible_viewset_list_and_create():
     client = APIClient()
 
-    # create a couple of items
+    # create a couple of items (they will be associated with a vendor)
     from collectibles.tests.factories import CollectibleFactory, UserFactory
-    CollectibleFactory.create(name="View Card 1", sku="VIEW-001")
-    CollectibleFactory.create(name="View Card 2", sku="VIEW-002")
+    first = CollectibleFactory.create(name="View Card 1", sku="VIEW-001")
+    CollectibleFactory.create(name="View Card 2", sku="VIEW-002", vendor=first.vendor)
 
     url = "/api/v1/collectibles/"
     # API requires authentication by default; authenticate a test user
     user = UserFactory.create(username="tester")
+    # attach the test user to the same vendor so the list is scoped to them
+    from collectibles.models import UserProfile
+    UserProfile.objects.create(user=user, vendor=first.vendor)
     client.force_authenticate(user=user)
 
     resp = client.get(url)
