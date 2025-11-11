@@ -39,3 +39,21 @@ def test_carddetails_str_unsaved():
     # unsaved CardDetails without a PK or related collectible should show a clear marker
     cd = CardDetails()
     assert str(cd) == "CardDetails (unsaved)"
+
+
+@pytest.mark.django_db
+def test_carddetails_str_saved_collectible_missing_sku():
+    # Saved CardDetails where the related Collectible at runtime has no `sku`
+    # attribute (e.g., defensive runtime case) should fall back to the CardDetails PK.
+    c = CollectibleFactory.create(name="NoSKU Card", sku="NSKU-001")
+    cd = CardDetailsFactory.create(collectible=c)
+
+    # Simulate a runtime collectible object lacking a sku attribute
+    try:
+        delattr(c, 'sku')
+    except Exception:
+        # If deletion isn't possible for some reason, set it to None in-memory
+        setattr(c, 'sku', None)
+
+    # Ensure the instance still resolves to the CardDetails PK
+    assert str(cd) == f"CardDetails for {cd.pk}"
