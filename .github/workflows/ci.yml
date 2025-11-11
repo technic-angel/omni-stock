@@ -13,6 +13,10 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11"]
 
+    # expose the Codecov token as an env var so expressions can safely reference it
+    env:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
     services:
       postgres:
         image: postgres:15
@@ -120,10 +124,10 @@ jobs:
             });
 
       - name: Upload coverage to Codecov
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
           files: coverage.xml
           flags: unittests
           fail_ci_if_error: true
