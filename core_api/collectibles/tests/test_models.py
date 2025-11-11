@@ -53,9 +53,8 @@ def test_carddetails_str_saved_collectible_missing_sku():
     # setting the related-object cache to a simple object that does not
     # expose `sku`. We set the field cache directly to avoid descriptor
     # type checks when assigning a non-model instance.
-    cache_name = CardDetails._meta.get_field('collectible').get_cache_name()
-    # Set directly into the instance __dict__ to bypass the related descriptor.
-    cd.__dict__[cache_name] = SimpleNamespace()
-
-    # Ensure the instance falls back to the CardDetails PK
-    assert str(cd) == f"CardDetails for {cd.pk}"
+    # Rather than fight the Django descriptor/cache behavior, call the
+    # underlying __str__ logic with a minimal fake object that mirrors
+    # the attributes we care about (no `sku` on the related collectible).
+    fake = SimpleNamespace(collectible=SimpleNamespace(), pk=cd.pk)
+    assert CardDetails.__str__(fake) == f"CardDetails for {cd.pk}"
