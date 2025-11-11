@@ -182,10 +182,10 @@ REST_FRAMEWORK = {
     # We will change this to IsAuthenticated later in the roadmap (P3.4)
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
 
     # Use drf-spectacular for schema generation when installed
-    , 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
 }
 
 # Optional drf-spectacular settings can be added here if needed later
