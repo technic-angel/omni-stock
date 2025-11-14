@@ -91,12 +91,15 @@ jobs:
           DEBUG: 'False'
         run: |
           pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
+          
+      - name: Copy coverage.xml to repo root
+        run: cp core_api/coverage.xml coverage.xml
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ matrix.python-version }}
-          path: core_api/coverage.xml
+          path: coverage.xml
 
       - name: Fail if coverage below threshold
         working-directory: core_api
@@ -146,6 +149,6 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ env.CODECOV_TOKEN }}
-          files: core_api/coverage.xml
+          files: coverage.xml
           flags: unittests
           fail_ci_if_error: true
