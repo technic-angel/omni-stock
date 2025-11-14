@@ -47,11 +47,16 @@ env = SimpleEnv()
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Use the DJANGO_SECRET_KEY environment variable defined in .env
+# Use the DJANGO_SECRET_KEY environment variable defined in .env.
+# For local development only, we allow a fallback value if DEBUG is True.
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-default-fallback-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
+
+# Fail fast if running in non-debug mode without a proper secret key.
+if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):
+    raise RuntimeError('DJANGO_SECRET_KEY must be set when DEBUG is False. Set it in your .env file.')
 
 ALLOWED_HOSTS = ['*'] # Allow connections from Docker network/host
 
