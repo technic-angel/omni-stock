@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
+// NOTE: @vitejs/plugin-react can improve HMR and JSX handling. It caused an
+// esbuild/require ESM import issue in this environment; to keep the dev server
+// start fast for smoke testing we omit the plugin. Add it back if your node
+// runtime and plugin versions are compatible.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   server: {
     port: 5173
   }
