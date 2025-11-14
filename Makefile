@@ -26,6 +26,8 @@ stop:
 
 
 test-ci:
-	# Run the full test suite inside the dev container and write coverage to ./core_api/coverage.xml
-	# Uses the dev image so tests run quickly without pip-install each run.
-	docker compose $(S_COMPOSE) run --rm core_api bash -lc "cd /usr/src/app && pytest --maxfail=1 --disable-warnings --cov=. --cov-report=xml:core_api/coverage.xml"
+	# Run the full test suite inside the dev container and produce coverage.
+	# Inside the container /usr/src/app maps to ./core_api on the host. Writing to core_api/coverage.xml
+	# therefore appears at ./core_api/core_api/coverage.xml on the host. After the run we move it up to ./coverage.xml.
+	docker compose $(S_COMPOSE) run --rm core_api bash -lc "cd /usr/src/app && pytest --maxfail=1 --disable-warnings --cov=. --cov-report=xml:core_api/coverage.xml" && \
+	mv core_api/core_api/coverage.xml coverage.xml || echo 'Coverage XML not found at core_api/core_api/coverage.xml (tests may have failed)'

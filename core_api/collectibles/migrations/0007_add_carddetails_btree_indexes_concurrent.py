@@ -7,6 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("collectibles", "0006_add_carddetails_externalids_gin"),
+        ("collectibles", "0005_add_carddetails_btree_indexes"),
     ]
 
     operations = [
