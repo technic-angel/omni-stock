@@ -1,0 +1,20 @@
+# Codecov configuration for omni-stock
+# See https://docs.codecov.com/docs/codecov-yaml
+
+comment:
+  # Post a comment on PRs with coverage changes. Set to false to disable.
+  behavior: default
+
+coverage:
+  status:
+    project:
+      default:
+        # Project-level target: adjust as you raise test coverage.
+        target: 75
+    patch:
+      default:
+        # Require no regression on changed code by default
+        target: auto
+
+flags:
+  - name: unittests
