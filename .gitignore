@@ -30,3 +30,10 @@ docs/local-master-plan.md
 docs/local/**
 # Ignore all docs in working tree (keep local only)
 docs/
+
+# Frontend local dev artifacts
+# Ignore node_modules inside the frontend folder (accidentally committed earlier)
+/frontend/node_modules/
+# Vite dev server artifacts
+/frontend/frontend.pid
+/frontend/frontend-dev.log
