@@ -30,29 +30,28 @@ total_errors=0
 total_skipped=0
 
 while IFS= read -r -d $'\0' xml; do
-  # Use python to safely parse JUnit XML formats (testsuites/testsuite)
-  read tests failures errors skipped <<<"$(python3 - "$xml" <<'PY'
+  # Parse JUnit XML using python -c for safer quoting
+  read tests failures errors skipped <<<"$(python3 -c '
 import sys, xml.etree.ElementTree as ET
 try:
-    tree = ET.parse(sys.argv[1])
-    root = tree.getroot()
-    tests = failures = errors = skipped = 0
-    if root.tag.endswith('testsuites'):
-        suites = root.findall('.//testsuite')
-    elif root.tag.endswith('testsuite'):
-        suites = [root]
-    else:
-        suites = root.findall('.//testsuite')
-    for s in suites:
-        tests += int(s.attrib.get('tests', 0))
-        failures += int(s.attrib.get('failures', 0))
-        errors += int(s.attrib.get('errors', 0))
-        skipped += int(s.attrib.get('skipped', 0) or s.attrib.get('disabled', 0) or 0)
-    print(tests, failures, errors, skipped)
+  tree = ET.parse(sys.argv[1])
+  root = tree.getroot()
+  tests = failures = errors = skipped = 0
+  if root.tag.endswith("testsuites"):
+    suites = root.findall(".//testsuite")
+  elif root.tag.endswith("testsuite"):
+    suites = [root]
+  else:
+    suites = root.findall(".//testsuite")
+  for s in suites:
+    tests += int(s.attrib.get("tests", 0))
+    failures += int(s.attrib.get("failures", 0))
+    errors += int(s.attrib.get("errors", 0))
+    skipped += int(s.attrib.get("skipped", 0) or s.attrib.get("disabled", 0) or 0)
+  print(tests, failures, errors, skipped)
 except Exception:
-    print('0 0 0 0')
-PY
-  )"
+  print("0 0 0 0")
+' "$xml")"
   total_tests=$((total_tests + tests))
   total_failures=$((total_failures + failures))
   total_errors=$((total_errors + errors))
@@ -77,20 +76,19 @@ vitest_failed=0
 vitest_skipped=0
 while IFS= read -r -d $'\0' jsonf; do
   vitest_found=1
-  # Use python to parse various possible JSON shapes
-  read total passed failed pending <<<"$(python3 - <<PY
+  # Use python -c to parse JSON safely
+  read total passed failed pending <<<"$(python3 -c '
 import sys, json
 try:
     data = json.load(open(sys.argv[1]))
-    total = data.get('numTotalTests') or data.get('total') or 0
-    passed = data.get('numPassedTests') or data.get('passed') or 0
-    failed = data.get('numFailedTests') or data.get('failed') or 0
-    pending = data.get('numPendingTests') or data.get('pending') or data.get('skipped') or 0
+    total = data.get("numTotalTests") or data.get("total") or 0
+    passed = data.get("numPassedTests") or data.get("passed") or 0
+    failed = data.get("numFailedTests") or data.get("failed") or 0
+    pending = data.get("numPendingTests") or data.get("pending") or data.get("skipped") or 0
     print(total, passed, failed, pending)
 except Exception:
-    print('0 0 0 0')
-PY
-" "$jsonf")
+    print("0 0 0 0")
+' "$jsonf")"
   vitest_total=$((vitest_total + total))
   vitest_passed=$((vitest_passed + passed))
   vitest_failed=$((vitest_failed + failed))
