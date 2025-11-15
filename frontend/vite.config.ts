@@ -1,12 +1,16 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Re-enable @vitejs/plugin-react now that this package is running in an
-// ESM-compatible package context (frontend/package.json includes "type": "module").
-// This restores improved HMR and JSX transforms.
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173
-  }
+    port: 5173,
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+  },
 })
