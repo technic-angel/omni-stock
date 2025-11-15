@@ -1,5 +1,5 @@
 Django==5.0.6
-django-environ
+django-environ==0.11.2
 psycopg==3.1.18
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.5.1
