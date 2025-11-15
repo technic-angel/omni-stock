@@ -204,7 +204,7 @@ jobs:
           path: frontend/coverage/
 
   build-test-summary:
-    needs: [backend-tests, frontend-tests]
+    needs: [openapi-check, backend-tests, frontend-tests]
     if: always()
     runs-on: ubuntu-latest
     name: Build Test Summary
@@ -217,10 +217,9 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Install yq and jq
+      - name: Install yq, jq, and xmllint
         run: |
-          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
-          sudo apt-get update && sudo apt-get install -y jq
+          sudo apt-get update && sudo apt-get install -y jq libxml2-utils
       
       - name: Generate Test Summary
         id: generate_summary
@@ -241,7 +240,7 @@ jobs:
             });
             
             const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && comment.body.includes('Omni-Stock CI Test Report')
+              comment.user.type === 'Bot' && comment.body.includes('Omni-Stock CI Report')
             );
 
             const summaryBody = `${{ steps.generate_summary.outputs.summary_body }}`;
@@ -261,3 +260,23 @@ jobs:
                 body: summaryBody
               });
             }
+
+  codecov-upload:
+    needs: [backend-tests, frontend-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    name: Upload to Codecov
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/coverage/lcov.info
