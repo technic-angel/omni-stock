@@ -35,8 +35,32 @@ jobs:
       - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r core_api/requirements.txt
-          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
+          # Use `python -m pip` to ensure we install into the same interpreter used to run manage.py
+          python -m pip install -r core_api/requirements.txt
+          if [ -f core_api/requirements-dev.txt ]; then python -m pip install -r core_api/requirements-dev.txt; fi
+
+      - name: Verify drf-spectacular is available
+        working-directory: core_api
+        env:
+          DJANGO_SETTINGS_MODULE: omni_stock.schema_generate_settings
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
+        run: |
+          echo "=== pip show drf-spectacular ==="
+          python -m pip show drf-spectacular || true
+          echo "=== python import check ==="
+          python - <<'PY'
+          import importlib, sys
+          try:
+              mod = importlib.import_module('drf_spectacular')
+              print('drf_spectacular', getattr(mod, '__version__', 'unknown'))
+          except Exception as e:
+              print('import drf_spectacular failed:', e)
+              sys.exit(0)
+          PY
+          echo "=== management commands (first 200 lines) ==="
+          # Running manage.py help will import settings; use the lightweight override
+          python manage.py help | sed -n '1,200p' || true
 
       - name: Generate current OpenAPI schema
         working-directory: core_api
