@@ -39,8 +39,17 @@ jobs:
           if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
 
       - name: Generate current OpenAPI schema
+        working-directory: core_api
+        env:
+          DJANGO_SETTINGS_MODULE: omni_stock.schema_generate_settings
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
         run: |
-          python core_api/manage.py spectacular --format openapi-json > generated_schema.json
+          # Use the lightweight schema generation settings override so the job
+          # doesn't require PostgreSQL / psycopg on the runner. Output the
+          # generated schema to the repo root where the subsequent diff step
+          # expects it.
+          python manage.py spectacular --format openapi-json > ../generated_schema.json
 
       - name: Check for schema drift
         run: |
