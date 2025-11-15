@@ -57,3 +57,38 @@ Coverage is uploaded to Codecov when `CODECOV_TOKEN` is present. The CI workflow
 ## Next Steps
 
 See `docs/project-roadmap.md` and runbooks under `docs/runbooks/` for operational guidance (e.g. index creation with `CONCURRENTLY`).
+
+## Try the demo (5 minutes)
+
+If you want to quickly run the app and exercise the core demo flow (register → login → create → delete), follow these steps. This is intentionally minimal — if you prefer a hosted demo link, add it here.
+
+1. Start the development stack (backend + db + frontend dev server):
+
+```bash
+# from repo root
+make dev-up
+cd frontend
+npm install
+npm run dev
+```
+
+2. Open the frontend dev URL (printed by Vite, usually http://localhost:5173) and register a new user.
+
+3. From the app: log in, create a collectible, confirm it appears in the list, then delete it to complete the smoke flow.
+
+4. Optional: run the Cypress smoke test skeleton (if you have Cypress installed):
+
+```bash
+cd frontend
+# install dev deps if not present
+npm install
+# run the (placeholder) smoke spec in headless mode
+npx cypress run --spec "cypress/integration/smoke.spec.ts"
+```
+
+Demo checklist (for README / recruiter copy)
+- [ ] Live demo link (add URL here if hosted)
+- [ ] 2–3 minute screencast link (optional)
+- [ ] CI badge(s) and passing E2E smoke test on PR previews
+
+If you want, I can add a recorded screencast file under `docs/` and wire the Cypress test to run against PR previews.
