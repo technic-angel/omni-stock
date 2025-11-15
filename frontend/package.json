@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:run:ci": "cypress run --headless --spec \"cypress/integration/smoke.spec.ts\"",
@@ -29,6 +30,8 @@
     "postcss": "^8.4.21",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.6.2",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vitest": "^0.34.6",
+    "vitest-json-reporter": "^1.0.0"
   }
 }
