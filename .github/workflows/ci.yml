@@ -49,16 +49,8 @@ jobs:
           echo "=== pip show drf-spectacular ==="
           python -m pip show drf-spectacular || true
           echo "=== python import check ==="
-          python - <<'PY'
-            import importlib, sys
-            try:
-                mod = importlib.import_module('drf_spectacular')
-                print('drf_spectacular', getattr(mod, '__version__', 'unknown'))
-            except Exception as e:
-                print('import drf_spectacular failed:', e)
-                # Fail fast so the job surfaces a clear error instead of hitting KeyError later
-                sys.exit(1)
-          PY
+          # Run a single-line import check to avoid heredoc indentation issues
+          python -c "import importlib,sys; mod=importlib.import_module('drf_spectacular'); print('drf_spectacular', getattr(mod,'__version__','unknown'))" || { echo 'import drf_spectacular failed'; exit 1; }
           echo "=== management commands (first 200 lines) ==="
           # Running manage.py help will import settings; use the lightweight override
           python manage.py help | sed -n '1,200p' || true
