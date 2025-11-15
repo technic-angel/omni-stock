@@ -35,7 +35,8 @@ jobs:
       - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r core_api/requirements-dev.txt
+          pip install -r core_api/requirements.txt
+          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
 
       - name: Generate current OpenAPI schema
         run: |
