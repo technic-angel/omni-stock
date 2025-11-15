@@ -18,6 +18,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
+    outputs:
+      test_result: ${{ steps.run_tests.outcome }}
+      python_version: ${{ matrix.python-version }}
 
     # NOTE: avoid mapping secrets at the job-level (some linters reject that).
     # We'll export the secret to the runner env in a dedicated step before the upload
@@ -91,7 +94,7 @@ jobs:
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: 'False'
         run: |
-          pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
+          pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml --junitxml=pytest-report.xml
           
       - name: Store test result
         if: always()
@@ -103,38 +106,82 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-xml-${{ matrix.python-version }}
+          name: backend-coverage-xml-${{ matrix.python-version }}
           path: coverage.xml
+      
+      - name: Upload pytest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-pytest-report-${{ matrix.python-version }}
+          path: core_api/pytest-report.xml
+
+#  frontend-test:
+#    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        working-directory: frontend
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: '20'
+#
+#      - name: Cache node modules
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.npm
+#          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-node-
+#
+#      - name: Install dependencies
+#        run: npm ci
+#
+#      - name: Run tests
+#        id: run_tests
+#        run: npm test -- --reporter=json --reporter-options "output=../test-results.json" || true
+#        
+#      - name: Upload test results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: frontend-test-results
+#          path: test-results.json
 
   build-test-summary:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'pull_request'
+    needs: [test]
+    if: github.event_name == 'pull_request' && always()
     steps:
-      - name: Download coverage artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: coverage-artifacts
+          path: artifacts
           
       - name: Generate Test Report
         id: test-report
         run: |
-          COVERAGE_FILE=$(find coverage-artifacts -name "coverage.xml" | head -n 1)
-          COVERAGE_PERCENTAGE=$(grep -o 'line-rate="[^"]*"' $COVERAGE_FILE | head -n 1 | sed 's/line-rate="\([^"]*\)"/\1/' | awk '{printf "%.2f", $1*100}')
-          
-          TEST_STATUS_ICON="✅"
-          if [ "${{ needs.test.outputs.test_result }}" != "success" ]; then
-            TEST_STATUS_ICON="❌"
+          # Backend data
+          BACKEND_COVERAGE_FILE=$(find artifacts -name "backend-coverage-xml-*" | head -n 1)
+          BACKEND_COVERAGE_PERCENTAGE=$(grep -o 'line-rate="[^"]*"' $BACKEND_COVERAGE_FILE | head -n 1 | sed 's/line-rate="\([^"]*\)"/\1/' | awk '{printf "%.2f", $1*100}')
+          BACKEND_TEST_RESULT="${{ needs.test.outputs.test_result }}"
+          BACKEND_PYTHON_VERSION="${{ needs.test.outputs.python_version }}"
+          BACKEND_TEST_STATUS_ICON="✅"
+          if [ "$BACKEND_TEST_RESULT" != "success" ]; then
+            BACKEND_TEST_STATUS_ICON="❌"
           fi
 
           REPORT_BODY=$(cat <<EOF
-          ### Omni-Stock Test Report 🧪
+          ### Omni-Stock Full-Stack Test Report 🚀
 
-          | Category              | Status                                  | Details                                                     |
-          |-----------------------|-----------------------------------------|-------------------------------------------------------------|
-          | **Backend Tests**     | ${{ needs.test.outputs.test_result }} ${TEST_STATUS_ICON} | Python ${{ needs.test.outputs.python_version }} |
-          | **Code Coverage**     | \`$COVERAGE_PERCENTAGE%\`                    | Threshold: \`60%\`                                           |
-          | **E2E Smoke Tests**   | ⏳ Pending                              | Runs on preview deployment                                  |
+          | Category              | Status                                  | Details                                                                      |
+          |-----------------------|-----------------------------------------|------------------------------------------------------------------------------|
+          | **Backend Tests**     | \`$BACKEND_TEST_RESULT\` $BACKEND_TEST_STATUS_ICON | Python $BACKEND_PYTHON_VERSION                                               |
+          | **Code Coverage**     | \`$BACKEND_COVERAGE_PERCENTAGE%\`                    | Threshold: \`60%\`                                                            |
+          | **Frontend Tests**    | ⚪️ Skipped                              | Blocked by TypeScript configuration issue.                                   |
+          | **E2E Smoke Tests**   | ⏳ Pending                              | Runs on preview deployment                                                   |
 
           **[View Full Test Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**
           EOF
