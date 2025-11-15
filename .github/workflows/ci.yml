@@ -115,44 +115,46 @@ jobs:
           name: backend-pytest-report-${{ matrix.python-version }}
           path: core_api/pytest-report.xml
 
-#  frontend-test:
-#    runs-on: ubuntu-latest
-#    defaults:
-#      run:
-#        working-directory: frontend
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#
-#      - name: Set up Node.js
-#        uses: actions/setup-node@v4
-#        with:
-#          node-version: '20'
-#
-#      - name: Cache node modules
-#        uses: actions/cache@v4
-#        with:
-#          path: ~/.npm
-#          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
-#          restore-keys: |
-#            ${{ runner.os }}-node-
-#
-#      - name: Install dependencies
-#        run: npm ci
-#
-#      - name: Run tests
-#        id: run_tests
-#        run: npm test -- --reporter=json --reporter-options "output=../test-results.json" || true
-#        
-#      - name: Upload test results
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: frontend-test-results
-#          path: test-results.json
+# ... (previous job definitions) ...
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        id: run_tests
+        run: npm test -- --reporter=json --reporter-options "output=../test-results.json" || true
+        
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results
+          path: test-results.json
 
   build-test-summary:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [test, frontend-test]
     if: github.event_name == 'pull_request' && always()
     steps:
       - name: Download artifacts
@@ -173,15 +175,49 @@ jobs:
             BACKEND_TEST_STATUS_ICON="❌"
           fi
 
+          # Frontend data
+          FRONTEND_TEST_RESULTS_FILE=$(find artifacts -name "frontend-test-results" -type f -path "*/test-results.json" | head -n 1)
+          FRONTEND_TESTS_PASSED=0
+          FRONTEND_TESTS_FAILED=0
+          FRONTEND_TESTS_TOTAL=0
+          FRONTEND_TEST_RESULT="success"
+          FRONTEND_TEST_STATUS_ICON="✅"
+          if [ -f "$FRONTEND_TEST_RESULTS_FILE" ]; then
+            FRONTEND_TESTS_PASSED=$(jq '.stats.passes' $FRONTEND_TEST_RESULTS_FILE)
+            FRONTEND_TESTS_FAILED=$(jq '.stats.failures' $FRONTEND_TEST_RESULTS_FILE)
+            FRONTEND_TESTS_TOTAL=$(jq '.stats.tests' $FRONTEND_TEST_RESULTS_FILE)
+            if [ "$FRONTEND_TESTS_FAILED" -gt 0 ]; then
+              FRONTEND_TEST_RESULT="failure"
+              FRONTEND_TEST_STATUS_ICON="❌"
+            fi
+          else
+            FRONTEND_TEST_RESULT="skipped"
+            FRONTEND_TEST_STATUS_ICON="⚪️"
+          fi
+
+          # Pytest Summary
+          PYTEST_REPORT_FILE=$(find artifacts -name "backend-pytest-report-*" | head -n 1)
+          PYTEST_SUMMARY=""
+          if [ -f "$PYTEST_REPORT_FILE" ]; then
+            ERRORS=$(yq -p xml '.testsuites.testsuite."@errors"' $PYTEST_REPORT_FILE)
+            FAILURES=$(yq -p xml '.testsuites.testsuite."@failures"' $PYTEST_REPORT_FILE)
+            SKIPPED=$(yq -p xml '.testsuites.testsuite."@skipped"' $PYTEST_REPORT_FILE)
+            TOTAL=$(yq -p xml '.testsuites.testsuite."@tests"' $PYTEST_REPORT_FILE)
+            TIME=$(yq -p xml '.testsuites.testsuite."@time"' $PYTEST_REPORT_FILE)
+            PYTEST_SUMMARY="<details><summary>Backend Test Details</summary><blockquote>\n\n**Summary:** \`$TOTAL\` tests run in \`$TIME\`s. \n**Results:** \`$FAILURES\` Failures, \`$ERRORS\` Errors, \`$SKIPPED\` Skipped.\n\n</blockquote></details>"
+          fi
+
           REPORT_BODY=$(cat <<EOF
           ### Omni-Stock Full-Stack Test Report 🚀
 
           | Category              | Status                                  | Details                                                                      |
           |-----------------------|-----------------------------------------|------------------------------------------------------------------------------|
           | **Backend Tests**     | \`$BACKEND_TEST_RESULT\` $BACKEND_TEST_STATUS_ICON | Python $BACKEND_PYTHON_VERSION                                               |
-          | **Code Coverage**     | \`$BACKEND_COVERAGE_PERCENTAGE%\`                    | Threshold: \`60%\`                                                            |
-          | **Frontend Tests**    | ⚪️ Skipped                              | Blocked by TypeScript configuration issue.                                   |
+          | **Backend Coverage**  | \`$BACKEND_COVERAGE_PERCENTAGE%\`                    | Threshold: \`60%\`                                                            |
+          | **Frontend Tests**    | \`$FRONTEND_TEST_RESULT\` $FRONTEND_TEST_STATUS_ICON | Passed: \`$FRONTEND_TESTS_PASSED\`, Failed: \`$FRONTEND_TESTS_FAILED\`, Total: \`$FRONTEND_TESTS_TOTAL\` |
           | **E2E Smoke Tests**   | ⏳ Pending                              | Runs on preview deployment                                                   |
+
+          $PYTEST_SUMMARY
 
           **[View Full Test Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**
           EOF
