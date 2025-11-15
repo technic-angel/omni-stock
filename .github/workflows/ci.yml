@@ -52,6 +52,7 @@ jobs:
           pip install -r core_api/requirements.txt
           if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
           if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
+          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
       - name: Wait for Postgres
         run: |
           for i in {1..30}; do
