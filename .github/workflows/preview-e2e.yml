@@ -7,6 +7,7 @@ on:
 jobs:
   e2e:
     name: Run preview E2E smoke
+    if: ${{ secrets.PREVIEW_URL != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

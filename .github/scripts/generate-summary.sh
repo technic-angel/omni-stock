@@ -1,3 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Minimal test summary generator for the CI workflow.
+# It looks for artifacts downloaded to the 'artifacts/' directory and
+# builds a small markdown summary. The workflow step that calls this
+# script expects it to write the output to $GITHUB_OUTPUT as 'summary_body'.
+
+SUMMARY="# Omni-Stock CI Test Report\n\n"
+
+if [ -d "artifacts" ]; then
+  SUMMARY+="**Downloaded artifacts**\n\n"
+  while IFS= read -r -d $'\0' file; do
+    # show relative path and small info
+    rel=${file#artifacts/}
+    SUMMARY+="- $rel\n"
+  done < <(find artifacts -type f -print0 | sort -z)
+else
+  SUMMARY+="No artifacts directory found.\n"
+fi
+
+# Add guidance if specific reports exist
+if [ -f artifacts/frontend-test-results ] || [ -f test-results.json ] || [ -f frontend/test-results.json ]; then
+  SUMMARY+="\n**Frontend tests**: JSON results available.\n"
+fi
+
+if ls artifacts/*pytest-report*.xml >/dev/null 2>&1 || [ -f core_api/pytest-report.xml ]; then
+  SUMMARY+="\n**Backend tests**: pytest JUnit/XML report available.\n"
+fi
+
+# Output to GitHub Actions output variable 'summary_body'
+if [ -n "${GITHUB_OUTPUT-}" ]; then
+  echo "summary_body<<EOF" >> "$GITHUB_OUTPUT"
+  echo -e "$SUMMARY" >> "$GITHUB_OUTPUT"
+  echo "EOF" >> "$GITHUB_OUTPUT"
+else
+  # Fallback: print to stdout
+  echo -e "$SUMMARY"
+fi
+
+exit 0
 #!/bin/bash
 
 set -e
