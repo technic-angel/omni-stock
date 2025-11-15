@@ -72,6 +72,19 @@ if [ -f "artifacts/openapi-check-status/failed" ]; then
     openapi_status="❌ Failed"
 fi
 
+# Compute readable statuses for use in the report (avoid illegal arithmetic/ternary in heredoc)
+if (( total_backend_failed + total_backend_errors > 0 )); then
+    backend_status="❌ Fail"
+else
+    backend_status="✅ Pass"
+fi
+
+if (( frontend_failed > 0 )); then
+    frontend_status="❌ Fail"
+else
+    frontend_status="✅ Pass"
+fi
+
 # --- Report Generation ---
 cat > "$SUMMARY_FILE" <<-EOF
 # 📈 Omni-Stock CI Report
@@ -82,8 +95,8 @@ Here's a summary of the automated checks for this pull request.
 
 | Check              | Status                                  |
 |--------------------|-----------------------------------------|
-| **Backend Tests**  | $((total_backend_failed + total_backend_errors > 0 ? '❌ Fail' : '✅ Pass')) |
-| **Frontend Tests** | $((frontend_failed > 0 ? '❌ Fail' : '✅ Pass'))     |
+| **Backend Tests**  | $backend_status |
+| **Frontend Tests** | $frontend_status     |
 | **OpenAPI Check**  | $openapi_status                         |
 
 <details>
