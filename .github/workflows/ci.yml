@@ -80,6 +80,7 @@ jobs:
           python manage.py migrate --noinput
 
       - name: Run tests with coverage
+        id: run_tests
         working-directory: core_api
         env:
           POSTGRES_DB: testdb
@@ -92,12 +93,68 @@ jobs:
         run: |
           pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
           
+      - name: Store test result
+        if: always()
+        run: echo "test_result=${{ steps.run_tests.outcome }}" >> $GITHUB_ENV
+
       - name: Copy coverage.xml to repo root
         run: cp core_api/coverage.xml coverage.xml
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
+          name: coverage-xml-${{ matrix.python-version }}
+          path: coverage.xml
+
+  build-test-summary:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: coverage-artifacts
+          
+      - name: Generate Test Report
+        id: test-report
+        run: |
+          COVERAGE_FILE=$(find coverage-artifacts -name "coverage.xml" | head -n 1)
+          COVERAGE_PERCENTAGE=$(grep -o 'line-rate="[^"]*"' $COVERAGE_FILE | head -n 1 | sed 's/line-rate="\([^"]*\)"/\1/' | awk '{printf "%.2f", $1*100}')
+          
+          TEST_STATUS_ICON="✅"
+          if [ "${{ needs.test.outputs.test_result }}" != "success" ]; then
+            TEST_STATUS_ICON="❌"
+          fi
+
+          REPORT_BODY=$(cat <<EOF
+          ### Omni-Stock Test Report 🧪
+
+          | Category              | Status                                  | Details                                                     |
+          |-----------------------|-----------------------------------------|-------------------------------------------------------------|
+          | **Backend Tests**     | ${{ needs.test.outputs.test_result }} ${TEST_STATUS_ICON} | Python ${{ needs.test.outputs.python_version }} |
+          | **Code Coverage**     | \`$COVERAGE_PERCENTAGE%\`                    | Threshold: \`60%\`                                           |
+          | **E2E Smoke Tests**   | ⏳ Pending                              | Runs on preview deployment                                  |
+
+          **[View Full Test Logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})**
+          EOF
+          )
+          echo "report_body<<EOF" >> $GITHUB_ENV
+          echo "$REPORT_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Post Test Report Comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `${process.env.report_body}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
           name: coverage-report-${{ matrix.python-version }}
           path: coverage.xml
 
