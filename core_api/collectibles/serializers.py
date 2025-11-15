@@ -1,6 +1,31 @@
 from django.db import transaction
 from rest_framework import serializers
 from .models import Collectible, CardDetails
+from django.contrib.auth import get_user_model
+from rest_framework import serializers as drf_serializers
+
+User = get_user_model()
+
+
+class RegisterSerializer(drf_serializers.Serializer):
+    """Serializer for user registration."""
+    username = drf_serializers.CharField(max_length=150)
+    email = drf_serializers.EmailField(required=False, allow_blank=True)
+    password = drf_serializers.CharField(write_only=True, min_length=8)
+
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        email = validated_data.get('email', '')
+        password = validated_data.get('password')
+        user = User.objects.create_user(username=username, email=email, password=password)
+        # Ensure a UserProfile exists for the new user (signals could be used instead).
+        try:
+            from .models.user_profile import UserProfile
+            UserProfile.objects.create(user=user)
+        except Exception:
+            # If the profile model or creation fails, don't break registration — profile is optional.
+            pass
+        return user
 
 
 class CardDetailsSerializer(serializers.ModelSerializer):
