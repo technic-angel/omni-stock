@@ -59,6 +59,26 @@ extract_lighthouse() {
     echo "$perf,$acc,$bp,$seo"
 }
 
+# Extract top failing lighthouse audits (returns markdown list or empty string)
+extract_lighthouse_failures_md() {
+    local file=$1
+    if [[ ! -f "$file" ]]; then echo ""; return; fi
+    # Select audits with score < 1 and sort by score ascending (worst first), take top 5
+    local raw=$(jq -r '.audits | to_entries[] | select(.value.score != null and .value.score < 1) | {id:.key, title:.value.title, score:.value.score, explanation:.value.explanation} ' "$file" 2>/dev/null)
+    if [[ -z "$raw" ]]; then
+        echo ""
+        return
+    fi
+    # Build markdown bullets from jq output: use jq again to format
+    local md=$(jq -r '. | "- [\(.title)](##) — score: \( (.score // 0) * 100 | floor )%"' <<< "$raw" 2>/dev/null | head -n 5)
+    # If md empty, return empty
+    if [[ -z "$md" ]]; then
+        echo ""
+    else
+        echo "$md"
+    fi
+}
+
 # --- Data Extraction ---
 # Backend Python 3.10
 backend_results_py310=$(extract_junit "artifacts/backend-pytest-report-3.10/pytest-report.xml")
@@ -85,6 +105,7 @@ frontend_coverage=$(extract_frontend_coverage "artifacts/frontend-coverage-repor
 # Lighthouse metrics (if a `lighthouse.json` artifact is uploaded)
 lighthouse_results=$(extract_lighthouse "artifacts/frontend-lighthouse/lighthouse.json")
 IFS=',' read -r lh_perf lh_acc lh_bp lh_seo <<< "$lighthouse_results"
+lh_failures_md=$(extract_lighthouse_failures_md "artifacts/frontend-lighthouse/lighthouse.json")
 
 # OpenAPI Check
 openapi_status="✅ Passed"
@@ -107,6 +128,22 @@ else
 fi
 
 # --- Report Generation ---
+# Prepare optional Lighthouse failures section
+if [[ -n "$lh_failures_md" ]]; then
+    LH_FAILURES_SECTION=$(cat <<-LHF
+
+<details>
+<summary><h3>⚠️ Lighthouse Audit Failures (top issues)</h3></summary>
+
+$lh_failures_md
+
+</details>
+LHF
+)
+else
+    LH_FAILURES_SECTION=""
+fi
+
 cat > "$SUMMARY_FILE" <<-EOF
 # 📈 Omni-Stock CI Report
 
@@ -150,6 +187,8 @@ Here's a summary of the automated checks for this pull request.
 
 > If Lighthouse metrics are missing, add a CI step to run Lighthouse and upload `lighthouse.json` as an artifact.
 </details>
+
+$LH_FAILURES_SECTION
 
 <details>
 <summary><h3>📝 OpenAPI Schema Check</h3></summary>
