@@ -13,19 +13,12 @@ permissions:
   issues: write
 
 jobs:
-  test:
+  backend-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
-    outputs:
-      test_result: ${{ steps.run_tests.outcome }}
-      python_version: ${{ matrix.python-version }}
-
-    # NOTE: avoid mapping secrets at the job-level (some linters reject that).
-    # We'll export the secret to the runner env in a dedicated step before the upload
-    # so later steps can safely reference `env.CODECOV_TOKEN` in `if` expressions.
-
+    name: Backend Tests (Python ${{ matrix.python-version }})
     services:
       postgres:
         image: postgres:15
@@ -38,16 +31,13 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U testuser -d testdb"
           --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -56,7 +46,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -68,7 +57,6 @@ jobs:
             pg_isready -h localhost -p 5432 -U testuser && break
             sleep 1
           done
-
       - name: Run migrations
         working-directory: core_api
         env:
@@ -79,9 +67,7 @@ jobs:
           POSTGRES_PORT: '5432'
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: 'False'
-        run: |
-          python manage.py migrate --noinput
-
+        run: python manage.py migrate --noinput
       - name: Run tests with coverage
         id: run_tests
         working-directory: core_api
@@ -93,44 +79,27 @@ jobs:
           POSTGRES_PORT: '5432'
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: 'False'
-        run: |
-          pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml --junitxml=pytest-report.xml
-          
-      - name: Store test result
-        if: always()
-        run: echo "test_result=${{ steps.run_tests.outcome }}" >> $GITHUB_ENV
-
-      - name: Copy coverage.xml to repo root
-        run: cp core_api/coverage.xml coverage.xml
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-coverage-xml-${{ matrix.python-version }}
-          path: coverage.xml
-      
+        run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml --junitxml=pytest-report.xml
       - name: Upload pytest report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-pytest-report-${{ matrix.python-version }}
           path: core_api/pytest-report.xml
 
-# ... (previous job definitions) ...
-
   frontend-test:
     runs-on: ubuntu-latest
+    name: Frontend Tests (Node.js 20)
     defaults:
       run:
         working-directory: frontend
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Cache node modules
         uses: actions/cache@v4
         with:
@@ -138,55 +107,123 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
       - name: Install dependencies
         run: npm ci
-
       - name: Run tests
         id: run_tests
-        run: npm test -- --reporter=json --reporter-options "output=../test-results.json" || true
-        
+        # Use `|| true` to prevent the job from failing if tests fail, so the summary can be generated
+        run: npm test -- --reporter=json --output-file=../test-results.json || true
       - name: Upload test results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-test-results
           path: test-results.json
 
   build-test-summary:
+    needs: [backend-tests, frontend-test]
+    if: always() # Run this job even if test jobs fail
     runs-on: ubuntu-latest
-    needs: [test, frontend-test]
-    if: github.event_name == 'pull_request' && always()
+    name: Build Test Summary
     steps:
-      - name: Download artifacts
+      - name: Download all workflow run artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-          
-      - name: Generate Test Report
-        id: test-report
-        run: |
-          # Backend data
-          BACKEND_COVERAGE_FILE=$(find artifacts -name "backend-coverage-xml-*" | head -n 1)
-          BACKEND_COVERAGE_PERCENTAGE=$(grep -o 'line-rate="[^"]*"' $BACKEND_COVERAGE_FILE | head -n 1 | sed 's/line-rate="\([^"]*\)"/\1/' | awk '{printf "%.2f", $1*100}')
-          BACKEND_TEST_RESULT="${{ needs.test.outputs.test_result }}"
-          BACKEND_PYTHON_VERSION="${{ needs.test.outputs.python_version }}"
-          BACKEND_TEST_STATUS_ICON="✅"
-          if [ "$BACKEND_TEST_RESULT" != "success" ]; then
-            BACKEND_TEST_STATUS_ICON="❌"
-          fi
+          path: artifacts/
 
-          # Frontend data
-          FRONTEND_TEST_RESULTS_FILE=$(find artifacts -name "frontend-test-results" -type f -path "*/test-results.json" | head -n 1)
-          FRONTEND_TESTS_PASSED=0
-          FRONTEND_TESTS_FAILED=0
-          FRONTEND_TESTS_TOTAL=0
-          FRONTEND_TEST_RESULT="success"
-          FRONTEND_TEST_STATUS_ICON="✅"
-          if [ -f "$FRONTEND_TEST_RESULTS_FILE" ]; then
-            FRONTEND_TESTS_PASSED=$(jq '.stats.passes' $FRONTEND_TEST_RESULTS_FILE)
-            FRONTEND_TESTS_FAILED=$(jq '.stats.failures' $FRONTEND_TEST_RESULTS_FILE)
-            FRONTEND_TESTS_TOTAL=$(jq '.stats.tests' $FRONTEND_TEST_RESULTS_FILE)
-            if [ "$FRONTEND_TESTS_FAILED" -gt 0 ]; then
+      - name: Install yq and jq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Generate Test Summary
+        id: generate_summary
+        run: |
+          # Start with a header
+          SUMMARY="### Omni-Stock CI Test Report 🧪\n\n"
+          SUMMARY+="A summary of the test runs for this pull request.\n\n"
+          
+          # --- Backend Summary ---
+          SUMMARY+="<details open><summary><strong>Backend Test Results (Pytest)</strong></summary>\n\n"
+          SUMMARY+="| Python Version | Total Tests | Passed ✅ | Failed ❌ | Errors ❗ |\n"
+          SUMMARY+="| :--- | :---: | :---: | :---: | :---: |\n"
+
+          for report in $(find artifacts -name "pytest-report.xml"); do
+            PYTHON_VERSION=$(echo "$report" | sed -n 's/.*backend-pytest-report-\([0-9.]*\)\/pytest-report.xml/\1/p')
+            if [ -z "$PYTHON_VERSION" ]; then
+                PYTHON_VERSION="Unknown"
+            fi
+            
+            TESTS=$(yq -p xml '.testsuite."@tests"' $report)
+            FAILURES=$(yq -p xml '.testsuite."@failures"' $report)
+            ERRORS=$(yq -p xml '.testsuite."@errors"' $report)
+            PASSED=$((TESTS - FAILURES - ERRORS))
+            
+            SUMMARY+="| Python ${PYTHON_VERSION} | ${TESTS} | ${PASSED} | ${FAILURES} | ${ERRORS} |\n"
+          done
+          SUMMARY+="\n</details>\n\n"
+
+          # --- Frontend Summary ---
+          SUMMARY+="<details open><summary><strong>Frontend Test Results (Vitest)</strong></summary>\n\n"
+          
+          FRONTEND_REPORT="artifacts/frontend-test-results/test-results.json"
+          if [ -f "$FRONTEND_REPORT" ]; then
+            NUM_TEST_SUITES=$(jq '.numTotalTestSuites' $FRONTEND_REPORT)
+            PASSED_SUITES=$(jq '.numPassedTestSuites' $FRONTEND_REPORT)
+            FAILED_SUITES=$(jq '.numFailedTestSuites' $FRONTEND_REPORT)
+            TOTAL_TESTS=$(jq '.numTotalTests' $FRONTEND_REPORT)
+            PASSED_TESTS=$(jq '.numPassedTests' $FRONTEND_REPORT)
+            FAILED_TESTS=$(jq '.numFailedTests' $FRONTEND_REPORT)
+            
+            SUMMARY+="| Metric | Count |\n"
+            SUMMARY+="| :--- | :---: |\n"
+            SUMMARY+="| Test Suites | **${NUM_TEST_SUITES}** (${PASSED_SUITES} passed, ${FAILED_SUITES} failed) |\n"
+            SUMMARY+="| Total Tests | **${TOTAL_TESTS}** |\n"
+            SUMMARY+="| Passed Tests ✅ | ${PASSED_TESTS} |\n"
+            SUMMARY+="| Failed Tests ❌ | ${FAILED_TESTS} |\n"
+          else
+            SUMMARY+="*No frontend test results found.*"
+          fi
+          SUMMARY+="\n</details>\n\n"
+
+          # Set output
+          echo "summary_body<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post Test Summary Comment
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('Omni-Stock CI Test Report')
+            );
+
+            const summaryBody = `${{ steps.generate_summary.outputs.summary_body }}`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: summaryBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: summaryBody
+              });
+            }
               FRONTEND_TEST_RESULT="failure"
               FRONTEND_TEST_STATUS_ICON="❌"
             fi
