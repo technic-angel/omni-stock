@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "cypress:run:ci": "cypress run --headless --spec \"cypress/integration/smoke.spec.ts\"",
+    "test:smoke": "npm run cypress:run:ci"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
@@ -23,10 +25,10 @@
     "@types/react-dom": "^18.0.11",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.14",
-    "cypress": "^12.0.0",
+    "cypress": "^15.6.0",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.6.2",
-    "vite": "^5.0.0"
+    "vite": "^7.2.2"
   }
 }
