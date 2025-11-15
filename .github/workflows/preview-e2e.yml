@@ -1,0 +1,55 @@
+name: Preview E2E Smoke
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Run preview E2E smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Validate PREVIEW_URL is set
+        run: |
+          if [ -z "${{ secrets.PREVIEW_URL }}" ]; then
+            echo "\nERROR: PREVIEW_URL secret is not set.\nSet repository secret PREVIEW_URL to the preview/staging URL (e.g. https://preview-123--your-app.vercel.app) and re-run this workflow.\n";
+            exit 1;
+          fi
+        env:
+          PREVIEW_URL: ${{ secrets.PREVIEW_URL }}
+
+      - name: Run Cypress smoke spec against preview
+        working-directory: frontend
+        env:
+          CYPRESS_baseUrl: ${{ secrets.PREVIEW_URL }}
+        run: |
+          # Run the smoke spec headless against the preview URL provided via PREVIEW_URL secret
+          npx cypress run --headless --spec "cypress/integration/smoke.spec.ts" --config baseUrl=${{ secrets.PREVIEW_URL }}
+
+      - name: Upload Cypress artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            frontend/cypress/videos
+            frontend/cypress/screenshots
+          if-no-files-found: ignore
+
+# Notes:
+# - This workflow expects a repository secret named PREVIEW_URL that contains the public preview URL
+#   for the PR (for example, a Vercel or Render preview deployment URL).
+# - If you use a deploy preview provider that exposes the URL via an Action, you can replace
+#   the usage of secrets.PREVIEW_URL with that output.
