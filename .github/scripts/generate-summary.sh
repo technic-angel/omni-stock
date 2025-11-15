@@ -121,7 +121,8 @@ if [ -n "${GITHUB_OUTPUT-}" ]; then
   # causing a SyntaxError: Unexpected identifier 'PREVIEW_URL'.
   echo "summary_body<<EOF" >> "$GITHUB_OUTPUT"
   # Use printf + sed to replace ` with \` (escaped backtick).
-  printf '%s' "$SUMMARY" | sed 's/`/\\`/g' >> "$GITHUB_OUTPUT"
+  # Ensure we terminate with a newline so the EOF delimiter is on its own line.
+  printf '%s\n' "$SUMMARY" | sed 's/`/\\`/g' >> "$GITHUB_OUTPUT"
   echo "EOF" >> "$GITHUB_OUTPUT"
 else
   # Fallback for local execution
