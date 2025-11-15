@@ -116,8 +116,12 @@ SUMMARY+="$BACKEND_SUMMARY\n\n$FRONTEND_SUMMARY\n\n$DEPLOYMENT_SUMMARY\n\n$ARTIF
 
 # Set GitHub Actions output
 if [ -n "${GITHUB_OUTPUT-}" ]; then
+  # Escape backticks in SUMMARY so the value can be safely embedded inside
+  # a JavaScript template literal (used by actions/github-script) without
+  # causing a SyntaxError: Unexpected identifier 'PREVIEW_URL'.
   echo "summary_body<<EOF" >> "$GITHUB_OUTPUT"
-  echo -e "$SUMMARY" >> "$GITHUB_OUTPUT"
+  # Use printf + sed to replace ` with \` (escaped backtick).
+  printf '%s' "$SUMMARY" | sed 's/`/\\`/g' >> "$GITHUB_OUTPUT"
   echo "EOF" >> "$GITHUB_OUTPUT"
 else
   # Fallback for local execution
