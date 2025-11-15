@@ -98,7 +98,7 @@ if [ -n "${PREVIEW_URL-}" ]; then
     # DEPLOYMENT_SUMMARY+="📦 **Backend Preview:** [${BACKEND_PREVIEW_URL}](${BACKEND_PREVIEW_URL})\n"
 else
     DEPLOYMENT_SUMMARY+="*No preview deployment URL was provided for this PR.*\n\n"
-    DEPLOYMENT_SUMMARY+="To enable, set the `PREVIEW_URL` repository secret or configure your deployment provider (e.g., Vercel, Render) to post a deployment status.\n"
+  DEPLOYMENT_SUMMARY+="To enable, set the \`PREVIEW_URL\` repository secret or configure your deployment provider (e.g., Vercel, Render) to post a deployment status.\n"
 fi
 DEPLOYMENT_SUMMARY+="</details>"
 
