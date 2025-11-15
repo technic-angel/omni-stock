@@ -42,6 +42,23 @@ extract_frontend_coverage() {
     echo "$coverage"
 }
 
+# Extract Lighthouse JSON summary if available
+extract_lighthouse() {
+    local file=$1
+    if [[ ! -f "$file" ]]; then echo "0,0,0,0"; return; fi
+    # Scores in lighthouse JSON are 0..1; multiply by 100 and format
+    local perf=$(jq '.categories.performance.score' "$file" 2>/dev/null || echo 0)
+    local acc=$(jq '.categories.accessibility.score' "$file" 2>/dev/null || echo 0)
+    local bp=$(jq '.categories['"'best-practices'"'].score' "$file" 2>/dev/null || echo 0)
+    local seo=$(jq '.categories.seo.score' "$file" 2>/dev/null || echo 0)
+    # convert to percent with two decimals
+    perf=$(awk "BEGIN{printf \"%.2f\", ($perf) * 100}")
+    acc=$(awk "BEGIN{printf \"%.2f\", ($acc) * 100}")
+    bp=$(awk "BEGIN{printf \"%.2f\", ($bp) * 100}")
+    seo=$(awk "BEGIN{printf \"%.2f\", ($seo) * 100}")
+    echo "$perf,$acc,$bp,$seo"
+}
+
 # --- Data Extraction ---
 # Backend Python 3.10
 backend_results_py310=$(extract_junit "artifacts/backend-pytest-report-3.10/pytest-report.xml")
@@ -64,6 +81,10 @@ total_backend_tests=$((total_backend_passed + total_backend_failed + total_backe
 frontend_results=$(extract_frontend_results "artifacts/frontend-test-results/test-results.json")
 IFS=',' read -r frontend_passed frontend_failed frontend_total <<< "$frontend_results"
 frontend_coverage=$(extract_frontend_coverage "artifacts/frontend-coverage-report/coverage/coverage-summary.json")
+
+# Lighthouse metrics (if a `lighthouse.json` artifact is uploaded)
+lighthouse_results=$(extract_lighthouse "artifacts/frontend-lighthouse/lighthouse.json")
+IFS=',' read -r lh_perf lh_acc lh_bp lh_seo <<< "$lighthouse_results"
 
 # OpenAPI Check
 openapi_status="✅ Passed"
@@ -115,6 +136,19 @@ Here's a summary of the automated checks for this pull request.
 | Passed | Failed | Total | Coverage |
 |---|---|---|---|
 | $frontend_passed | $frontend_failed | $frontend_total | ${frontend_coverage:-0.00}% |
+</details>
+
+<details>
+<summary><h3>🔎 Lighthouse Summary (if available)</h3></summary>
+
+| Metric | Score |
+|---|---:|
+| Performance | ${lh_perf:-"N/A"}% |
+| Accessibility | ${lh_acc:-"N/A"}% |
+| Best Practices | ${lh_bp:-"N/A"}% |
+| SEO | ${lh_seo:-"N/A"}% |
+
+> If Lighthouse metrics are missing, add a CI step to run Lighthouse and upload `lighthouse.json` as an artifact.
 </details>
 
 <details>
