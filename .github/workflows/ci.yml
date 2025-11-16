@@ -370,7 +370,7 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Debug: list downloaded artifacts
+      - name: "Debug: list downloaded artifacts"
         if: always()
         run: |
           echo "Listing artifacts directory contents:";
