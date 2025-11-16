@@ -490,6 +490,10 @@
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
                     },
+                    "image_url": {
+                        "type": "string",
+                        "readOnly": true
+                    },
                     "name": {
                         "type": "string",
                         "description": "The common name of the collectible item.",
@@ -514,9 +518,8 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {
@@ -558,6 +561,7 @@
                 },
                 "required": [
                     "id",
+                    "image_url",
                     "last_updated",
                     "name",
                     "sku"
@@ -573,6 +577,10 @@
                     },
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "readOnly": true
                     },
                     "name": {
                         "type": "string",
@@ -598,9 +606,8 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {
