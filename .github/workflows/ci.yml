@@ -158,12 +158,12 @@ jobs:
         with:
           name: backend-pytest-report-${{ matrix.python-version }}
           path: core_api/pytest-report.xml
-      - name: Upload coverage report
+      - name: Upload coverage XML
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-coverage-report-${{ matrix.python-version }}
-          path: core_api/htmlcov/
+          path: core_api/coverage.xml
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -189,7 +189,7 @@ jobs:
         run: npm ci
       - name: Run tests with coverage
         id: run_tests
-        run: npm test -- --reporter=json --output-file=../test-results.json --coverage || true
+        run: npm test -- --reporter=json --output-file=./test-results.json --coverage || true
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
