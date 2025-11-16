@@ -35,18 +35,69 @@ jobs:
       - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r core_api/requirements-dev.txt
+          # Use `python -m pip` to ensure we install into the same interpreter used to run manage.py
+          python -m pip install -r core_api/requirements.txt
+          if [ -f core_api/requirements-dev.txt ]; then python -m pip install -r core_api/requirements-dev.txt; fi
+
+      - name: Verify drf-spectacular is available
+        working-directory: core_api
+        env:
+          DJANGO_SETTINGS_MODULE: omni_stock.schema_generate_settings
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
+        run: |
+          echo "=== pip show drf-spectacular ==="
+          python -m pip show drf-spectacular || true
+          echo "=== python import check ==="
+          # Run a single-line import check to avoid heredoc indentation issues
+          python -c "import importlib,sys; mod=importlib.import_module('drf_spectacular'); print('drf_spectacular', getattr(mod,'__version__','unknown'))" || { echo 'import drf_spectacular failed'; exit 1; }
+          echo "=== management commands (first 200 lines) ==="
+          # Running manage.py help will import settings; use the lightweight override
+          python manage.py help | sed -n '1,200p' || true
+
+      - name: Ensure drf-spectacular installed
+        working-directory: core_api
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install drf-spectacular
 
       - name: Generate current OpenAPI schema
+        working-directory: core_api
+        env:
+          DJANGO_SETTINGS_MODULE: omni_stock.schema_generate_settings
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
         run: |
-          python core_api/manage.py spectacular --format openapi-json > generated_schema.json
+          # Use the lightweight schema generation settings override so the job
+          # doesn't require PostgreSQL / psycopg on the runner. Output the
+          # generated schema to the repo root where the subsequent diff step
+          # expects it.
+          python manage.py spectacular --format openapi-json > ../generated_schema.json
 
       - name: Check for schema drift
         run: |
           set -e
+          DRIFT=0
+          mkdir -p openapi-artifact
           if ! git diff --no-index --quiet core_api/api_schema.json generated_schema.json; then
-            echo "\nOpenAPI schema differs from committed baseline. Please update core_api/api_schema.json (and api_schema.json) and explain the change in the PR description or add the 'schema-change' label.\n"
+            echo "OpenAPI schema differs from committed baseline." > openapi-artifact/failed
             git --no-pager diff --no-index -- core_api/api_schema.json generated_schema.json || true
+            DRIFT=1
+          else
+            echo "passed" > openapi-artifact/passed
+          fi
+          echo "DRIFT=$DRIFT" > openapi_status.txt
+      - name: Upload OpenAPI check status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-check-status
+          path: openapi-artifact/
+      - name: Fail if schema drift detected
+        if: always()
+        run: |
+          if [ -f openapi-artifact/failed ]; then
+            echo "OpenAPI schema drift detected" >&2
             exit 1
           fi
 
@@ -118,13 +169,19 @@ jobs:
           POSTGRES_PORT: '5432'
           DJANGO_SECRET_KEY: ci-secret
           DEBUG: 'False'
-        run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml --junitxml=pytest-report.xml || true
+        run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml --cov-report=html --junitxml=pytest-report.xml || true
       - name: Upload pytest report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-pytest-report-${{ matrix.python-version }}
           path: core_api/pytest-report.xml
+      - name: Upload coverage XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report-${{ matrix.python-version }}
+          path: core_api/coverage.xml
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -148,18 +205,163 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
-      - name: Run tests
+      - name: Install Vitest coverage plugin
+        run: npm i -D @vitest/coverage-c8
+      - name: Run tests with coverage
         id: run_tests
-        run: npm test -- --reporter=json --output-file=../test-results.json || true
+        run: |
+          # Generate Vitest JSON results and coverage outputs
+          npx vitest --run --reporter=json --coverage --coverage.reporter=json-summary --coverage.reporter=lcov > test-results.json || true
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-test-results
-          path: test-results.json
+          path: frontend/test-results.json
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: frontend/coverage/
+
+      - name: Build for preview
+        run: npm run build
+
+      - name: Start preview server
+        run: |
+          # Start the Vite preview server in the background and log output
+          npm run preview -- --port 5173 &>/tmp/vite_preview.log &
+          # Wait for the server to be ready
+          for i in {1..30}; do
+            if curl -sSf http://127.0.0.1:5173 > /dev/null; then
+              echo "Preview server is up"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Install Chromium and Lighthouse
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+          npm install -g lighthouse@9
+
+      - name: Run Lighthouse (JSON)
+        run: |
+          # Run Lighthouse against the local preview. Use no-sandbox for GitHub Actions.
+          lighthouse http://127.0.0.1:5173 --output=json --output-path=./lighthouse.json --chrome-flags="--no-sandbox --headless" || true
+
+      - name: Upload Lighthouse artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lighthouse
+          path: frontend/lighthouse.json
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name:  End-to-End Tests (Cypress)
+    needs: [backend-tests, frontend-tests]
+    if: always()
+    defaults:
+      run:
+        working-directory: frontend
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r core_api/requirements.txt
+          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
+        working-directory: . # run from root
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache and Install Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/frontend/package-lock.json') }}
+      - run: npm ci
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U testuser && break
+            sleep 1
+          done
+        working-directory: . # run from root
+
+      - name: Run backend migrations
+        working-directory: core_api
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: '5432'
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
+        run: python manage.py migrate --noinput
+
+      - name: Start backend server
+        run: |
+          cd core_api
+          gunicorn omni_stock.wsgi --bind 0.0.0.0:8000 &
+        working-directory: . # run from root
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: '5432'
+          DJANGO_SECRET_KEY: ci-secret
+          DEBUG: 'False'
+
+      - name: Build and Start frontend server
+        run: |
+          npm run build
+          npm run preview -- --port 5173 &
+          for i in {1..30}; do if curl -sSf http://127.0.0.1:5173 > /dev/null; then echo "Frontend server is up"; break; fi; sleep 1; done
+
+      - name: Run Cypress E2E tests
+        run: npm run cypress:run:ci || true
+
+      - name: Upload E2E test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-artifacts
+          path: |
+            frontend/results
+            frontend/cypress/videos
+            frontend/cypress/screenshots
 
   build-test-summary:
-    needs: [backend-tests, frontend-tests]
+    needs: [backend-tests, frontend-tests, e2e-tests]
     if: always()
     runs-on: ubuntu-latest
     name: Build Test Summary
@@ -172,10 +374,19 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Install yq and jq
+      - name: "Debug: list downloaded artifacts"
+        if: always()
         run: |
-          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && sudo chmod +x /usr/bin/yq
-          sudo apt-get update && sudo apt-get install -y jq
+          echo "Listing artifacts directory contents:";
+          ls -la artifacts || true;
+          echo "Recursive listing (max depth 4):";
+          find artifacts -maxdepth 4 -type d -print -exec ls -la {} \; || true;
+          echo "Summary sizes:";
+          du -sh artifacts/* || true
+
+      - name: Install yq, jq, and xmllint
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq libxml2-utils
       
       - name: Generate Test Summary
         id: generate_summary
@@ -183,36 +394,100 @@ jobs:
           chmod +x .github/scripts/generate-summary.sh
           .github/scripts/generate-summary.sh
 
+      - name: Upload generated test summary (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-artifact
+          path: test_summary.md
+
+      - name: Publish Test Summary to Actions UI
+        if: always()
+        run: |
+          if [ -f test_summary.md ]; then
+            echo "Appending test_summary.md to job summary"
+            cat test_summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "test_summary.md not found"
+          fi
+
       - name: Post Test Summary Comment
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && comment.body.includes('Omni-Stock CI Test Report')
-            );
+            const fs = require('fs');
 
-            const summaryBody = `${{ steps.generate_summary.outputs.summary_body }}`;
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: summaryBody
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: summaryBody
-              });
+            const summaryExists = fs.existsSync('test_summary.md');
+            console.log('DEBUG: test_summary.md exists=', summaryExists);
+            if (!summaryExists) {
+              console.log('test_summary.md not found; skipping PR comment');
+              return;
             }
+            const summaryBody = fs.readFileSync('test_summary.md', 'utf8');
+
+            // Determine PR number: prefer pull_request payload, otherwise find PRs associated with this commit
+            let prNumber = null;
+            if (context.payload && context.payload.pull_request) {
+              prNumber = context.payload.pull_request.number;
+              console.log('DEBUG: event is pull_request, number=', prNumber);
+            } else {
+              const sha = process.env.GITHUB_SHA;
+              console.log('DEBUG: looking up PRs for commit_sha=', sha);
+              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: sha,
+              });
+              console.log('DEBUG: found prs.length=', Array.isArray(prs) ? prs.length : prs);
+              if (prs && prs.length > 0) {
+                prNumber = prs[0].number;
+                console.log('DEBUG: selected prNumber=', prNumber, 'pr_url=', prs[0].html_url || prs[0].url);
+              }
+            }
+
+            console.log('DEBUG: resolved prNumber=', prNumber);
+            if (!prNumber) {
+              console.log('No associated PR found for this run; skipping comment');
+              return;
+            }
+
+            try {
+              // Always create a fresh comment per run for visibility (avoid silent edits).
+              const runId = process.env.GITHUB_RUN_ID || context.runId || process.env.GITHUB_RUN_NUMBER;
+              const artifactsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
+              const header = `Omni-Stock CI Report (run ${runId}): [Artifacts](${artifactsUrl})`;
+              const wrappedSummary = `\n\n<details>\n<summary><strong>Full CI Report (expand)</strong></summary>\n\n${summaryBody}\n\n</details>`;
+              const combinedBody = `${header}${wrappedSummary}`;
+              const resp = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: combinedBody,
+              });
+              console.log('DEBUG: created new CI report comment id=', resp && resp.data && resp.data.id);
+            } catch (err) {
+              console.log('ERROR: failed to create CI report comment', err && err.message ? err.message : err);
+              if (err && err.status) console.log('ERROR: status=', err.status);
+              throw err;
+            }
+
+  codecov-upload:
+    needs: [backend-tests, frontend-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    name: Upload to Codecov
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+          files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/lcov.info
