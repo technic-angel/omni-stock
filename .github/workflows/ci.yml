@@ -92,7 +92,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openapi-check-status
-          path: openapi-artifact/
+          path: |
+            openapi-artifact/
+            generated_schema.json
       - name: Fail if schema drift detected
         if: always()
         run: |
