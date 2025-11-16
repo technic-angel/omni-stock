@@ -1,3 +1,15 @@
+# Ignore generated coverage artifacts
+/frontend/coverage/
+/core_api/coverage.xml
+coverage/
+*.lcov
+
+# Node modules and logs
+node_modules/
+*.log
+
+# Build output
+/dist/
 Environments
 
  .env
