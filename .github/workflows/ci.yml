@@ -77,9 +77,27 @@ jobs:
       - name: Check for schema drift
         run: |
           set -e
+          DRIFT=0
+          mkdir -p openapi-artifact
           if ! git diff --no-index --quiet core_api/api_schema.json generated_schema.json; then
-            echo "\nOpenAPI schema differs from committed baseline. Please update core_api/api_schema.json (and api_schema.json) and explain the change in the PR description or add the 'schema-change' label.\n"
+            echo "OpenAPI schema differs from committed baseline." > openapi-artifact/failed
             git --no-pager diff --no-index -- core_api/api_schema.json generated_schema.json || true
+            DRIFT=1
+          else
+            echo "passed" > openapi-artifact/passed
+          fi
+          echo "DRIFT=$DRIFT" > openapi_status.txt
+      - name: Upload OpenAPI check status
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-check-status
+          path: openapi-artifact/
+      - name: Fail if schema drift detected
+        if: always()
+        run: |
+          if [ -f openapi-artifact/failed ]; then
+            echo "OpenAPI schema drift detected" >&2
             exit 1
           fi
 
@@ -361,6 +379,16 @@ jobs:
         run: |
           chmod +x .github/scripts/generate-summary.sh
           .github/scripts/generate-summary.sh
+
+      - name: Publish Test Summary to Actions UI
+        if: always()
+        run: |
+          if [ -f test_summary.md ]; then
+            echo "Appending test_summary.md to job summary"
+            cat test_summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "test_summary.md not found"
+          fi
 
       - name: Post Test Summary Comment
         uses: actions/github-script@v7
