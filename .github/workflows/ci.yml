@@ -370,6 +370,16 @@ jobs:
         with:
           path: artifacts/
 
+      - name: Debug: list downloaded artifacts
+        if: always()
+        run: |
+          echo "Listing artifacts directory contents:";
+          ls -la artifacts || true;
+          echo "Recursive listing (max depth 4):";
+          find artifacts -maxdepth 4 -type d -print -exec ls -la {} \; || true;
+          echo "Summary sizes:";
+          du -sh artifacts/* || true
+
       - name: Install yq, jq, and xmllint
         run: |
           sudo apt-get update && sudo apt-get install -y jq libxml2-utils
@@ -379,6 +389,13 @@ jobs:
         run: |
           chmod +x .github/scripts/generate-summary.sh
           .github/scripts/generate-summary.sh
+
+      - name: Upload generated test summary (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-artifact
+          path: test_summary.md
 
       - name: Publish Test Summary to Actions UI
         if: always()
@@ -397,7 +414,9 @@ jobs:
           script: |
             const fs = require('fs');
 
-            if (!fs.existsSync('test_summary.md')) {
+            const summaryExists = fs.existsSync('test_summary.md');
+            console.log('DEBUG: test_summary.md exists=', summaryExists);
+            if (!summaryExists) {
               console.log('test_summary.md not found; skipping PR comment');
               return;
             }
@@ -419,6 +438,7 @@ jobs:
               }
             }
 
+            console.log('DEBUG: resolved prNumber=', prNumber);
             if (!prNumber) {
               console.log('No associated PR found for this run; skipping comment');
               return;
@@ -433,6 +453,7 @@ jobs:
             const botComment = comments.find(comment => 
               comment.user.type === 'Bot' && comment.body.includes('Omni-Stock')
             );
+            console.log('DEBUG: found existing botComment=', !!botComment);
 
             if (botComment) {
               await github.rest.issues.updateComment({
