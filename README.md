@@ -1,6 +1,6 @@
 # omni-stock
 
-[![Coverage](https://codecov.io/gh/technic-angel/omni-stock/branch/main/graph/badge.svg)](https://codecov.io/gh/technic-angel/omni-stock)
+[![codecov](https://codecov.io/gh/technic-angel/omni-stock/graph/badge.svg?token=M19L9AHOPN)](https://codecov.io/gh/technic-angel/omni-stock)
 
 ## Developer Quickstart
 
