@@ -1,4 +1,4 @@
-/Users/melissa/Downloads/test_summary 2.mdfrom .settings import *
+from .settings import *
 
 # Override database settings to use SQLite in-memory so manage.py commands
 # (like spectacular) don't require PostgreSQL or psycopg on the runner.
