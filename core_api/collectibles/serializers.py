@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from .models import Collectible, CardDetails
 from django.contrib.auth import get_user_model
 from rest_framework import serializers as drf_serializers
@@ -9,7 +10,10 @@ User = get_user_model()
 
 class RegisterSerializer(drf_serializers.Serializer):
     """Serializer for user registration."""
-    username = drf_serializers.CharField(max_length=150)
+    username = drf_serializers.CharField(
+        max_length=150,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="A user with that username already exists.")],
+    )
     email = drf_serializers.EmailField(required=False, allow_blank=True)
     password = drf_serializers.CharField(write_only=True, min_length=8)
 
