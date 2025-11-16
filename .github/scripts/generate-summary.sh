@@ -197,9 +197,10 @@ fi
 echo "DEBUG: frontend test artifact = $frontend_results_file" >&2
 
 # OpenAPI Check
-openapi_status="✅ Passed"
-# This assumes the openapi-check job will touch a file called 'failed' in its artifact on failure.
-if [ -f "artifacts/openapi-check-status/failed" ]; then
+openapi_status="⚪️ Not Run"
+if [ -f "artifacts/openapi-check-status/passed" ]; then
+    openapi_status="✅ Passed"
+elif [ -f "artifacts/openapi-check-status/failed" ]; then
     openapi_status="❌ Failed"
 fi
 
