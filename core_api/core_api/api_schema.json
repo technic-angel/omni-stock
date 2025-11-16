@@ -490,6 +490,10 @@
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
                     },
+                    "image_url": {
+                        "type": "string",
+                        "readOnly": true
+                    },
                     "name": {
                         "type": "string",
                         "description": "The common name of the collectible item.",
@@ -557,6 +561,7 @@
                 },
                 "required": [
                     "id",
+                    "image_url",
                     "last_updated",
                     "name",
                     "sku"
@@ -572,6 +577,10 @@
                     },
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "readOnly": true
                     },
                     "name": {
                         "type": "string",
