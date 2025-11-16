@@ -80,15 +80,43 @@ extract_lighthouse_failures_md() {
 }
 
 # --- Data Extraction ---
-# Backend Python 3.10
-backend_results_py310=$(extract_junit "artifacts/backend-pytest-report-3.10/pytest-report.xml")
+# Backend Python 3.10 (search recursively in artifacts)
+backend_py310_file=$(find "$ARTIFACTS_DIR" -type f -iname 'pytest-report*.xml' -path '*3.10*' -print -quit)
+if [[ -z "$backend_py310_file" ]]; then
+    backend_py310_file=$(find "$ARTIFACTS_DIR" -type f -iname 'pytest-report*.xml' -print -quit)
+fi
+if [[ -z "$backend_py310_file" ]]; then
+    echo "WARNING: backend pytest report for 3.10 not found under $ARTIFACTS_DIR" >&2
+fi
+backend_results_py310=$(extract_junit "$backend_py310_file")
 IFS=',' read -r p310 f310 e310 s310 <<< "$backend_results_py310"
-backend_coverage_310=$(extract_coverage "artifacts/backend-coverage-report-3.10/coverage.xml")
+backend_coverage_310_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage.xml' -path '*3.10*' -print -quit)
+if [[ -z "$backend_coverage_310_file" ]]; then
+    backend_coverage_310_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage.xml' -print -quit)
+fi
+if [[ -z "$backend_coverage_310_file" ]]; then
+    echo "WARNING: backend coverage.xml for 3.10 not found under $ARTIFACTS_DIR" >&2
+fi
+backend_coverage_310=$(extract_coverage "$backend_coverage_310_file")
 
 # Backend Python 3.11
-backend_results_py311=$(extract_junit "artifacts/backend-pytest-report-3.11/pytest-report.xml")
+backend_py311_file=$(find "$ARTIFACTS_DIR" -type f -iname 'pytest-report*.xml' -path '*3.11*' -print -quit)
+if [[ -z "$backend_py311_file" ]]; then
+    backend_py311_file=$(find "$ARTIFACTS_DIR" -type f -iname 'pytest-report*.xml' -print -quit)
+fi
+if [[ -z "$backend_py311_file" ]]; then
+    echo "WARNING: backend pytest report for 3.11 not found under $ARTIFACTS_DIR" >&2
+fi
+backend_results_py311=$(extract_junit "$backend_py311_file")
 IFS=',' read -r p311 f311 e311 s311 <<< "$backend_results_py311"
-backend_coverage_311=$(extract_coverage "artifacts/backend-coverage-report-3.11/coverage.xml")
+backend_coverage_311_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage.xml' -path '*3.11*' -print -quit)
+if [[ -z "$backend_coverage_311_file" ]]; then
+    backend_coverage_311_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage.xml' -print -quit)
+fi
+if [[ -z "$backend_coverage_311_file" ]]; then
+    echo "WARNING: backend coverage.xml for 3.11 not found under $ARTIFACTS_DIR" >&2
+fi
+backend_coverage_311=$(extract_coverage "$backend_coverage_311_file")
 
 # Totals for Backend
 total_backend_passed=$((p310 + p311))
@@ -97,26 +125,76 @@ total_backend_errors=$((e310 + e311))
 total_backend_skipped=$((s310 + s311))
 total_backend_tests=$((total_backend_passed + total_backend_failed + total_backend_errors + total_backend_skipped))
 
-# Frontend
-frontend_results=$(extract_frontend_results "artifacts/frontend-test-results/test-results.json")
+# Frontend: locate test results and coverage anywhere in artifacts
+frontend_results_file=$(find "$ARTIFACTS_DIR" -type f \( -iname 'test-results*.json' -o -iname '*vitest*.json' \) -print -quit)
+if [[ -z "$frontend_results_file" ]]; then
+    echo "WARNING: frontend test results JSON not found under $ARTIFACTS_DIR" >&2
+fi
+echo "DEBUG: frontend test artifact = $frontend_results_file" >&2
+frontend_results=$(extract_frontend_results "$frontend_results_file")
 IFS=',' read -r frontend_passed frontend_failed frontend_total <<< "$frontend_results"
-frontend_coverage=$(extract_frontend_coverage "artifacts/frontend-coverage-report/coverage/coverage-summary.json")
+frontend_coverage_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage-summary.json' -print -quit)
+if [[ -z "$frontend_coverage_file" ]]; then
+    # try common alternate names
+    frontend_coverage_file=$(find "$ARTIFACTS_DIR" -type f -iname 'coverage-final.json' -print -quit)
+fi
+if [[ -z "$frontend_coverage_file" ]]; then
+    echo "WARNING: frontend coverage summary not found under $ARTIFACTS_DIR" >&2
+fi
+frontend_coverage=$(extract_frontend_coverage "$frontend_coverage_file")
 
-# Lighthouse metrics (if a `lighthouse.json` artifact is uploaded)
-lighthouse_results=$(extract_lighthouse "artifacts/frontend-lighthouse/lighthouse.json")
+# Lighthouse metrics (search recursively)
+lighthouse_file=$(find "$ARTIFACTS_DIR" -type f -iname 'lighthouse*.json' -print -quit)
+if [[ -z "$lighthouse_file" ]]; then
+    echo "WARNING: lighthouse JSON not found under $ARTIFACTS_DIR" >&2
+fi
+lighthouse_results=$(extract_lighthouse "$lighthouse_file")
 IFS=',' read -r lh_perf lh_acc lh_bp lh_seo <<< "$lighthouse_results"
-lh_failures_md=$(extract_lighthouse_failures_md "artifacts/frontend-lighthouse/lighthouse.json")
+lh_failures_md=$(extract_lighthouse_failures_md "$lighthouse_file")
 
-# E2E Tests
-# Find E2E JUnit XML anywhere under the e2e artifact directory (upload may include subfolders)
-e2e_results_file=$(find artifacts/e2e-test-artifacts -type f -name 'e2e-results-*.xml' -print -quit)
-echo "DEBUG: e2e_results_file="$e2e_results_file"" >&2
+# E2E Tests: search for common junit filenames
+e2e_results_file=$(find "$ARTIFACTS_DIR" -type f \( -iname 'e2e-results-*.xml' -o -iname '*junit*.xml' -o -iname '*cypress*.xml' \) -print -quit)
+if [[ -z "$e2e_results_file" ]]; then
+    echo "WARNING: E2E junit xml not found under $ARTIFACTS_DIR" >&2
+fi
+echo "DEBUG: e2e_results_file=$e2e_results_file" >&2
 e2e_results=$(extract_junit "$e2e_results_file")
 IFS=',' read -r e2e_passed e2e_failed e2e_errors e2e_skipped <<< "$e2e_results"
 total_e2e_tests=$((e2e_passed + e2e_failed + e2e_errors + e2e_skipped))
 
-# Also echo which frontend test result file we'll parse
-echo "DEBUG: frontend test artifact = artifacts/frontend-test-results/test-results.json" >&2
+# Determine display values (use N/A when the underlying artifact was not found)
+if [[ -n "$backend_coverage_310_file" && -f "$backend_coverage_310_file" ]]; then
+    backend_coverage_310_display="$(printf '%.2f' "$backend_coverage_310")%"
+else
+    backend_coverage_310_display="N/A"
+fi
+
+if [[ -n "$backend_coverage_311_file" && -f "$backend_coverage_311_file" ]]; then
+    backend_coverage_311_display="$(printf '%.2f' "$backend_coverage_311")%"
+else
+    backend_coverage_311_display="N/A"
+fi
+
+if [[ -n "$frontend_coverage_file" && -f "$frontend_coverage_file" ]]; then
+    frontend_coverage_display="$(printf '%.2f' "$frontend_coverage")%"
+else
+    frontend_coverage_display="N/A"
+fi
+
+if [[ -n "$lighthouse_file" && -f "$lighthouse_file" ]]; then
+    lh_perf_display="${lh_perf}%"
+    lh_acc_display="${lh_acc}%"
+    lh_bp_display="${lh_bp}%"
+    lh_seo_display="${lh_seo}%"
+else
+    lh_perf_display="N/A"
+    lh_acc_display="N/A"
+    lh_bp_display="N/A"
+    lh_seo_display="N/A"
+fi
+
+# Debug: echo which frontend test result file we'll parse
+echo "DEBUG: frontend test artifact = $frontend_results_file" >&2
 
 # OpenAPI Check
 openapi_status="✅ Passed"
@@ -177,7 +255,7 @@ A full analysis of all automated checks for this Pull Request.
 | **End-to-End Tests** | $e2e_status | **$e2e_passed** passed, **$((e2e_failed + e2e_errors))** failed |
 | **API Schema Check** | $openapi_status | Schema is consistent with the baseline |
 | **Code Coverage** | ☂️ | View detailed report on Codecov |
-| **Lighthouse Audit** | 💡 | Performance: **${lh_perf:-N/A}%** |
+| **Lighthouse Audit** | 💡 | Performance: **${lh_perf_display}** |
 
 ---
 
@@ -188,8 +266,8 @@ A full analysis of all automated checks for this Pull Request.
 
 | Python | ✅ Passed | ❌ Failed | 💥 Errors | ⏭️ Skipped | 🧪 Total | ☂️ Coverage |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **3.10** | $p310 | $f310 | $e310 | $s310 | $((p310+f310+e310+s310)) | \`${backend_coverage_310:-0.00}%\` |
-| **3.11** | $p311 | $f311 | $e311 | $s311 | $((p311+f311+e311+s311)) | \`${backend_coverage_311:-0.00}%\` |
+| **3.10** | $p310 | $f310 | $e310 | $s310 | $((p310+f310+e310+s310)) | \`${backend_coverage_310_display}\` |
+| **3.11** | $p311 | $f311 | $e311 | $s311 | $((p311+f311+e311+s311)) | \`${backend_coverage_311_display}\` |
 | **Total**| **$total_backend_passed** | **$total_backend_failed** | **$total_backend_errors** | **$total_backend_skipped** | **$total_backend_tests** | |
 
 </details>
@@ -199,7 +277,7 @@ A full analysis of all automated checks for this Pull Request.
 
 | ✅ Passed | ❌ Failed | 🧪 Total | ☂️ Coverage |
 | :---: | :---: | :---: | :---: |
-| $frontend_passed | $frontend_failed | $frontend_total | \`${frontend_coverage:-0.00}%\` |
+| $frontend_passed | $frontend_failed | $frontend_total | \`${frontend_coverage_display}\` |
 
 </details>
 
@@ -227,10 +305,10 @@ A full analysis of all automated checks for this Pull Request.
 
 | Metric | Score |
 | :--- | :---: |
-| **Performance** | \`${lh_perf:-N/A}%\` |
-| **Accessibility** | \`${lh_acc:-N/A}%\` |
-| **Best Practices** | \`${lh_bp:-N/A}%\` |
-| **SEO** | \`${lh_seo:-N/A}%\` |
+| **Performance** | \`${lh_perf_display}\` |
+| **Accessibility** | \`${lh_acc_display}\` |
+| **Best Practices** | \`${lh_bp_display}\` |
+| **SEO** | \`${lh_seo_display}\` |
 
 $LH_FAILURES_SECTION
 
