@@ -26,6 +26,17 @@ extract_coverage() {
     echo "$coverage"
 }
 
+# Extract both line and branch coverage (Cobertura attributes line-rate, branch-rate)
+extract_coverage_details() {
+    local file=$1
+    if [[ ! -f "$file" ]]; then echo "0,0"; return; fi
+    local line_rate=$(xmllint --xpath "string(//coverage/@line-rate)" "$file" 2>/dev/null || echo 0)
+    local branch_rate=$(xmllint --xpath "string(//coverage/@branch-rate)" "$file" 2>/dev/null || echo 0)
+    line_rate=$(awk "BEGIN{printf \"%.2f\", ($line_rate) * 100}")
+    branch_rate=$(awk "BEGIN{printf \"%.2f\", ($branch_rate) * 100}")
+    echo "$line_rate,$branch_rate"
+}
+
 extract_frontend_results() {
     local file=$1
     if [[ ! -f "$file" ]]; then echo "0,0,0"; return; fi
@@ -40,6 +51,17 @@ extract_frontend_coverage() {
     if [[ ! -f "$file" ]]; then echo "0"; return; fi
     local coverage=$(jq '.total.lines.pct' "$file")
     echo "$coverage"
+}
+
+# Detailed frontend coverage (lines, statements, branches, functions)
+extract_frontend_coverage_details() {
+    local file=$1
+    if [[ ! -f "$file" ]]; then echo "0,0,0,0"; return; fi
+    local lines=$(jq '.total.lines.pct' "$file" 2>/dev/null || echo 0)
+    local statements=$(jq '.total.statements.pct' "$file" 2>/dev/null || echo 0)
+    local branches=$(jq '.total.branches.pct' "$file" 2>/dev/null || echo 0)
+    local functions=$(jq '.total.functions.pct' "$file" 2>/dev/null || echo 0)
+    echo "$lines,$statements,$branches,$functions"
 }
 
 # Extract Lighthouse JSON summary if available
@@ -98,6 +120,8 @@ if [[ -z "$backend_coverage_310_file" ]]; then
     echo "WARNING: backend coverage.xml for 3.10 not found under $ARTIFACTS_DIR" >&2
 fi
 backend_coverage_310=$(extract_coverage "$backend_coverage_310_file")
+backend_coverage_310_details=$(extract_coverage_details "$backend_coverage_310_file")
+IFS=',' read -r backend_310_line backend_310_branch <<< "$backend_coverage_310_details"
 
 # Backend Python 3.11
 backend_py311_file=$(find "$ARTIFACTS_DIR" -type f -iname 'pytest-report*.xml' -path '*3.11*' -print -quit)
@@ -117,6 +141,8 @@ if [[ -z "$backend_coverage_311_file" ]]; then
     echo "WARNING: backend coverage.xml for 3.11 not found under $ARTIFACTS_DIR" >&2
 fi
 backend_coverage_311=$(extract_coverage "$backend_coverage_311_file")
+backend_coverage_311_details=$(extract_coverage_details "$backend_coverage_311_file")
+IFS=',' read -r backend_311_line backend_311_branch <<< "$backend_coverage_311_details"
 
 # Totals for Backend
 total_backend_passed=$((p310 + p311))
@@ -142,6 +168,8 @@ if [[ -z "$frontend_coverage_file" ]]; then
     echo "WARNING: frontend coverage summary not found under $ARTIFACTS_DIR" >&2
 fi
 frontend_coverage=$(extract_frontend_coverage "$frontend_coverage_file")
+frontend_coverage_details=$(extract_frontend_coverage_details "$frontend_coverage_file")
+IFS=',' read -r fe_lines fe_statements fe_branches fe_functions <<< "$frontend_coverage_details"
 
 # Lighthouse metrics (search recursively)
 lighthouse_file=$(find "$ARTIFACTS_DIR" -type f -iname 'lighthouse*.json' -print -quit)
@@ -165,20 +193,32 @@ total_e2e_tests=$((e2e_passed + e2e_failed + e2e_errors + e2e_skipped))
 # Determine display values (use N/A when the underlying artifact was not found)
 if [[ -n "$backend_coverage_310_file" && -f "$backend_coverage_310_file" ]]; then
     backend_coverage_310_display="$(printf '%.2f' "$backend_coverage_310")%"
+    backend_coverage_310_branch_display="${backend_310_branch}%"
 else
     backend_coverage_310_display="N/A"
+    backend_coverage_310_branch_display="N/A"
 fi
 
 if [[ -n "$backend_coverage_311_file" && -f "$backend_coverage_311_file" ]]; then
     backend_coverage_311_display="$(printf '%.2f' "$backend_coverage_311")%"
+    backend_coverage_311_branch_display="${backend_311_branch}%"
 else
     backend_coverage_311_display="N/A"
+    backend_coverage_311_branch_display="N/A"
 fi
 
 if [[ -n "$frontend_coverage_file" && -f "$frontend_coverage_file" ]]; then
     frontend_coverage_display="$(printf '%.2f' "$frontend_coverage")%"
+    fe_lines_display="${fe_lines}%"
+    fe_statements_display="${fe_statements}%"
+    fe_branches_display="${fe_branches}%"
+    fe_functions_display="${fe_functions}%"
 else
     frontend_coverage_display="N/A"
+    fe_lines_display="N/A"
+    fe_statements_display="N/A"
+    fe_branches_display="N/A"
+    fe_functions_display="N/A"
 fi
 
 if [[ -n "$lighthouse_file" && -f "$lighthouse_file" ]]; then
@@ -255,8 +295,8 @@ A full analysis of all automated checks for this Pull Request.
 | **Frontend Unit Tests** | $frontend_status | **$frontend_passed** passed, **$frontend_failed** failed |
 | **End-to-End Tests** | $e2e_status | **$e2e_passed** passed, **$((e2e_failed + e2e_errors))** failed |
 | **API Schema Check** | $openapi_status | Schema is consistent with the baseline |
-| **Code Coverage** | ☂️ | View detailed report on Codecov |
-| **Lighthouse Audit** | 💡 | Performance: **${lh_perf_display}** |
+| **Code Coverage** | ☂️ | Backend (L/B): **${backend_coverage_310_display}/${backend_coverage_310_branch_display}** (3.10), **${backend_coverage_311_display}/${backend_coverage_311_branch_display}** (3.11); Frontend lines: **${frontend_coverage_display}** |
+| **Lighthouse Audit** | 💡 | Perf **${lh_perf_display}** · Acc **${lh_acc_display}** · BP **${lh_bp_display}** · SEO **${lh_seo_display}** |
 
 ---
 
@@ -265,20 +305,20 @@ A full analysis of all automated checks for this Pull Request.
 <details>
 <summary><h3>📊 Backend Test Results & Coverage</h3></summary>
 
-| Python | ✅ Passed | ❌ Failed | 💥 Errors | ⏭️ Skipped | 🧪 Total | ☂️ Coverage |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **3.10** | $p310 | $f310 | $e310 | $s310 | $((p310+f310+e310+s310)) | \`${backend_coverage_310_display}\` |
-| **3.11** | $p311 | $f311 | $e311 | $s311 | $((p311+f311+e311+s311)) | \`${backend_coverage_311_display}\` |
-| **Total**| **$total_backend_passed** | **$total_backend_failed** | **$total_backend_errors** | **$total_backend_skipped** | **$total_backend_tests** | |
+| Python | ✅ Passed | ❌ Failed | 💥 Errors | ⏭️ Skipped | 🧪 Total | ☂️ Line | 🌿 Branch |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **3.10** | $p310 | $f310 | $e310 | $s310 | $((p310+f310+e310+s310)) | \`${backend_coverage_310_display}\` | \`${backend_coverage_310_branch_display}\` |
+| **3.11** | $p311 | $f311 | $e311 | $s311 | $((p311+f311+e311+s311)) | \`${backend_coverage_311_display}\` | \`${backend_coverage_311_branch_display}\` |
+| **Total**| **$total_backend_passed** | **$total_backend_failed** | **$total_backend_errors** | **$total_backend_skipped** | **$total_backend_tests** | | |
 
 </details>
 
 <details>
 <summary><h3>🎨 Frontend Test Results & Coverage</h3></summary>
 
-| ✅ Passed | ❌ Failed | 🧪 Total | ☂️ Coverage |
-| :---: | :---: | :---: | :---: |
-| $frontend_passed | $frontend_failed | $frontend_total | \`${frontend_coverage_display}\` |
+| ✅ Passed | ❌ Failed | 🧪 Total | Lines | Statements | Branches | Functions |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| $frontend_passed | $frontend_failed | $frontend_total | \`${fe_lines_display}\` | \`${fe_statements_display}\` | \`${fe_branches_display}\` | \`${fe_functions_display}\` |
 
 </details>
 
