@@ -485,6 +485,21 @@ jobs:
               // rethrow so the job shows failure if desired
               throw err;
             }
+            // Also post a short, visible comment linking to the artifacts/run so it's easy to spot in the PR timeline
+            try {
+              const runId = process.env.GITHUB_RUN_ID || context.runId || process.env.GITHUB_RUN_NUMBER;
+              const artifactsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
+              const shortBody = `Omni-Stock CI Report: the full test summary was posted (updated) on this PR. Download artifacts: ${artifactsUrl}`;
+              const shortResp = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: shortBody,
+              });
+              console.log('DEBUG: create short summary comment id=', shortResp && shortResp.data && shortResp.data.id);
+            } catch (err2) {
+              console.log('WARN: failed to post short summary comment', err2 && err2.message ? err2.message : err2);
+            }
 
   codecov-upload:
     needs: [backend-tests, frontend-tests]
