@@ -452,46 +452,22 @@ jobs:
               return;
             }
 
-            // List existing comments for debugging
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            });
-            console.log('DEBUG: comments.length=', Array.isArray(comments) ? comments.length : 0);
-
-            const botComment = comments.find(comment => 
-              comment.user && comment.user.type === 'Bot' && comment.body && comment.body.includes('Omni-Stock')
-            );
-            console.log('DEBUG: found existing botComment=', !!botComment, botComment ? botComment.id : null);
-
             try {
-              // Compose a compact visible header plus the full report inside a collapsible details block.
+              // Always create a fresh comment per run for visibility (avoid silent edits).
               const runId = process.env.GITHUB_RUN_ID || context.runId || process.env.GITHUB_RUN_NUMBER;
               const artifactsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
-              const header = `Omni-Stock CI Report: summary posted for this PR. [Download artifacts](${artifactsUrl})`;
-              const wrappedSummary = `\n\n<details>\n<summary><strong>Full CI Report (click to expand)</strong></summary>\n\n${summaryBody}\n\n</details>`;
+              const header = `Omni-Stock CI Report (run ${runId}): [Artifacts](${artifactsUrl})`;
+              const wrappedSummary = `\n\n<details>\n<summary><strong>Full CI Report (expand)</strong></summary>\n\n${summaryBody}\n\n</details>`;
               const combinedBody = `${header}${wrappedSummary}`;
-
-              if (botComment) {
-                const resp = await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: botComment.id,
-                  body: combinedBody,
-                });
-                console.log('DEBUG: updateComment response id=', resp && resp.data && resp.data.id);
-              } else {
-                const resp = await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  body: combinedBody,
-                });
-                console.log('DEBUG: createComment response id=', resp && resp.data && resp.data.id);
-              }
+              const resp = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: combinedBody,
+              });
+              console.log('DEBUG: created new CI report comment id=', resp && resp.data && resp.data.id);
             } catch (err) {
-              console.log('ERROR: failed to create/update comment', err && err.message ? err.message : err);
+              console.log('ERROR: failed to create CI report comment', err && err.message ? err.message : err);
               if (err && err.status) console.log('ERROR: status=', err.status);
               throw err;
             }
