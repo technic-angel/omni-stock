@@ -58,6 +58,11 @@ Coverage is uploaded to Codecov when `CODECOV_TOKEN` is present. The CI workflow
 
 See `docs/project-roadmap.md` and runbooks under `docs/runbooks/` for operational guidance (e.g. index creation with `CONCURRENTLY`).
 
+## Repository Rules
+
+- **Agent/Automation rules**: Automation and contributors must follow the repository agent rules in `docs/project-roadmap.md` "Agent Execution Rules": explain before edits, create a branch per feature, update the todo list, avoid committing secrets, run tests before committing, and include an identifying line in automated commits.
+- **Merge protection rule**: Do not merge pull requests into `main` until all CI checks pass. Every PR must show green check runs in GitHub Actions before merging to `main`.
+
 ## Try the demo (5 minutes)
 
 If you want to quickly run the app and exercise the core demo flow (register → login → create → delete), follow these steps. This is intentionally minimal — if you prefer a hosted demo link, add it here.

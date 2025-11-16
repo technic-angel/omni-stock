@@ -31,6 +31,17 @@ docs/local/**
 # Ignore all docs in working tree (keep local only)
 docs/
 
+# Test artifacts and generated files
+generated_schema.json
+core_api/generated_schema.json
+*_norm.json
+core_api/*_norm.json
+pytest-report.xml
+core_api/pytest-report.xml
+coverage.xml
+core_api/coverage.xml
+core_api/.coverage
+
 # Frontend local dev artifacts
 # Ignore node_modules inside the frontend folder (accidentally committed earlier)
 /frontend/node_modules/
