@@ -172,7 +172,7 @@ A full analysis of all automated checks for this Pull Request.
 | **End-to-End Tests** | $e2e_status | **$e2e_passed** passed, **$((e2e_failed + e2e_errors))** failed |
 | **API Schema Check** | $openapi_status | Schema is consistent with the baseline |
 | **Code Coverage** | ☂️ | View detailed report on Codecov |
-| **Lighthouse Audit** |  lighthouse | Performance: **${lh_perf:-N/A}%** |
+| **Lighthouse Audit** | 💡 | Performance: **${lh_perf:-N/A}%** |
 
 ---
 
@@ -218,7 +218,7 @@ A full analysis of all automated checks for this Pull Request.
 </details>
 
 <details>
-<summary><h3> lighthouse  Lighthouse Performance Audit</h3></summary>
+<summary><h3>Lighthouse Performance Audit</h3></summary>
 
 | Metric | Score |
 | :--- | :---: |
@@ -239,37 +239,6 @@ $LH_FAILURES_SECTION
 A detailed, line-by-line code coverage report is available on Codecov.
 **[View Full Report on Codecov](https://codecov.io/gh/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})**
 > Coverage helps us identify untested parts of the application and ensures new code is well-tested.
-
-</details>
-
----
-
-## 🚀 Actionable Insights & Next Steps
-
-<details>
-<summary><strong>For the Junior Developer 🙋‍♀️</strong></summary>
-
-*   **Celebrate the Wins!** A green build is a sign of high-quality work. Great job!
-*   **Address Failures:** If any checks failed (marked with ❌), start by looking at the logs for that job. The artifacts for each job contain detailed reports (\`pytest-report.xml\`, \`test-results.json\`, etc.) that can help you pinpoint the issue. For E2E failures, the video recordings are your best friend!
-*   **Improve Coverage:** Look at the Codecov report. Are there parts of your new code that are not tested? Adding a simple unit test can boost confidence and prevent future bugs.
-
-</details>
-
-<details>
-<summary><strong>For the Senior/Principal Engineer 🧑‍💻</strong></summary>
-
-*   **Review Test Strategy:** Are the E2E tests covering critical user paths? Are the unit tests robust, or are they brittle? Flaky tests (that fail intermittently) should be identified and fixed or removed.
-*   **Analyze Performance Regressions:** A significant drop in the Lighthouse Performance score might indicate a problem with bundle size, expensive component renders, or slow network requests. Let's investigate before it impacts user experience.
-*   **Maintain Code Health:** Use the Codecov report to identify modules with chronically low coverage. These might be candidates for refactoring to improve testability and maintainability.
-
-</details>
-
-<details>
-<summary><strong>For the Product Manager  प्रोडक्ट</strong></summary>
-
-*   **Quality at a Glance:** This report is your high-level dashboard for the health of the codebase. Green checks across the board mean high confidence for a stable release.
-*   **Feature Readiness:** The **End-to-End Tests** act as a proxy for user acceptance testing. If they pass, it's a strong signal that the core features are working as expected from a user's perspective.
-*   **User Experience Impact:** The **Lighthouse Report** provides key metrics on performance and accessibility. A low score here could directly translate to user frustration and should be prioritized as a quality-of-life improvement.
 
 </details>
 
