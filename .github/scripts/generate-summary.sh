@@ -40,10 +40,28 @@ extract_coverage_details() {
 extract_frontend_results() {
     local file=$1
     if [[ ! -f "$file" ]]; then echo "0,0,0"; return; fi
-    local passed=$(jq '.numPassedTests' "$file")
-    local failed=$(jq '.numFailedTests' "$file")
-    local total=$(jq '.numTotalTests' "$file")
-    echo "$passed,$failed,$total"
+    # Attempt Jest-style totals first
+    local passed=$(jq -r 'try .numPassedTests // empty' "$file")
+    local failed=$(jq -r 'try .numFailedTests // empty' "$file")
+    local total=$(jq -r 'try .numTotalTests // empty' "$file")
+    if [[ -n "$total" && "$total" != "null" ]]; then
+        echo "$passed,$failed,$total"
+        return
+    fi
+    # Fallback for Vitest JSON: walk states and count
+    local csv=$(jq -r '
+      def states: [.. | objects | .state? // empty];
+      (states | map(select(.=="pass")) | length) as $p |
+      (states | map(select(.=="fail")) | length) as $f |
+      (states | map(select(.=="skip")) | length) as $s |
+      [$p, $f, ($p + $f + $s)] | @csv
+    ' "$file" 2>/dev/null)
+    if [[ -n "$csv" ]]; then
+        IFS=',' read -r p f t <<< "$csv"
+        echo "$p,$f,$t"
+    else
+        echo "0,0,0"
+    fi
 }
 
 extract_frontend_coverage() {

@@ -205,15 +205,19 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
+      - name: Install Vitest coverage plugin
+        run: npm i -D @vitest/coverage-c8
       - name: Run tests with coverage
         id: run_tests
-        run: npm test -- --reporter=json --output-file=./test-results.json --coverage || true
+        run: |
+          # Generate Vitest JSON results and coverage outputs
+          npx vitest --run --reporter=json --coverage --coverage.reporter=json-summary --coverage.reporter=lcov > test-results.json || true
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-test-results
-          path: test-results.json
+          path: frontend/test-results.json
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -253,7 +257,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-lighthouse
-          path: lighthouse.json
+          path: frontend/lighthouse.json
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -510,4 +514,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-          files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/coverage/lcov.info
+          files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/lcov.info
