@@ -108,10 +108,15 @@ IFS=',' read -r lh_perf lh_acc lh_bp lh_seo <<< "$lighthouse_results"
 lh_failures_md=$(extract_lighthouse_failures_md "artifacts/frontend-lighthouse/lighthouse.json")
 
 # E2E Tests
-e2e_results_file=$(find artifacts/e2e-test-artifacts/results -name 'e2e-results-*.xml' -print -quit)
+# Find E2E JUnit XML anywhere under the e2e artifact directory (upload may include subfolders)
+e2e_results_file=$(find artifacts/e2e-test-artifacts -type f -name 'e2e-results-*.xml' -print -quit)
+echo "DEBUG: e2e_results_file="$e2e_results_file"" >&2
 e2e_results=$(extract_junit "$e2e_results_file")
 IFS=',' read -r e2e_passed e2e_failed e2e_errors e2e_skipped <<< "$e2e_results"
 total_e2e_tests=$((e2e_passed + e2e_failed + e2e_errors + e2e_skipped))
+
+# Also echo which frontend test result file we'll parse
+echo "DEBUG: frontend test artifact = artifacts/frontend-test-results/test-results.json" >&2
 
 # OpenAPI Check
 openapi_status="✅ Passed"
