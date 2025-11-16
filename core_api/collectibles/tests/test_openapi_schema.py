@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 from django.core.management import call_command
 import pytest
@@ -10,6 +11,10 @@ def test_openapi_schema_matches_baseline():
 
     This test guards against accidental API contract changes.
     """
+    # Ensure the lightweight CI settings are used so schema generation
+    # is deterministic and doesn't require Postgres or other services.
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'omni_stock.schema_generate_settings')
+
     # generate schema to stdout and capture
     with tempfile.NamedTemporaryFile(mode='w+', suffix='.json') as tmp:
         # request JSON output to match the committed baseline
@@ -29,4 +34,11 @@ def test_openapi_schema_matches_baseline():
             baseline = None
     assert baseline is not None, f"Baseline schema not found at any of {possible}"
 
-    assert generated == baseline
+    # Canonicalize JSON (sort keys) to avoid incidental ordering differences
+    def canonical(obj):
+        return json.dumps(obj, sort_keys=True, separators=(',', ':'))
+
+    gen_norm = canonical(generated)
+    base_norm = canonical(baseline)
+
+    assert gen_norm == base_norm
