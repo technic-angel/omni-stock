@@ -392,19 +392,42 @@ jobs:
 
       - name: Post Test Summary Comment
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
 
-            // Read the generated summary file at runtime to avoid interpolation/escaping issues
+            if (!fs.existsSync('test_summary.md')) {
+              console.log('test_summary.md not found; skipping PR comment');
+              return;
+            }
             const summaryBody = fs.readFileSync('test_summary.md', 'utf8');
+
+            // Determine PR number: prefer pull_request payload, otherwise find PRs associated with this commit
+            let prNumber = null;
+            if (context.payload && context.payload.pull_request) {
+              prNumber = context.payload.pull_request.number;
+            } else {
+              const sha = process.env.GITHUB_SHA;
+              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: sha,
+              });
+              if (prs && prs.length > 0) {
+                prNumber = prs[0].number;
+              }
+            }
+
+            if (!prNumber) {
+              console.log('No associated PR found for this run; skipping comment');
+              return;
+            }
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: prNumber,
             });
 
             const botComment = comments.find(comment => 
@@ -422,7 +445,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 body: summaryBody,
               });
             }
