@@ -44,6 +44,8 @@ def test_openapi_schema_matches_baseline():
         except FileNotFoundError:
             baseline = None
     assert baseline is not None, f"Baseline schema not found at any of {possible}"
+    # Print which baseline file was used (helpful when multiple copies exist)
+    print('Using baseline file:', p)
 
     # Normalize schema to ignore tooling-driven integer representation differences
     # (e.g. int32 vs int64 bounds and the `format` field). This keeps the test
