@@ -1,9 +1,13 @@
+from typing import Optional
+
 from django.db import transaction
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from .models import Collectible, CardDetails
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
+from rest_framework.validators import UniqueValidator
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
+
+from .models import Collectible, CardDetails
 
 User = get_user_model()
 
@@ -75,7 +79,8 @@ class CollectibleSerializer(serializers.ModelSerializer):
                 CardDetails.objects.create(collectible=collectible, **card_details_data)
         return collectible
 
-    def get_image_url(self, obj):
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_image_url(self, obj: Collectible) -> Optional[str]:
         """Return an absolute URL to the collectible image, or None."""
         if not obj or not getattr(obj, 'image', None):
             return None

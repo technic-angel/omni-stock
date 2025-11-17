@@ -205,8 +205,6 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
-      - name: Install Vitest coverage plugin
-        run: npm i -D @vitest/coverage-c8
       - name: Run tests with coverage
         id: run_tests
         run: |
