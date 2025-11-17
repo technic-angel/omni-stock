@@ -62,7 +62,7 @@ class CollectibleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collectible
         fields = '__all__'
-        read_only_fields = ('last_updated',)
+        read_only_fields = ('last_updated', 'image_url')
 
     def create(self, validated_data):
         card_details_data = validated_data.pop('card_details', None)
