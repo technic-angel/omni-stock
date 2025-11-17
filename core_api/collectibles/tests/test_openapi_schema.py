@@ -22,6 +22,17 @@ def test_openapi_schema_matches_baseline():
         tmp.flush()
         tmp.seek(0)
         generated = json.load(tmp)
+            # Write the exact runtime-generated schema to a host-visible temp
+            # file for debugging so we can diff what the test produced vs
+            # the committed baseline. This file is removed from repo and is
+            # only used transiently during local debugging and CI artifact
+            # collection.
+            try:
+                with open('/tmp/generated_from_test.json', 'w', encoding='utf-8') as dbgf:
+                    json.dump(generated, dbgf, ensure_ascii=False, indent=2)
+            except Exception:
+                # Don't let debug I/O break the test run; ignore failures here.
+                pass
 
     # Baseline may exist at core_api/api_schema.json or at repo root api_schema.json
     possible = ['core_api/api_schema.json', 'api_schema.json']
