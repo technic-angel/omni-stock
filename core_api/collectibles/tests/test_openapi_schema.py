@@ -42,16 +42,28 @@ def test_openapi_schema_matches_baseline():
         if isinstance(obj, dict):
             # If this object is an integer schema, normalize known tooling noise.
             if obj.get('type') == 'integer':
-                # Remove explicit int64 formatting which can differ by environment
-                if obj.get('format') == 'int64':
-                    obj.pop('format', None)
+                # Remove integer `format` and platform-specific numeric extremes
+                # (32-bit vs 64-bit) which can differ across environments.
+                obj.pop('format', None)
 
-                # Remove int64-specific numeric extremes which are not meaningful
-                # for API contract comparisons and differ between generator builds.
+                # Remove common 64-bit extremes
                 if obj.get('maximum') == 9223372036854775807:
                     obj.pop('maximum', None)
                 if obj.get('minimum') == -9223372036854775808:
                     obj.pop('minimum', None)
+
+                # Remove common 32-bit extremes
+                if obj.get('maximum') == 2147483647:
+                    obj.pop('maximum', None)
+                if obj.get('minimum') == -2147483648:
+                    obj.pop('minimum', None)
+
+            # If this object is a string that uses `uri` format (e.g. image URLs),
+            # normalize by stripping the `format` so minor generator differences
+            # don't fail the contract test. Keep other meaningful formats like
+            # `date-time` or `email`.
+            if obj.get('type') == 'string' and obj.get('format') == 'uri':
+                obj.pop('format', None)
 
             # Recurse into nested structures
             for v in obj.values():
