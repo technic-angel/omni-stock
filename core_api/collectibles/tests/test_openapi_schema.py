@@ -99,4 +99,21 @@ def test_openapi_schema_matches_baseline():
     gen_norm = canonical(gen_copy)
     base_norm = canonical(base_copy)
 
+    # If they differ, print a concise canonical diff to aid debugging in CI
+    if gen_norm != base_norm:
+        import hashlib
+        print('\n--- OpenAPI canonical mismatch ---')
+        print('generated sha1:', hashlib.sha1(gen_norm.encode('utf-8')).hexdigest())
+        print('baseline  sha1:', hashlib.sha1(base_norm.encode('utf-8')).hexdigest())
+        print('generated length:', len(gen_norm), 'baseline length:', len(base_norm))
+        # show a short unified diff of the canonical JSON strings
+        from difflib import unified_diff
+        diff_lines = list(unified_diff(base_norm.splitlines(), gen_norm.splitlines(), lineterm=''))
+        for ln in diff_lines[:400]:
+            print(ln)
+        if len(diff_lines) > 400:
+            print('\n...diff truncated, total lines:', len(diff_lines))
+        # Fail with a helpful message so CI output includes the printed diff
+        assert False, 'OpenAPI schema does not match baseline; see printed diff above.'
+
     assert gen_norm == base_norm
