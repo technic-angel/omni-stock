@@ -1,9 +1,13 @@
+from typing import Optional
+
 from django.db import transaction
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from .models import Collectible, CardDetails
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 from rest_framework import serializers as drf_serializers
+from rest_framework.validators import UniqueValidator
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
+
+from .models import Collectible, CardDetails
 
 User = get_user_model()
 
@@ -51,11 +55,18 @@ class CollectibleSerializer(serializers.ModelSerializer):
     `card_details` object by creating or updating the related CardDetails row.
     """
     card_details = CardDetailsSerializer(required=False)
+    # Expose a stable image URL that clients can use. This is read-only
+    # and will return the absolute URL when a request is available in the
+    # serializer context. This makes it easy to migrate image storage to
+    # Supabase or another remote storage provider later — clients use
+    # `image_url` regardless of whether the file is stored locally or
+    # remotely.
+    image_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Collectible
         fields = '__all__'
-        read_only_fields = ('last_updated',)
+        read_only_fields = ('last_updated', 'image_url')
 
     def create(self, validated_data):
         card_details_data = validated_data.pop('card_details', None)
@@ -67,6 +78,24 @@ class CollectibleSerializer(serializers.ModelSerializer):
             if card_details_data:
                 CardDetails.objects.create(collectible=collectible, **card_details_data)
         return collectible
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_image_url(self, obj: Collectible) -> Optional[str]:
+        """Return an absolute URL to the collectible image, or None."""
+        if not obj or not getattr(obj, 'image', None):
+            return None
+        url = None
+        try:
+            # If a request is present in the context, build an absolute URI
+            request = self.context.get('request')
+            if request is not None:
+                url = request.build_absolute_uri(obj.image.url)
+            else:
+                # Fallback to the storage URL (may be relative)
+                url = obj.image.url
+        except Exception:
+            url = getattr(obj.image, 'url', None)
+        return url
 
     def update(self, instance, validated_data):
         card_details_data = validated_data.pop('card_details', None)

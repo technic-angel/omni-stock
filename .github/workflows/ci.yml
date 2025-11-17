@@ -139,8 +139,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r core_api/requirements.txt
           if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
-          # Ensure coverage tooling is present for pytest-cov and coverage.xml generation
-          python -m pip install coverage
+          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
+          if [ -f core_api/requirements-dev.txt ]; then pip install -r core_api/requirements-dev.txt; fi
       - name: Wait for Postgres
         run: |
           for i in {1..30}; do
@@ -205,27 +205,23 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install dependencies
         run: npm ci
-      - name: Install Vitest coverage plugin
-        run: npm i -D @vitest/coverage-v8@^4.0.9
       - name: Run tests with coverage
         id: run_tests
         run: |
           # Generate Vitest JSON results and coverage outputs
           npx vitest --run --reporter=json --coverage --coverage.reporter=json-summary --coverage.reporter=lcov > test-results.json || true
-          # Ensure lcov file exists and print listing for debugging
-          if [ -d coverage ]; then ls -la coverage || true; fi
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-test-results
-          path: test-results.json
+          path: frontend/test-results.json
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-report
-          path: coverage/
+          path: frontend/coverage/
 
       - name: Build for preview
         run: npm run build
@@ -259,7 +255,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-lighthouse
-          path: lighthouse.json
+          path: frontend/lighthouse.json
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -486,35 +482,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Debug - list downloaded artifacts before Codecov
-        run: |
-          echo "Listing artifacts root:";
-          ls -la artifacts || true;
-          find artifacts -type f -maxdepth 4 -print -exec ls -la {} \; || true
-      - name: Check for coverage artifacts
-        id: check_cov
-        run: |
-          # Look for common coverage file names produced by backend and frontend jobs
-          echo "Searching for coverage files under artifacts/...";
-          set -e
-          found=0
-          if find artifacts -type f -name 'coverage.xml' -print -quit | grep -q .; then found=1; fi
-          if find artifacts -type f -name 'lcov.info' -print -quit | grep -q .; then found=1; fi
-          if [ "$found" -eq 1 ]; then
-            echo "coverage_found=true" >> "$GITHUB_OUTPUT"
-            echo "Found coverage artifacts"
-          else
-            echo "coverage_found=false" >> "$GITHUB_OUTPUT"
-            echo "No coverage artifacts found"
-          fi
       - name: Upload to Codecov
-        if: steps.check_cov.outputs.coverage_found == 'true'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # Do not fail the CI run solely because Codecov couldn't find reports here;
-          # fail the codecov step only after we've ensured reports are present.
-          fail_ci_if_error: false
+          fail_ci_if_error: true
           verbose: true
           files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/lcov.info
