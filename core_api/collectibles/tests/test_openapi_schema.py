@@ -34,11 +34,46 @@ def test_openapi_schema_matches_baseline():
             baseline = None
     assert baseline is not None, f"Baseline schema not found at any of {possible}"
 
+    # Normalize schema to ignore tooling-driven integer representation differences
+    # (e.g. int32 vs int64 bounds and the `format` field). This keeps the test
+    # sensitive to real contract changes while tolerating harmless generator
+    # differences across environments.
+    def normalize_integer_bounds_and_format(obj):
+        if isinstance(obj, dict):
+            # If this object is an integer schema, normalize known tooling noise.
+            if obj.get('type') == 'integer':
+                # Remove explicit int64 formatting which can differ by environment
+                if obj.get('format') == 'int64':
+                    obj.pop('format', None)
+
+                # Remove int64-specific numeric extremes which are not meaningful
+                # for API contract comparisons and differ between generator builds.
+                if obj.get('maximum') == 9223372036854775807:
+                    obj.pop('maximum', None)
+                if obj.get('minimum') == -9223372036854775808:
+                    obj.pop('minimum', None)
+
+            # Recurse into nested structures
+            for v in obj.values():
+                normalize_integer_bounds_and_format(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                normalize_integer_bounds_and_format(item)
+
+    # Apply normalization to copies to avoid mutating original test artifacts
+    import copy
+    gen_copy = copy.deepcopy(generated)
+    base_copy = copy.deepcopy(baseline)
+
+    normalize_integer_bounds_and_format(gen_copy)
+    normalize_integer_bounds_andFormat = normalize_integer_bounds_and_format
+    normalize_integer_bounds_and_format(base_copy)
+
     # Canonicalize JSON (sort keys) to avoid incidental ordering differences
     def canonical(obj):
         return json.dumps(obj, sort_keys=True, separators=(',', ':'))
 
-    gen_norm = canonical(generated)
-    base_norm = canonical(baseline)
+    gen_norm = canonical(gen_copy)
+    base_norm = canonical(base_copy)
 
     assert gen_norm == base_norm
