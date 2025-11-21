@@ -3,6 +3,8 @@
 from django.conf import settings
 from django.db import models
 
+from backend.vendors.models import Vendor
+
 
 class Collectible(models.Model):
     """Represents a single stockable inventory item."""
@@ -15,7 +17,7 @@ class Collectible(models.Model):
         help_text="The user/vendor who owns this inventory item.",
     )
     vendor = models.ForeignKey(
-        "collectibles.Vendor",
+        Vendor,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -62,7 +64,6 @@ class Collectible(models.Model):
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        app_label = "collectibles"
         verbose_name = "Collectible Item"
         verbose_name_plural = "Collectible Items"
         ordering = ["name"]
@@ -119,7 +120,6 @@ class CardDetails(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = "collectibles"
         verbose_name = "Card Details"
         verbose_name_plural = "Card Details"
 

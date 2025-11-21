@@ -82,7 +82,6 @@ INSTALLED_APPS = [
     'backend.users.apps.UsersConfig',
     'backend.vendors.apps.VendorsConfig',
     'backend.inventory.apps.InventoryConfig',
-    'collectibles', 
 ]
 
 MIDDLEWARE = [

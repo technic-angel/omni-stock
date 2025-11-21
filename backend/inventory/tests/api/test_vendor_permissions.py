@@ -3,7 +3,8 @@ import pytest
 from rest_framework.test import APIClient
 
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
-from collectibles.models import Collectible, UserProfile
+from backend.inventory.models import Collectible
+from backend.users.models import UserProfile
 
 
 @pytest.mark.django_db

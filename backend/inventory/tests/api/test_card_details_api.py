@@ -8,7 +8,8 @@ from backend.inventory.tests.factories import (
     UserFactory,
     VendorFactory,
 )
-from collectibles.models import Collectible, UserProfile
+from backend.inventory.models import Collectible
+from backend.users.models import UserProfile
 
 
 @pytest.mark.django_db

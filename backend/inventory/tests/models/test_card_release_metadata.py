@@ -11,7 +11,7 @@ def test_card_details_release_metadata_stored_and_serialized():
     assert cd.market_region == 'US'
 
     # ensure nested serializer includes these fields
-    from collectibles.serializers import CollectibleSerializer
+    from backend.inventory.api.serializers import CollectibleSerializer
     ser = CollectibleSerializer(c)
     data = ser.data
     # card_details is read-only nested representation
