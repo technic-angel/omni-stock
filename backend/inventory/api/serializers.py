@@ -1,6 +1,8 @@
 """Inventory domain serializers."""
 
 from rest_framework import serializers
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 
 from backend.inventory.models import CardDetails, Collectible
 from backend.inventory.services.create_item import create_item
@@ -29,7 +31,10 @@ class CollectibleSerializer(serializers.ModelSerializer):
     """Serializer for the Collectible model with nested card details support."""
 
     card_details = CardDetailsSerializer(required=False)
-    image_url = serializers.SerializerMethodField(read_only=True)
+    image_url = serializers.SerializerMethodField(
+        read_only=True,
+        help_text="Return an absolute URL to the collectible image, or None.",
+    )
 
     class Meta:
         model = Collectible
@@ -41,6 +46,7 @@ class CollectibleSerializer(serializers.ModelSerializer):
         payload = validated_data.copy()
         return create_item(data=payload, card_details_data=card_details_data)
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_image_url(self, obj):
         if not obj or not getattr(obj, 'image', None):
             return None

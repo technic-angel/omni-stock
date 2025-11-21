@@ -493,7 +493,9 @@
                     },
                     "image_url": {
                         "type": "string",
-                        "readOnly": true
+                        "format": "uri",
+                        "readOnly": true,
+                        "description": "Return an absolute URL to the collectible image, or None."
                     },
                     "name": {
                         "type": "string",
@@ -581,7 +583,9 @@
                     },
                     "image_url": {
                         "type": "string",
-                        "readOnly": true
+                        "format": "uri",
+                        "readOnly": true,
+                        "description": "Return an absolute URL to the collectible image, or None."
                     },
                     "name": {
                         "type": "string",
