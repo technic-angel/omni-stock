@@ -1,7 +1,7 @@
 import pytest
 
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
-from collectibles.models import UserProfile
+from backend.users.models import UserProfile
 
 from backend.core.permissions import VendorScopedPermission
 

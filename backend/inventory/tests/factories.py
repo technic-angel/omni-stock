@@ -1,7 +1,8 @@
 import factory
 from django.contrib.auth import get_user_model
 
-from collectibles.models import Vendor, Collectible, CardDetails
+from backend.inventory.models import CardDetails, Collectible
+from backend.vendors.models import Vendor
 
 
 User = get_user_model()
