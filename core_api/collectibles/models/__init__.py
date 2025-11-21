@@ -1,7 +1,8 @@
-from .collectible import Collectible
-from .vendor import Vendor
-from .user_profile import UserProfile
-from .card_details import CardDetails
+"""Compatibility package that re-exports models from backend domains."""
+
+from backend.inventory.models import CardDetails, Collectible
+from backend.users.models import UserProfile
+from backend.vendors.models import Vendor
 
 __all__ = [
     "Collectible",

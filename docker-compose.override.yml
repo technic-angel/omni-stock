@@ -1,12 +1,14 @@
 services:
-  core_api:
+  backend:
     build:
-      context: ./core_api
-      dockerfile: Dockerfile.dev
-    container_name: omni_stock_core_api_dev
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    container_name: omni_stock_backend_dev
     command: sh -c "tail -f /dev/null"
+    working_dir: /usr/src/app/backend
     volumes:
-      - ./core_api:/usr/src/app:rw
+      - ./backend:/usr/src/app/backend:rw
+      - ./core_api:/usr/src/app/core_api:rw
     ports:
       - "8000:8000"
     env_file:

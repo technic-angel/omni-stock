@@ -8,6 +8,7 @@
         "/api/v1/auth/register/": {
             "post": {
                 "operationId": "auth_register_create",
+                "description": "Public endpoint for registering a new user account.",
                 "tags": [
                     "auth"
                 ],
@@ -518,9 +519,10 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 2147483647,
-                        "minimum": -2147483648,
-                        "description": "Current number of units in stock."
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "description": "Current number of units in stock.",
+                        "format": "int64"
                     },
                     "last_updated": {
                         "type": "string",
