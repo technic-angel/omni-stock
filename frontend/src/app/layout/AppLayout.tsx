@@ -1,21 +1,13 @@
 import React from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
 
-import { logout as logoutAction } from '../../features/auth/store/authSlice'
-import type { RootState } from '../../store'
-
+import { useAuth } from '../../features/auth/hooks/useAuth'
 const navLinkClass = (active: boolean) =>
   `text-blue-600 ${active ? 'font-semibold' : ''}`
 
 const AppLayout = () => {
   const location = useLocation()
-  const isAuthenticated = useSelector((s: RootState) => s.auth.isAuthenticated)
-  const dispatch = useDispatch()
-
-  const handleLogout = () => {
-    dispatch(logoutAction())
-  }
+  const { isAuthenticated, logout } = useAuth()
 
   const isActive = (path: string) => location.pathname === path
 
@@ -44,7 +36,7 @@ const AppLayout = () => {
             Login
           </Link>
           {isAuthenticated && (
-            <button data-cy="nav-logout" onClick={handleLogout} className="text-red-600">
+            <button data-cy="nav-logout" onClick={logout} className="text-red-600">
               Logout
             </button>
           )}
