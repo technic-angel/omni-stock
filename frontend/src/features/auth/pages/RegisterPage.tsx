@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -6,11 +7,8 @@ import Card from '../../../shared/components/Card'
 import { useRegister } from '../hooks/useRegister'
 import { RegisterInput, registerSchema } from '../schema/authSchema'
 
-type Props = {
-  onRegistered: () => void
-}
-
-const RegisterPage = ({ onRegistered }: Props) => {
+const RegisterPage = () => {
+  const navigate = useNavigate()
   const { mutateAsync, isPending } = useRegister()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -27,7 +25,7 @@ const RegisterPage = ({ onRegistered }: Props) => {
     setServerError(null)
     try {
       await mutateAsync(values)
-      onRegistered()
+      navigate('/login', { replace: true })
     } catch (err: any) {
       setServerError(err?.response?.data?.detail || err.message || 'Registration failed')
     }
