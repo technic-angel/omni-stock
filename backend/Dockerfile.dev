@@ -18,7 +18,6 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt -r requirements-dev.txt
 
 COPY backend /usr/src/app/backend
-COPY collectibles /usr/src/app/collectibles
 
 EXPOSE 8000
 

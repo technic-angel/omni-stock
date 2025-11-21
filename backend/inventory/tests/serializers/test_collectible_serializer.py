@@ -1,7 +1,7 @@
 import pytest
 
-from collectibles.serializers import CollectibleSerializer
-from collectibles.models import Collectible
+from backend.inventory.api.serializers import CollectibleSerializer
+from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import CollectibleFactory
 
 

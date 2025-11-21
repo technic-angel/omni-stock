@@ -1,6 +1,7 @@
 import pytest
 
-from collectibles.models import Vendor, Collectible, CardDetails
+from backend.inventory.models import Collectible, CardDetails
+from backend.vendors.models import Vendor
 from backend.inventory.tests.factories import VendorFactory, CollectibleFactory, CardDetailsFactory
 from types import SimpleNamespace
 

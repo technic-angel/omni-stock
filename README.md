@@ -34,8 +34,8 @@ make dev-shell
 Run a single test file (default target runs one API test):
 
 ```bash
-make test-docker           # runs collectibles/tests/test_card_details_api.py by default
-TEST=collectibles/tests/test_models.py make test-docker   # specify an alternate file
+make test-docker           # runs backend/inventory/tests/api/test_card_details_api.py by default
+TEST=backend/inventory/tests/models/test_models.py make test-docker   # specify an alternate file
 ```
 
 Run the full test suite with coverage written to `coverage.xml`:

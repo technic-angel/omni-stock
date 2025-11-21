@@ -7,7 +7,7 @@ from backend.inventory.tests.factories import (
     UserFactory,
     VendorFactory,
 )
-from collectibles.models import UserProfile
+from backend.users.models import UserProfile
 
 from backend.inventory.selectors.get_item import get_item
 from backend.inventory.selectors.list_items import list_items

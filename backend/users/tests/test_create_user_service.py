@@ -2,7 +2,7 @@ import pytest
 
 from backend.users.services.create_user import create_user
 from django.contrib.auth import get_user_model
-from collectibles.models import UserProfile
+from backend.users.models import UserProfile
 
 User = get_user_model()
 

@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from collectibles.models import UserProfile
+from backend.users.models import UserProfile
 
 User = get_user_model()
 
