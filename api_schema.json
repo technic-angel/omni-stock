@@ -493,6 +493,11 @@
                     },
                     "image_url": {
                         "type": "string",
+<<<<<<< HEAD
+=======
+                        "format": "uri",
+                        "description": "Return an absolute URL to the collectible image, or None.",
+>>>>>>> origin/main
                         "readOnly": true
                     },
                     "name": {
@@ -519,8 +524,9 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 2147483647,
-                        "minimum": -2147483648,
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "format": "int64",
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {
@@ -581,6 +587,11 @@
                     },
                     "image_url": {
                         "type": "string",
+<<<<<<< HEAD
+=======
+                        "format": "uri",
+                        "description": "Return an absolute URL to the collectible image, or None.",
+>>>>>>> origin/main
                         "readOnly": true
                     },
                     "name": {
@@ -607,8 +618,9 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 2147483647,
-                        "minimum": -2147483648,
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "format": "int64",
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {

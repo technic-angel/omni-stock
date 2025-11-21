@@ -178,7 +178,7 @@
         "/api/v1/collectibles/": {
             "get": {
                 "operationId": "collectibles_list",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "tags": [
                     "collectibles"
                 ],
@@ -205,7 +205,7 @@
             },
             "post": {
                 "operationId": "collectibles_create",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "tags": [
                     "collectibles"
                 ],
@@ -251,7 +251,7 @@
         "/api/v1/collectibles/{id}/": {
             "get": {
                 "operationId": "collectibles_retrieve",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "parameters": [
                     {
                         "in": "path",
@@ -286,7 +286,7 @@
             },
             "put": {
                 "operationId": "collectibles_update",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "parameters": [
                     {
                         "in": "path",
@@ -341,7 +341,7 @@
             },
             "patch": {
                 "operationId": "collectibles_partial_update",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "parameters": [
                     {
                         "in": "path",
@@ -395,7 +395,7 @@
             },
             "delete": {
                 "operationId": "collectibles_destroy",
-                "description": "API endpoint that allows Collectible items to be viewed or edited.\n\nBehavior additions:\n- The list endpoint is scoped to the authenticated user's vendor (if present on their profile).\n- When creating a Collectible, the server sets the `user` and `vendor` based on the\n  authenticated user's profile. Attempts to create a Collectible for another vendor\n  will be rejected with 403.",
+                "description": "Inventory CRUD viewset with vendor scoping rules.",
                 "parameters": [
                     {
                         "in": "path",
@@ -482,7 +482,7 @@
             },
             "Collectible": {
                 "type": "object",
-                "description": "Serializer for the Collectible model.\n\nSupports writable nested `card_details` payloads. The nested handling is\nintentionally explicit and minimal: create/update will handle a provided\n`card_details` object by creating or updating the related CardDetails row.",
+                "description": "Serializer for the Collectible model with nested card details support.",
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -519,10 +519,9 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "description": "Current number of units in stock.",
-                        "format": "int64"
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
+                        "description": "Current number of units in stock."
                     },
                     "last_updated": {
                         "type": "string",
@@ -571,7 +570,7 @@
             },
             "PatchedCollectible": {
                 "type": "object",
-                "description": "Serializer for the Collectible model.\n\nSupports writable nested `card_details` payloads. The nested handling is\nintentionally explicit and minimal: create/update will handle a provided\n`card_details` object by creating or updating the related CardDetails row.",
+                "description": "Serializer for the Collectible model with nested card details support.",
                 "properties": {
                     "id": {
                         "type": "integer",
