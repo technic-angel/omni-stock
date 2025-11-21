@@ -24,17 +24,18 @@ services:
     env_file:
       - .env
 
-  # 2. Core API Service (Django)
-  core_api:
+  # 2. Backend Service (Django)
+  backend:
     build:
-      context: ./core_api
-      dockerfile: Dockerfile
-    container_name: omni_stock_core_api
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: omni_stock_backend
     # *** FIX 2: Use sh -c wrapper for robust command execution ***
     command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    working_dir: /usr/src/app/backend
     volumes:
-      # Syncs your local code changes into the container instantly
-      - ./core_api:/usr/src/app
+      # Syncs your local backend code changes into the container instantly
+      - ./backend:/usr/src/app/backend
     ports:
       - "8000:8000"
     environment:
@@ -47,6 +48,8 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DEBUG: True # Added DEBUG back for completeness from earlier version
+      PYTHONPATH: /usr/src/app
+      DJANGO_SETTINGS_MODULE: backend.omni_stock.settings
     depends_on:
       # Ensures the database service starts before the API attempts to connect
       db:

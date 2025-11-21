@@ -9,7 +9,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 GEN_FILE="$REPO_ROOT/generated_schema.json"
-BASE_FILES=("$REPO_ROOT/core_api/api_schema.json" "$REPO_ROOT/api_schema.json")
+BASE_FILES=("$REPO_ROOT/backend/api_schema.json" "$REPO_ROOT/api_schema.json")
 
 AUTO=yes
 if [ "${1:-}" = "--yes" ] || [ "${REBASE_AUTO:-}" = "1" ]; then
@@ -18,12 +18,12 @@ else
   AUTO=no
 fi
 
-echo "Using DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-omni_stock.schema_generate_settings}"
+echo "Using DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-backend.omni_stock.schema_generate_settings}"
 echo "Generating OpenAPI schema to: $GEN_FILE"
 
 # Generate the schema using manage.py spectacular
-DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-omni_stock.schema_generate_settings} \
-  python manage.py spectacular --format openapi-json -o "$GEN_FILE"
+DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-backend.omni_stock.schema_generate_settings} \
+  python backend/manage.py spectacular --format openapi-json -o "$GEN_FILE"
 
 if [ ! -f "$GEN_FILE" ]; then
   echo "Error: generated file not found at $GEN_FILE"
