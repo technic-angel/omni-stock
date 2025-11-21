@@ -78,6 +78,10 @@ INSTALLED_APPS = [
     'admin_thumbnails',
     'drf_spectacular',
     # Local Apps 
+    'backend.core.apps.CoreConfig',
+    'backend.users.apps.UsersConfig',
+    'backend.vendors.apps.VendorsConfig',
+    'backend.inventory.apps.InventoryConfig',
     'collectibles', 
 ]
 
