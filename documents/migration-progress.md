@@ -2,7 +2,7 @@
 
 ## Backend (Stages 1–2)
 - ✅ Domain skeleton created under `backend/users`, `backend/vendors`, `backend/inventory`, and `backend/core` with services, selectors, and tests.
-- ✅ Existing Django models moved into their respective domains with compatibility shims left under `core_api/collectibles/`.
+- ✅ Existing Django models moved into their respective domains with compatibility shims now living under the top-level `collectibles/` package (legacy `core_api` folder removed).
 - ✅ Inventory services/selectors implemented; DRF serializers/viewsets delegate to them.
 - ✅ Tests relocated to `backend/<domain>/tests/` and run via dockerized pytest.
 - ✅ Django project scaffold now runs entirely from `backend/manage.py`; docker-compose, `Makefile`, OpenAPI scripts, pytest configs, and CI workflows invoke the backend project (with `PYTHONPATH` glue so the remaining legacy `collectibles` shims continue to load).

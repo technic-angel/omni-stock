@@ -8,7 +8,7 @@ Restructure the Django project so all backend code (project scaffolding + domain
 ## Phase 0 — Preconditions
 - ✅ Stage 2 domain migrations complete: users, vendors, inventory, and core modules exist under `backend/`.
 - ✅ Tests pass via dockerized `pytest` and frontend Vitest.
-- 🔁 Remaining concern: Django project scaffold (`core_api/manage.py`, `omni_stock/settings.py`, etc.) still exists. The rebuild must recreate this scaffold under `backend/`.
+- ✅ Django project scaffold now lives entirely under `backend/` (legacy `core_api` folder removed after confirming the new structure works end-to-end).
 
 ---
 
@@ -73,4 +73,5 @@ Deliverable: repository contains a single backend root (`backend/`) that houses 
 
 ### Progress Log
 - 2024-XX-XX: Created new branch `agent/backend-project-rebuild`, copied Django settings/project scaffold into `backend/omni_stock/`, and added `backend/manage.py` pointing at `backend.omni_stock.settings`. Phase 1 scaffolding is now in place; upcoming work is wiring the new project into Docker/tests before removing `core_api`.
+- 2025-11-21: Removed the legacy `core_api` folder entirely, moved the compatibility shim into the repo-root `collectibles/` package, updated Docker/Dockerfiles/CI to rely solely on `backend/`, and reran tests/OpenAPI generation.
 - 2025-11-21: Updated docker-compose/Makefile/CI scripts, pytest config, and OpenAPI tooling to invoke `backend/manage.py`, set `PYTHONPATH` so legacy `collectibles` shims still load, moved `pytest.ini` to the repo root, and re-ran dockerized pytest, frontend Vitest, and `manage.py spectacular` to confirm the new scaffold works end-to-end.

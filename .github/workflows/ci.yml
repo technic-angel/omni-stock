@@ -13,7 +13,7 @@ permissions:
   issues: write
 
 env:
-  PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/core_api
+  PYTHONPATH: ${{ github.workspace }}
   DJANGO_SETTINGS_MODULE: backend.omni_stock.settings
 
 jobs:

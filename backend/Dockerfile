@@ -27,10 +27,9 @@ COPY backend/requirements.txt /usr/src/app/backend/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Copy the backend application code and legacy compatibility app
+# Copy the backend application code and the compatibility shim package
 COPY backend /usr/src/app/backend
-RUN mkdir -p /usr/src/app/core_api
-COPY core_api/collectibles /usr/src/app/core_api/collectibles
+COPY collectibles /usr/src/app/collectibles
 
 # Port Django runs on
 EXPOSE 8000

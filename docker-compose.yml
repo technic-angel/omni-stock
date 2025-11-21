@@ -34,9 +34,8 @@ services:
     command: sh -c "python manage.py runserver 0.0.0.0:8000"
     working_dir: /usr/src/app/backend
     volumes:
-      # Syncs your local code changes into the container instantly
+      # Syncs your local backend code changes into the container instantly
       - ./backend:/usr/src/app/backend
-      - ./core_api:/usr/src/app/core_api
     ports:
       - "8000:8000"
     environment:
@@ -49,7 +48,7 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DEBUG: True # Added DEBUG back for completeness from earlier version
-      PYTHONPATH: /usr/src/app:/usr/src/app/core_api
+      PYTHONPATH: /usr/src/app
       DJANGO_SETTINGS_MODULE: backend.omni_stock.settings
     depends_on:
       # Ensures the database service starts before the API attempts to connect

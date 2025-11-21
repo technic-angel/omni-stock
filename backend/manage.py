@@ -8,9 +8,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 # Ensure scripts executed from the backend folder can still import the
-# top-level `backend` package as well as the legacy `collectibles` app,
-# which currently lives under `core_api/collectibles` pending removal.
-for extra_path in (REPO_ROOT, REPO_ROOT / 'core_api'):
+# top-level `backend` package as well as the legacy `collectibles` app
+# compatibility shim kept at the repo root.
+for extra_path in (REPO_ROOT,):
     extra_str = str(extra_path)
     if extra_str not in sys.path:
         sys.path.insert(0, extra_str)
