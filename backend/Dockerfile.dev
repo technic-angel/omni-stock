@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    libpq-dev \
+    gcc \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /usr/src/app/backend
+
+# Install both runtime and dev/test dependencies so this image is useful for
+# running tests and development without repeated pip installs.
+COPY backend/requirements.txt /usr/src/app/backend/requirements.txt
+COPY backend/requirements-dev.txt /usr/src/app/backend/requirements-dev.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt -r requirements-dev.txt
+
+COPY backend /usr/src/app/backend
+COPY collectibles /usr/src/app/collectibles
+
+EXPOSE 8000
+
+# Default entrypoint keeps a shell so developers can run commands interactively
+CMD ["/bin/bash"]

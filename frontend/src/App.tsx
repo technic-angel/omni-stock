@@ -1,43 +1,63 @@
 import React, { useState } from 'react'
-import CollectiblesList from './features/collectibles/CollectiblesList'
-import LoginPage from './features/auth/LoginPage'
-import RegisterPage from './features/auth/RegisterPage'
 import { useSelector, useDispatch } from 'react-redux'
+
+import CollectiblesListPage from './features/inventory/pages/CollectiblesListPage'
+import DashboardPage from './features/dashboard/pages/DashboardPage'
+import VendorOverviewPage from './features/vendors/pages/VendorOverviewPage'
+import LoginPage from './features/auth/pages/LoginPage'
+import RegisterPage from './features/auth/pages/RegisterPage'
+import { logout as logoutAction } from './features/auth/store/authSlice'
 import type { RootState } from './store'
-import { logout as logoutAction } from './features/auth/authSlice'
+
+type View = 'inventory' | 'dashboard' | 'vendors' | 'login' | 'register'
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'login' | 'register'>('home')
+  const [view, setView] = useState<View>('inventory')
   const isAuthenticated = useSelector((s: RootState) => s.auth.isAuthenticated)
   const dispatch = useDispatch()
 
   function handleLogout() {
     dispatch(logoutAction())
-    setView('home')
+    setView('inventory')
+  }
+
+  const renderContent = () => {
+    switch (view) {
+      case 'dashboard':
+        return <DashboardPage />
+      case 'vendors':
+        return <VendorOverviewPage />
+      case 'login':
+        return <LoginPage onLoggedIn={() => setView('inventory')} />
+      case 'register':
+        return <RegisterPage onRegistered={() => setView('login')} />
+      case 'inventory':
+      default:
+        return <CollectiblesListPage />
+    }
   }
 
   return (
-    <div className="p-4">
-      <header className="flex items-center justify-between">
+    <div className="space-y-4 p-4">
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h1 className="text-2xl font-bold">Omni-Stock (Frontend)</h1>
-        <nav className="space-x-4">
-          <button data-cy="nav-register" onClick={() => setView('register')} className="text-sm text-blue-600">Register</button>
-          <button data-cy="nav-login" onClick={() => setView('login')} className="text-sm text-blue-600">Login</button>
-          {isAuthenticated ? (
-            <button data-cy="nav-logout" onClick={handleLogout} className="text-sm text-red-600">Logout</button>
-          ) : (
-            <button data-cy="nav-logout" className="text-sm text-gray-400 hidden">Logout</button>
+        <nav className="flex flex-wrap gap-2 text-sm">
+          <button data-cy="nav-inventory" onClick={() => setView('inventory')} className="text-blue-600">Inventory</button>
+          {isAuthenticated && (
+            <>
+              <button data-cy="nav-dashboard" onClick={() => setView('dashboard')} className="text-blue-600">Dashboard</button>
+              <button data-cy="nav-vendors" onClick={() => setView('vendors')} className="text-blue-600">Vendors</button>
+            </>
+          )}
+          <button data-cy="nav-register" onClick={() => setView('register')} className="text-blue-600">Register</button>
+          <button data-cy="nav-login" onClick={() => setView('login')} className="text-blue-600">Login</button>
+          {isAuthenticated && (
+            <button data-cy="nav-logout" onClick={handleLogout} className="text-red-600">Logout</button>
           )}
         </nav>
       </header>
 
-      <p className="mt-4">Welcome — frontend scaffolded. Next: collectibles list and auth.</p>
-
-      <div className="mt-6">
-        {view === 'home' && <CollectiblesList />}
-        {view === 'login' && <LoginPage onLoggedIn={() => setView('home')} />}
-        {view === 'register' && <RegisterPage onRegistered={() => setView('login')} />}
-      </div>
+      <div>{renderContent()}</div>
     </div>
   )
 }
