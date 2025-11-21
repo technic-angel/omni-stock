@@ -29,11 +29,6 @@ class UserProfile(models.Model):
         help_text="Arbitrary profile metadata (JSON string ok).",
     )
 
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="profile",
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
