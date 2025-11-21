@@ -118,7 +118,7 @@ def _schema_collectible_component(schema: dict):
     # drf-spectacular typically exposes model schemas under components->schemas
     components = schema.get('components', {}).get('schemas', {})
     # Try several likely keys
-    for key in ('Collectible', 'collectible', 'core_api_collectible'):
+    for key in ('Collectible', 'collectible', 'collectibles_collectible'):
         if key in components:
             return components[key]
     # If not present, return None so tests can fail clearly
