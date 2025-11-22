@@ -54,3 +54,20 @@ def test_collectible_create_with_image_url():
     assert resp.status_code in (200, 201)
     body = resp.json()
     assert body.get("image_url") == payload["image_url"]
+
+
+@pytest.mark.django_db
+def test_collectible_patch_image_url():
+    client = APIClient()
+    collectible = CollectibleFactory.create(sku="PATCH-IMG-1")
+    user = UserFactory.create(username="patch_user")
+    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    client.force_authenticate(user=user)
+
+    url = f"/api/v1/collectibles/{collectible.pk}/"
+    payload = {"image_url": "https://example.com/new-image.png"}
+    resp = client.patch(url, payload, format='json')
+    assert resp.status_code in (200, 202, 204)
+
+    collectible.refresh_from_db()
+    assert collectible.image_url == payload["image_url"]
