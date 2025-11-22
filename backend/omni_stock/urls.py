@@ -44,6 +44,15 @@ urlpatterns = [
     # Add your API paths here later: path('api/v1/auth/', include('auth.urls')),
 ]
 
+# Health endpoint for deploy checks
+def health_view(request):
+    from django.http import JsonResponse
+    return JsonResponse({"status": "ok"})
+
+urlpatterns += [
+    path('health/', health_view, name='health'),
+]
+
 # Serving Media Files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
