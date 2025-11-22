@@ -7,8 +7,11 @@ export interface CardDetails {
 export interface Collectible {
   id: number
   name: string
+  sku?: string
+  quantity?: number
   language?: string
   market_region?: string
+  image_url?: string | null
   card_details?: CardDetails | null
 }
 

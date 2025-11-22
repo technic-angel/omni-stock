@@ -1,0 +1,32 @@
+<svg
+  width="260"
+  height="64"
+  viewBox="0 0 260 64"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Omni -->
+  <text
+    x="0"
+    y="30"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif"
+    font-size="22"
+    font-weight="700"
+    fill="#E5E7EB"
+  >
+    Omni
+  </text>
+
+  <!-- STOCK (tight spacing, x=58) -->
+  <text
+    x="58"
+    y="30"
+    font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
+    font-size="20"
+    font-weight="500"
+    letter-spacing="0.16em"
+    fill="#14B8A6"
+  >
+    STOCK
+  </text>
+</svg>

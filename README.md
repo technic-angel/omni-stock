@@ -1,5 +1,8 @@
 # omni-stock
 
+![Omni-Stock Logo](frontend/public/branding/omni-stock-logo-horizontal-gem.svg)
+![Omni-Stock Wordmark](frontend/public/branding/omni-stock-wordmark-midnight-jade.svg)
+
 [![codecov](https://codecov.io/gh/technic-angel/omni-stock/graph/badge.svg?token=M19L9AHOPN)](https://codecov.io/gh/technic-angel/omni-stock)
 
 ## Developer Quickstart
@@ -43,6 +46,27 @@ Run the full test suite with coverage written to `coverage.xml`:
 ```bash
 make test-ci
 ```
+
+## Supabase Image Seeding (Dev/Staging)
+
+If you want quick test images in the `product-images` bucket for frontend debugging:
+
+```bash
+# Requires Supabase bucket & policies set up (public, insert/select for anon/authenticated)
+# Run from repo root:
+SUPABASE_URL=https://<your-project>.supabase.co \
+SUPABASE_ANON_KEY=<your-anon-key> \
+node scripts/seed_supabase_images.mjs
+```
+
+The script uploads a few sample images and prints their public URLs you can drop into forms or fixtures.
+
+Supabase checklist:
+- Bucket name: `product-images`
+- Public bucket
+- Policies on `storage.objects` (table): allow SELECT + INSERT for `anon` (and/or `authenticated`) with `bucket_id = 'product-images'`
+- Optional DELETE policy for `authenticated` to allow cleanup
+- Frontend env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ## Environment & Secrets
 

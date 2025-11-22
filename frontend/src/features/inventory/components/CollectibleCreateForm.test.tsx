@@ -1,17 +1,20 @@
 import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import CollectibleCreateForm from './CollectibleCreateForm'
 
-vi.mock('../hooks/useCreateCollectible', () => {
-  return {
-    useCreateCollectible: () => ({
-      mutateAsync: vi.fn().mockResolvedValue({}),
-      isPending: false,
-    }),
-  }
-})
+const mutateSpy = vi.fn().mockResolvedValue({})
+
+vi.mock('../hooks/useCreateCollectible', () => ({
+  useCreateCollectible: () => ({
+    mutateAsync: mutateSpy,
+    isPending: false,
+  }),
+}))
+vi.mock('../../../shared/lib/supabase', () => ({
+  uploadImageToSupabase: vi.fn().mockResolvedValue('https://example.com/image.jpg'),
+}))
 
 describe('CollectibleCreateForm', () => {
   it('submits with required fields', async () => {
@@ -20,11 +23,13 @@ describe('CollectibleCreateForm', () => {
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Item' } })
     fireEvent.change(screen.getByLabelText('SKU'), { target: { value: 'SKU-1' } })
-    fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Quantity'), { target: { value: 1 } })
+    const file = new File(['data'], 'image.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText('Image'), { target: { files: [file] } })
 
-    fireEvent.submit(screen.getByRole('button', { name: /create/i }))
-    await screen.findByRole('button', { name: /create/i })
-
+    const form = screen.getByRole('button', { name: /create/i }).closest('form') as HTMLFormElement
+    fireEvent.submit(form)
+    await waitFor(() => expect(mutateSpy).toHaveBeenCalled(), { timeout: 2000 })
     expect(onCreated).toHaveBeenCalled()
   })
 })
