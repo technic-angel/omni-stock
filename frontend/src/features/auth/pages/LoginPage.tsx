@@ -1,19 +1,17 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import Card from '../../../shared/components/Card'
 import { useLogin } from '../hooks/useLogin'
 import { LoginInput, loginSchema } from '../schema/authSchema'
-import { setAccessToken } from '../store/authSlice'
+import { useAuth } from '../hooks/useAuth'
 
-type Props = {
-  onLoggedIn: () => void
-}
-
-const LoginPage = ({ onLoggedIn }: Props) => {
-  const dispatch = useDispatch()
+const LoginPage = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { setAccessToken } = useAuth()
   const { mutateAsync, isPending } = useLogin()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -30,8 +28,9 @@ const LoginPage = ({ onLoggedIn }: Props) => {
     setServerError(null)
     try {
       const data = await mutateAsync(values)
-      dispatch(setAccessToken(data.access))
-      onLoggedIn()
+      setAccessToken(data.access)
+      const redirectTo = (location.state as any)?.from?.pathname || '/inventory'
+      navigate(redirectTo, { replace: true })
     } catch (err: any) {
       setServerError(err?.response?.data?.detail || err.message || 'Login failed')
     }

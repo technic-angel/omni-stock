@@ -1,6 +1,8 @@
 import React from 'react'
 
 import Page from '../../../shared/components/Page'
+import VendorList from '../components/VendorList'
+import VendorForm from '../components/VendorForm'
 
 const VendorOverviewPage = () => {
   return (
@@ -9,9 +11,9 @@ const VendorOverviewPage = () => {
       subtitle="Manage vendor profile information and staff assignments."
       dataCy="vendor-page"
     >
-      <div className="text-sm text-gray-700">
-        Vendor management UI will live here. The backend vendors domain is being migrated, and this placeholder keeps the
-        frontend architecture aligned while services are implemented.
+      <div className="grid gap-4 lg:grid-cols-[2fr,1fr]">
+        <VendorList />
+        <VendorForm />
       </div>
     </Page>
   )
