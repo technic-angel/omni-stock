@@ -20,3 +20,12 @@ def test_collectible_serializer_roundtrip():
     assert ser.is_valid(), ser.errors
     obj = ser.save()
     assert Collectible.objects.filter(pk=obj.pk, sku="SER-002").exists()
+
+
+@pytest.mark.django_db
+def test_collectible_serializer_image_url():
+    payload = {"name": "Image Card", "sku": "SER-IMG", "quantity": 1, "image_url": "https://example.com/img.png"}
+    ser = CollectibleSerializer(data=payload)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+    assert obj.image_url == payload["image_url"]
