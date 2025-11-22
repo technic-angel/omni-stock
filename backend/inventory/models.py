@@ -35,12 +35,7 @@ class Collectible(models.Model):
         null=True,
         help_text="Physical location (e.g., 'Binder 3', 'Shelf A')",
     )
-    image = models.ImageField(
-        upload_to="collectibles_images/",
-        blank=True,
-        null=True,
-        help_text="Image of the collectible item.",
-    )
+    image_url = models.URLField(blank=True, null=True, help_text="Public image URL stored in Supabase.")
     quantity = models.IntegerField(default=0, help_text="Current number of units in stock.")
     last_updated = models.DateTimeField(auto_now=True)
     intake_price = models.DecimalField(

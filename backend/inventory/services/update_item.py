@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from django.db import transaction
 
 from backend.inventory.models import CardDetails, Collectible
+from backend.core.validators import validate_image_url
 
 
 def update_item(
@@ -15,6 +16,9 @@ def update_item(
 ) -> Collectible:
     """Update a Collectible (and optional CardDetails) inside a transaction."""
     with transaction.atomic():
+        image_url = data.get("image_url")
+        if image_url:
+            validate_image_url(image_url)
         for attr, value in data.items():
             setattr(instance, attr, value)
         instance.save()

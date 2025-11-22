@@ -738,12 +738,6 @@
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
                     },
-                    "image_url": {
-                        "type": "string",
-                        "format": "uri",
-                        "readOnly": true,
-                        "description": "Return an absolute URL to the collectible image, or None."
-                    },
                     "name": {
                         "type": "string",
                         "description": "The common name of the collectible item.",
@@ -760,11 +754,12 @@
                         "description": "Physical location (e.g., 'Binder 3', 'Shelf A')",
                         "maxLength": 100
                     },
-                    "image": {
+                    "image_url": {
                         "type": "string",
                         "format": "uri",
                         "nullable": true,
-                        "description": "Image of the collectible item."
+                        "description": "Public image URL stored in Supabase.",
+                        "maxLength": 200
                     },
                     "quantity": {
                         "type": "integer",
@@ -812,7 +807,6 @@
                 },
                 "required": [
                     "id",
-                    "image_url",
                     "last_updated",
                     "name",
                     "sku"
@@ -828,12 +822,6 @@
                     },
                     "card_details": {
                         "$ref": "#/components/schemas/CardDetails"
-                    },
-                    "image_url": {
-                        "type": "string",
-                        "format": "uri",
-                        "readOnly": true,
-                        "description": "Return an absolute URL to the collectible image, or None."
                     },
                     "name": {
                         "type": "string",
@@ -851,11 +839,12 @@
                         "description": "Physical location (e.g., 'Binder 3', 'Shelf A')",
                         "maxLength": 100
                     },
-                    "image": {
+                    "image_url": {
                         "type": "string",
                         "format": "uri",
                         "nullable": true,
-                        "description": "Image of the collectible item."
+                        "description": "Public image URL stored in Supabase.",
+                        "maxLength": 200
                     },
                     "quantity": {
                         "type": "integer",

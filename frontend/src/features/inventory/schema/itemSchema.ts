@@ -9,6 +9,16 @@ export const collectibleSchema = z.object({
     .min(0, 'Quantity must be at least 0'),
   language: z.string().optional(),
   market_region: z.string().optional(),
+  image_file: z
+    .any()
+    .optional()
+    .transform((value) => {
+      if (!value) return undefined
+      if (value instanceof File) return value
+      if (Array.isArray(value) && value[0] instanceof File) return value[0]
+      if (value?.length && value[0] instanceof File) return value[0]
+      return undefined
+    }),
 })
 
 export type CollectibleInput = z.infer<typeof collectibleSchema>

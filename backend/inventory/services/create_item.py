@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from django.db import transaction
 
 from backend.inventory.models import CardDetails, Collectible
+from backend.core.validators import validate_image_url
 
 
 def create_item(
@@ -14,6 +15,9 @@ def create_item(
 ) -> Collectible:
     """Create a Collectible (and optional CardDetails) inside a transaction."""
     payload = data.copy()
+    image_url = payload.get("image_url")
+    if image_url:
+        validate_image_url(image_url)
     with transaction.atomic():
         collectible = Collectible.objects.create(**payload)
         if card_details_data:

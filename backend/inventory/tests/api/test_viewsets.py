@@ -33,3 +33,24 @@ def test_collectible_viewset_list_and_create():
     resp = client.post(url, payload, format='json')
     assert resp.status_code in (200, 201)
     assert Collectible.objects.filter(sku="VIEW-003").exists()
+
+
+@pytest.mark.django_db
+def test_collectible_create_with_image_url():
+    client = APIClient()
+
+    user = UserFactory.create(username="img_user")
+    UserProfile.objects.create(user=user)
+    client.force_authenticate(user=user)
+
+    url = "/api/v1/collectibles/"
+    payload = {
+        "name": "Image Item",
+        "sku": "IMG-API-1",
+        "quantity": 1,
+        "image_url": "https://example.com/img.png",
+    }
+    resp = client.post(url, payload, format='json')
+    assert resp.status_code in (200, 201)
+    body = resp.json()
+    assert body.get("image_url") == payload["image_url"]
