@@ -1,5 +1,7 @@
 # omni-stock
 
+![Omni-Stock Logo](documents/omni-stock-logo/omni-stock-logo-horizontal-gem.svg)
+
 [![codecov](https://codecov.io/gh/technic-angel/omni-stock/graph/badge.svg?token=M19L9AHOPN)](https://codecov.io/gh/technic-angel/omni-stock)
 
 ## Developer Quickstart
@@ -43,6 +45,18 @@ Run the full test suite with coverage written to `coverage.xml`:
 ```bash
 make test-ci
 ```
+
+## Supabase Image Seeding (Dev/Staging)
+
+If you want quick test images in the `product-images` bucket for frontend debugging:
+
+```bash
+# Requires supabase CLI plus env vars
+cd scripts
+SUPABASE_URL=... SUPABASE_ANON_KEY=... ./seed_supabase_images.sh
+```
+
+The script uploads a few sample images and prints their public URLs you can drop into forms or fixtures.
 
 ## Environment & Secrets
 
