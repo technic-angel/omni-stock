@@ -1,8 +1,8 @@
 import React from 'react'
 
 import Page from '../../../shared/components/Page'
-import VendorList from '../components/VendorList'
-import VendorForm from '../components/VendorForm'
+import VendorProfileCard from '../components/VendorProfileCard'
+import VendorStatsCard from '../components/VendorStatsCard'
 
 const VendorOverviewPage = () => {
   return (
@@ -12,8 +12,8 @@ const VendorOverviewPage = () => {
       dataCy="vendor-page"
     >
       <div className="grid gap-4 lg:grid-cols-[2fr,1fr]">
-        <VendorList />
-        <VendorForm />
+        <VendorProfileCard />
+        <VendorStatsCard />
       </div>
     </Page>
   )
