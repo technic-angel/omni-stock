@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { setAccessToken } = useAuth()
   const { mutateAsync, isPending } = useLogin()
   const [serverError, setServerError] = useState<string | null>(null)
@@ -28,7 +29,8 @@ const LoginPage = () => {
     try {
       const data = await mutateAsync(values)
       setAccessToken(data.access)
-      navigate('/inventory', { replace: true })
+      const redirectTo = (location.state as any)?.from?.pathname || '/inventory'
+      navigate(redirectTo, { replace: true })
     } catch (err: any) {
       setServerError(err?.response?.data?.detail || err.message || 'Login failed')
     }
