@@ -9,6 +9,7 @@ export interface Collectible {
   name: string
   language?: string
   market_region?: string
+  image_url?: string | null
   card_details?: CardDetails | null
 }
 

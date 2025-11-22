@@ -30,6 +30,19 @@ def test_create_item_with_nested_card_details():
 
 
 @pytest.mark.django_db
+def test_create_item_with_image_url():
+    collectible = create_item(
+        data={
+            "name": "Image Card",
+            "sku": "IMG-001",
+            "quantity": 1,
+            "image_url": "https://example.com/img.jpg",
+        },
+    )
+    assert collectible.image_url == "https://example.com/img.jpg"
+
+
+@pytest.mark.django_db
 def test_update_item_updates_nested_details():
     collectible = CollectibleFactory.create(name="Old", quantity=1)
     CardDetails.objects.filter(collectible=collectible).delete()
