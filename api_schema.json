@@ -763,9 +763,8 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {
@@ -848,9 +847,8 @@
                     },
                     "quantity": {
                         "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
+                        "maximum": 2147483647,
+                        "minimum": -2147483648,
                         "description": "Current number of units in stock."
                     },
                     "last_updated": {

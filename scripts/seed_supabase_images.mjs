@@ -24,7 +24,7 @@ async function download(image) {
 }
 
 async function upload(buffer, name) {
-  const path = `${BUCKET}/seed-${Date.now()}-${name}`
+  const path = `seed-${Date.now()}-${name}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, buffer, {
     contentType: 'image/jpeg',
     upsert: true,
