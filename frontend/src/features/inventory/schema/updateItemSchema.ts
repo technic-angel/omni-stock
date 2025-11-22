@@ -6,6 +6,7 @@ export const updateCollectibleSchema = z.object({
   quantity: z.number().int().min(0),
   language: z.string().optional(),
   market_region: z.string().optional(),
+  image_url: z.string().url().optional(),
 })
 
 export type UpdateCollectibleInput = z.infer<typeof updateCollectibleSchema>
