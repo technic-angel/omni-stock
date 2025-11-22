@@ -1,6 +1,7 @@
 # omni-stock
 
-![Omni-Stock Logo](documents/omni-stock-logo/omni-stock-logo-horizontal-gem.svg)
+![Omni-Stock Logo](frontend/public/branding/omni-stock-logo-horizontal-gem.svg)
+![Omni-Stock Wordmark](frontend/public/branding/omni-stock-wordmark-midnight-jade.svg)
 
 [![codecov](https://codecov.io/gh/technic-angel/omni-stock/graph/badge.svg?token=M19L9AHOPN)](https://codecov.io/gh/technic-angel/omni-stock)
 
