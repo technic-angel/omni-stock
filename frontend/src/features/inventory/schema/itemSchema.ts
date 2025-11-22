@@ -9,6 +9,7 @@ export const collectibleSchema = z.object({
     .min(0, 'Quantity must be at least 0'),
   language: z.string().optional(),
   market_region: z.string().optional(),
+  image_url: z.string().url().optional(),
   image_file: z
     .any()
     .optional()

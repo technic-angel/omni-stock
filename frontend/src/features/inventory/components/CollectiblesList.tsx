@@ -6,9 +6,10 @@ import type { InventoryFiltersInput } from '../schema/filtersSchema'
 
 type Props = {
   filters: InventoryFiltersInput
+  onSelect?: (collectible: CollectibleType) => void
 }
 
-const CollectiblesList = ({ filters }: Props) => {
+const CollectiblesList = ({ filters, onSelect }: Props) => {
   const { data, isLoading, error } = useCollectibles(filters)
 
   if (isLoading) return <div>Loading collectibles…</div>
@@ -21,7 +22,12 @@ const CollectiblesList = ({ filters }: Props) => {
   return (
     <ul className="space-y-2" data-cy="collectible-list">
       {data.results.map((c: CollectibleType) => (
-        <li key={c.id} className="rounded border p-3" data-cy="collectible-row">
+        <li
+          key={c.id}
+          className="rounded border p-3 hover:bg-gray-50 cursor-pointer"
+          data-cy="collectible-row"
+          onClick={() => onSelect?.(c)}
+        >
           <div className="font-medium" data-cy="collectible-name">{c.name}</div>
           <div className="text-sm text-gray-600">{c.language} — {c.market_region}</div>
           <div className="mt-2 flex gap-2">
