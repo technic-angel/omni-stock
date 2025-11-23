@@ -74,7 +74,24 @@ CI includes a preview workflow (non-draft PRs):
 - Frontend: builds and, if secrets are present, runs `npx vercel deploy --prebuilt`.
   - Required secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 - Backend: builds Docker image as a smoke step (no automatic Render deploy).
-  - If you want Render deploys, add a step with Render API key/service trigger.
+  - If you want Render deploys, use `render-deploy.yml` (manual) with `RENDER_API_KEY` and a Render `service_id`.
+
+## Render Deployment (Backend)
+
+The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
+
+1. In Render, create a new **Web Service** and point it at the repo’s `backend/` folder.
+2. Set build command to `docker build -t omni-stock-backend .` (Render will infer from Dockerfile).
+3. Expose port `8000`.
+4. Add environment variables:
+   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
+   - `DJANGO_SECRET_KEY` (strong random value)
+   - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
+   - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
+   - Any Supabase envs needed by future tasks
+5. Render will call `/health/` to verify the service; the endpoint returns `{"status":"ok"}`.
+
+Static files are collected into `backend/staticfiles` (via `STATIC_ROOT`), and Gunicorn serves the WSGI app per Render’s requirements.
 
 ## Environment & Secrets
 

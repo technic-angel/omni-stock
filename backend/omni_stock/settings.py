@@ -37,6 +37,11 @@ def _parse_bool(value, default=False):
         return bool(default)
     return str(value).strip().lower() in ('1', 'true', 'yes', 'y', 'on')
 
+def _parse_list(value, default=None):
+    if value is None or value == '':
+        return default or []
+    return [item.strip() for item in value.split(',') if item.strip()]
+
 class SimpleEnv:
     def __call__(self, name, default=None):
         return os.environ.get(name, default)
@@ -58,7 +63,7 @@ DEBUG = env.bool('DEBUG', default=True)
 if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):
     raise RuntimeError('DJANGO_SECRET_KEY must be set when DEBUG is False. Set it in your .env file.')
 
-ALLOWED_HOSTS = ['*'] # Allow connections from Docker network/host
+ALLOWED_HOSTS = _parse_list(env('ALLOWED_HOSTS'), default=['*'])
 
 
 # Application definition
@@ -97,19 +102,21 @@ MIDDLEWARE = [
 ]
 
 # CORS: allow requests from frontend during development. For production,
-# set specific origins via CORS_ALLOWED_ORIGINS.
-# Allow only local frontend (e.g., React at localhost:3000) during development
-CORS_ALLOWED_ORIGINS = [
+# set specific origins via `CORS_ALLOWED_ORIGINS`.
+_default_cors_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     # Vite default dev server port used by frontend
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-# Alternatively, to allow all localhost ports, use:
-# CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
+CORS_ALLOWED_ORIGINS = _parse_list(env('CORS_ALLOWED_ORIGINS'), default=_default_cors_origins)
+# Allow Render/Vercel HTTPS domains via env: e.g. https://my-app.onrender.com
+CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
 
-ROOT_URLCONF = 'omni_stock.urls'
+CSRF_TRUSTED_ORIGINS = _parse_list(env('CSRF_TRUSTED_ORIGINS'), default=[])
+
+ROOT_URLCONF = 'backend.omni_stock.urls'
 
 TEMPLATES = [
     {
@@ -127,7 +134,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'omni_stock.wsgi.application'
+WSGI_APPLICATION = 'backend.omni_stock.wsgi.application'
 
 
 # Database Configuration
@@ -176,6 +183,7 @@ USE_TZ = True
 # generate correct URL patterns. Define MEDIA settings to avoid adding a
 # catch-all static pattern when MEDIA_URL is missing.
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (user-uploaded content)
 MEDIA_URL = '/media/'
@@ -211,3 +219,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
