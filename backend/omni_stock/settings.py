@@ -47,6 +47,8 @@ class SimpleEnv:
         return os.environ.get(name, default)
     def bool(self, name, default=False):
         return _parse_bool(os.environ.get(name), default)
+    def list(self, name, default=None):
+        return _parse_list(os.environ.get(name), default)
 
 env = SimpleEnv()
 
@@ -63,7 +65,7 @@ DEBUG = env.bool('DEBUG', default=True)
 if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):
     raise RuntimeError('DJANGO_SECRET_KEY must be set when DEBUG is False. Set it in your .env file.')
 
-ALLOWED_HOSTS = _parse_list(env('ALLOWED_HOSTS'), default=['*'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 
 # Application definition
@@ -110,11 +112,11 @@ _default_cors_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-CORS_ALLOWED_ORIGINS = _parse_list(env('CORS_ALLOWED_ORIGINS'), default=_default_cors_origins)
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=_default_cors_origins)
 # Allow Render/Vercel HTTPS domains via env: e.g. https://my-app.onrender.com
 CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
 
-CSRF_TRUSTED_ORIGINS = _parse_list(env('CSRF_TRUSTED_ORIGINS'), default=[])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
 ROOT_URLCONF = 'backend.omni_stock.urls'
 
@@ -147,6 +149,9 @@ DATABASES = {
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'), # This must be 'db', the service name in docker-compose.yml
         'PORT': env('POSTGRES_PORT'),
+        'OPTIONS': {
+            'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
+        },
     }
 }
 

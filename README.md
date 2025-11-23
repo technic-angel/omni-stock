@@ -80,7 +80,7 @@ CI includes a preview workflow (non-draft PRs):
 
 The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
 
-1. In Render, create a new **Web Service** and point it at the repo’s `backend/` folder.
+1. In Render, create a new **Web Service**. If you leave the root directory blank, Render will use the repo-level `Dockerfile` (which already proxies into `backend/`). Alternatively, set the root to `backend/` explicitly.
 2. Set build command to `docker build -t omni-stock-backend .` (Render will infer from Dockerfile).
 3. Expose port `8000`.
 4. Add environment variables:
@@ -88,6 +88,7 @@ The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
    - `DJANGO_SECRET_KEY` (strong random value)
    - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
    - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
+   - `POSTGRES_SSL_MODE=require` (Supabase/Postgres typically needs SSL)
    - Any Supabase envs needed by future tasks
 5. Render will call `/health/` to verify the service; the endpoint returns `{"status":"ok"}`.
 
