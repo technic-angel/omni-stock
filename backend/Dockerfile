@@ -24,12 +24,21 @@ WORKDIR /usr/src/app
 # Copy the requirements file and install dependencies first (for layer caching)
 # The build context (when invoked from backend/) contains requirements.txt directly.
 COPY requirements.txt ./requirements.txt
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip \
+ && pip install -r requirements.txt
 
 # Copy the backend application code
 COPY . /usr/src/app/backend
 WORKDIR /usr/src/app/backend
+
+# Collect static (optional)
+# RUN python manage.py collectstatic --no-input
+
+ENV DJANGO_SETTINGS_MODULE=backend.omni_stock.settings
+ENV PYTHONPATH=/usr/src/app
+EXPOSE 8000
+
+CMD ["gunicorn", "backend.omni_stock.wsgi:application", "--bind", "0.0.0.0:8000"]
 
 # Port Django runs on
 EXPOSE 8000
