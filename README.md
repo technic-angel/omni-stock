@@ -146,3 +146,15 @@ Demo checklist (for README / recruiter copy)
 - [ ] CI badge(s) and passing E2E smoke test on PR previews
 
 If you want, I can add a recorded screencast file under `docs/` and wire the Cypress test to run against PR previews.
+
+## Vercel Deployment (Frontend)
+
+1. In Vercel, create a new project and point it at the `frontend/` directory.
+2. Set the build command to `npm run build` and the output directory to `dist`.
+3. Configure environment variables (in Vercel project settings):
+   - `VITE_API_BASE` (Render backend URL)
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+4. Deploy. The app will call the backend using `VITE_API_BASE`.
+
+The GitHub preview workflow already runs `npm run build` and `vercel deploy --prebuilt` when secrets are provided.
