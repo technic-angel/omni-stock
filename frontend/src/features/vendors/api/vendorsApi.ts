@@ -15,6 +15,11 @@ export async function fetchVendors() {
   return data
 }
 
+export async function fetchCurrentVendor() {
+  const { data } = await http.get<Vendor>('/v1/vendors/me/')
+  return data
+}
+
 export async function createVendor(payload: Partial<Vendor>) {
   const { data } = await http.post<Vendor>('/v1/vendors/', payload)
   return data
