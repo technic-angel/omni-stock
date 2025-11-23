@@ -70,6 +70,8 @@ Supabase checklist:
 
 ## Preview Deploys
 
+> Render Preview Test: this section intentionally touched to trigger PR previews.
+
 CI includes a preview workflow (non-draft PRs):
 - Frontend: builds and, if secrets are present, runs `npx vercel deploy --prebuilt`.
   - Required secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
