@@ -17,20 +17,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Set the working directory inside the container (repo-root build context)
-WORKDIR /usr/src/app
+# Set the working directory inside the container
+WORKDIR /usr/src/app/backend
 
 # Copy the requirements file and install dependencies first (for layer caching)
-# When building from repo root we reference backend/requirements.txt
-COPY backend/requirements.txt ./backend/requirements.txt
+# Build context is backend/ directory
+COPY requirements.txt /usr/src/app/backend/requirements.txt
 RUN pip install --upgrade pip && \
-    pip install -r backend/requirements.txt
+    pip install -r requirements.txt
 
 # Copy the backend application code
-COPY backend/ ./backend/
-
-# Set working directory to backend
-WORKDIR /usr/src/app/backend
+COPY . /usr/src/app/backend/
 
 # Set Django settings and Python path
 ENV DJANGO_SETTINGS_MODULE=backend.omni_stock.settings
