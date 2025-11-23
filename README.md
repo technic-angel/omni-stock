@@ -74,7 +74,25 @@ CI includes a preview workflow (non-draft PRs):
 - Frontend: builds and, if secrets are present, runs `npx vercel deploy --prebuilt`.
   - Required secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 - Backend: builds Docker image as a smoke step (no automatic Render deploy).
-  - If you want Render deploys, add a step with Render API key/service trigger.
+  - If you want Render deploys, use `render-deploy.yml` (manual) with `RENDER_API_KEY` and a Render `service_id`.
+
+## Render Deployment (Backend)
+
+The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
+
+1. In Render, create a new **Web Service**. If you leave the root directory blank, Render will use the repo-level `Dockerfile` (which already proxies into `backend/`). Alternatively, set the root to `backend/` explicitly.
+2. Set build command to `docker build -t omni-stock-backend .` (Render will infer from Dockerfile).
+3. Expose port `8000`.
+4. Add environment variables:
+   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
+   - `DJANGO_SECRET_KEY` (strong random value)
+   - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
+   - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
+   - `POSTGRES_SSL_MODE=require` (Supabase/Postgres typically needs SSL)
+   - Any Supabase envs needed by future tasks
+5. Render will call `/health/` to verify the service; the endpoint returns `{"status":"ok"}`.
+
+Static files are collected into `backend/staticfiles` (via `STATIC_ROOT`), and Gunicorn serves the WSGI app per Render’s requirements.
 
 ## Environment & Secrets
 
@@ -129,3 +147,15 @@ Demo checklist (for README / recruiter copy)
 - [ ] CI badge(s) and passing E2E smoke test on PR previews
 
 If you want, I can add a recorded screencast file under `docs/` and wire the Cypress test to run against PR previews.
+
+## Vercel Deployment (Frontend)
+
+1. In Vercel, create a new project and point it at the `frontend/` directory.
+2. Set the build command to `npm run build` and the output directory to `dist`.
+3. Configure environment variables (in Vercel project settings):
+   - `VITE_API_BASE` (Render backend URL)
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+4. Deploy. The app will call the backend using `VITE_API_BASE`.
+
+The GitHub preview workflow already runs `npm run build` and `vercel deploy --prebuilt` when secrets are provided.
