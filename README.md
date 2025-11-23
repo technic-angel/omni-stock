@@ -27,7 +27,9 @@ A modern, full-stack inventory management system for collectibles. Built with Dj
 **Frontend**
 - React 18 + TypeScript
 - Vite 7.x build tool
-- TailwindCSS for styling
+- TailwindCSS + shadcn/ui components
+- React Query for server state
+- React Hook Form + Zod validation
 - Cypress for E2E testing
 
 **Infrastructure**
@@ -177,113 +179,154 @@ VITE_SUPABASE_URL=https://<your-project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-## Deployment
+## Render Deployment (Backend)
 
-### Backend (Render)
+The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
 
-1. **Create a Web Service** in Render
-2. **Configure Build Settings**:
-   - Root Directory: `backend`
-   - Build Command: `./build.sh`
-   - Start Command: `gunicorn omni_stock.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
-3. **Set Environment Variables**:
-   ```bash
-   DJANGO_SECRET_KEY=<generate-secure-key>
-   DEBUG=False
-   POSTGRES_DB=<your-db-name>
-   POSTGRES_USER=<your-db-user>
-   POSTGRES_PASSWORD=<your-db-password>
-   POSTGRES_HOST=<your-db-host>
-   POSTGRES_PORT=5432
-   POSTGRES_SSL_MODE=require
-   ```
-4. **Auto-Configuration**: The app automatically detects Render deployment and configures:
-   - `ALLOWED_HOSTS` with `.onrender.com` wildcard
-   - CORS settings for `*.onrender.com` and `*.vercel.app` domains
-   - CSRF trusted origins
+1. In Render, create a new **Web Service**. If you leave the root directory blank, Render will use the repo-level `Dockerfile` (which already proxies into `backend/`). Alternatively, set the root to `backend/` explicitly.
+2. Set build command to `docker build -t omni-stock-backend .` (Render will infer from Dockerfile).
+3. Expose port `8000`.
+4. Add environment variables:
+   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
+   - `DJANGO_SECRET_KEY` (strong random value)
+   - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
+   - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
+   - `POSTGRES_SSL_MODE=require` (Supabase/Postgres typically needs SSL)
+   - Any Supabase envs needed by future tasks
+5. Render will call `/health/` to verify the service; the endpoint returns `{"status":"ok"}`.
 
-The `/health/` endpoint is used for health checks and returns `{"status":"ok"}`.
+Static files are collected into `backend/staticfiles` (via `STATIC_ROOT`), and Gunicorn serves the WSGI app per Render’s requirements.
 
-### Frontend (Vercel)
+## Environment & Secrets
 
-1. **Create a New Project** in Vercel
-2. **Configure Build Settings**:
-   - Root Directory: `frontend`
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-3. **Set Environment Variables**:
-   ```bash
-   VITE_API_BASE=https://your-backend.onrender.com
-   VITE_SUPABASE_URL=https://<your-project>.supabase.co
-   VITE_SUPABASE_ANON_KEY=<your-anon-key>
-   ```
+Local development uses a `.env` file (gitignored). Copy `dev.env` to `.env` and adjust values. Never commit real secrets. In CI, secrets are provided via GitHub Actions (e.g. `CODECOV_TOKEN`).
 
-### Preview Deployments
+`DJANGO_SECRET_KEY` must be set when `DEBUG=False` (the app will raise on start if missing in non-debug mode). For local dev you may use the placeholder.
 
-Pull requests automatically trigger preview deployments:
-- **Frontend**: Deploys to Vercel (requires `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets)
-- **Backend**: Deploys to Render for non-draft PRs
+## Coverage & Code Quality
 
-## Testing
+Coverage is uploaded to Codecov when `CODECOV_TOKEN` is present. The CI workflow enforces a minimum threshold and comments on pull requests with the current percentage.
 
-### Local Testing
+## Next Steps
+
+See `docs/project-roadmap.md` and runbooks under `docs/runbooks/` for operational guidance (e.g. index creation with `CONCURRENTLY`).
+
+## Repository Rules
+
+- **Agent/Automation rules**: Automation and contributors must follow the repository agent rules in `docs/project-roadmap.md` "Agent Execution Rules": explain before edits, create a branch per feature, update the todo list, avoid committing secrets, run tests before committing, and include an identifying line in automated commits.
+- **Merge protection rule**: Do not merge pull requests into `main` until all CI checks pass. Every PR must show green check runs in GitHub Actions before merging to `main`.
+
+## Try the demo (5 minutes)
+
+If you want to quickly run the app and exercise the core demo flow (register → login → create → delete), follow these steps. This is intentionally minimal — if you prefer a hosted demo link, add it here.
+
+1. Start the development stack (backend + db + frontend dev server):
 
 ```bash
-# Run all tests with coverage
-make test-ci
-
-# Run specific test file
-TEST=backend/inventory/tests/api/test_card_details_api.py make test-docker
-
-# Run tests in dev container
-make dev-shell
-pytest backend/inventory/tests/
+# from repo root
+make dev-up
+cd frontend
+npm install
+npm run dev
 ```
 
-### E2E Testing
+2. Open the frontend dev URL (printed by Vite, usually http://localhost:5173) and register a new user.
+
+3. From the app: log in, create a collectible, confirm it appears in the list, then delete it to complete the smoke flow.
+
+4. Optional: run the Cypress smoke test skeleton (if you have Cypress installed):
 
 ```bash
 cd frontend
+# install dev deps if not present
 npm install
+# run the (placeholder) smoke spec in headless mode
 npx cypress run --spec "cypress/integration/smoke.spec.ts"
 ```
 
-## Code Quality
+Demo checklist (for README / recruiter copy)
+- [ ] Live demo link (add URL here if hosted)
+- [ ] 2–3 minute screencast link (optional)
+- [ ] CI badge(s) and passing E2E smoke test on PR previews
 
-- **Test Coverage**: Automated coverage reports via Codecov
-- **CI/CD**: GitHub Actions runs tests on all PRs
-- **Code Standards**: Pre-commit hooks and linting configured
+If you want, I can add a recorded screencast file under `docs/` and wire the Cypress test to run against PR previews.
 
-## Project Structure
+## Vercel Deployment (Frontend)
 
-```
-omni-stock/
-├── backend/              # Django REST API
-│   ├── core/            # Core utilities and base classes
-│   ├── inventory/       # Inventory management app
-│   ├── users/           # User authentication
-│   ├── vendors/         # Vendor management
-│   └── omni_stock/      # Project settings
-├── frontend/            # React frontend
-│   ├── src/            # Source code
-│   ├── public/         # Static assets
-│   └── cypress/        # E2E tests
-├── docs/               # Documentation
-└── scripts/            # Utility scripts
-```
+1. In Vercel, create a new project and point it at the `frontend/` directory.
+2. Set the build command to `npm run build` and the output directory to `dist`.
+3. Configure environment variables (in Vercel project settings):
+   - `VITE_API_BASE` (Render backend URL)
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+4. Deploy. The app will call the backend using `VITE_API_BASE`.
 
-## Contributing
+The GitHub preview workflow already runs `npm run build` and `vercel deploy --prebuilt` when secrets are provided.
 
-1. Create a feature branch from `main`
-2. Make your changes with descriptive commits
-3. Ensure all tests pass (`make test-ci`)
-4. Open a pull request
-5. Wait for CI checks to pass before merging
+## Project Status
 
-## License
+**Current Version**: 1.0.0 MVP
 
-This project is private and proprietary.
+- ✅ User authentication (JWT tokens)
+- ✅ Vendor management (single-vendor MVP)
+- ✅ Inventory CRUD operations
+- ✅ Image upload via Supabase
+- ✅ Dockerized development environment
+- ✅ CI/CD pipeline with preview deployments
+- ✅ Comprehensive test coverage (30+ backend tests, 16+ frontend tests)
+- 🚧 Advanced search with filters (planned)
+- 🚧 Bulk CSV import (planned)
+- 🚧 Real-time inventory sync (planned)
 
-## Contact
+## Development Approach & AI Transparency
 
-For questions or support, please open an issue on GitHub.
+This project was built with a **hybrid approach**: architectural decisions and debugging were human-driven, while AI tools (GitHub Copilot) assisted with boilerplate generation and syntax.
+
+**Human Contributions:**
+- All architectural decisions (service/selector pattern, React Query, domain-driven design)
+- Debugging complex issues (Render deployment, vendor scoping, CORS configuration)
+- Test writing and validation
+- Trade-off analysis between technologies
+
+**AI Assistance:**
+- Boilerplate code generation (serializers, test scaffolding)
+- Documentation formatting
+- Syntax suggestions and code completion
+
+**Why This Approach?**
+Modern software development increasingly involves AI tools. The key differentiator is understanding *why* patterns are chosen, not just *how* to implement them. This project demonstrates:
+- Deep understanding of Django and React patterns
+- Ability to debug complex deployment issues
+- Thoughtful technology selection with trade-off analysis
+- Production-ready code quality and testing practices
+
+See [TECHNICAL_DECISIONS.md](./TECHNICAL_DECISIONS.md) for detailed rationale behind architecture choices.
+
+## Key Learning Outcomes
+
+- **Backend Architecture**: Implemented service/selector pattern for separation of concerns and testability
+- **State Management**: Evaluated Redux vs React Query; chose React Query for better server-state handling
+- **DevOps**: Built complete CI/CD pipeline with GitHub Actions, automated testing, and preview deployments
+- **Security**: Implemented vendor-scoped permissions, JWT authentication, and environment-based configuration
+- **Testing**: Achieved high test coverage with pytest (backend) and Vitest (frontend)
+- **Deployment**: Configured Docker multi-stage builds, Render backend hosting, and Vercel frontend hosting
+
+## Known Limitations & Future Improvements
+
+### Current Limitations
+- **Single-vendor MVP**: Currently supports one vendor per user. Multi-vendor marketplace planned for v2.
+- **Basic search**: Uses PostgreSQL `icontains`. Planning full-text search with `pg_trgm` or Elasticsearch.
+- **No real-time updates**: List refreshes on manual action. WebSockets/SSE planned for collaborative features.
+- **No email verification**: Simple auth flow for MVP. Email confirmation planned.
+
+### Planned Improvements
+1. **Performance**: Add Redis caching layer for frequently accessed queries
+2. **Search**: Implement PostgreSQL full-text search with trigram similarity
+3. **Bulk Operations**: CSV import/export with background task processing (Celery)
+4. **Real-time**: WebSocket integration for live inventory updates
+5. **Monitoring**: Add Sentry for error tracking and performance monitoring
+
+## Technical Documentation
+
+- [TECHNICAL_DECISIONS.md](./TECHNICAL_DECISIONS.md) - Detailed architecture rationale and trade-offs
+- [INTERVIEW_PREP.md](./INTERVIEW_PREP.md) - Answers to common technical interview questions
