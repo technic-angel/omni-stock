@@ -65,7 +65,25 @@ DEBUG = env.bool('DEBUG', default=True)
 if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):
     raise RuntimeError('DJANGO_SECRET_KEY must be set when DEBUG is False. Set it in your .env file.')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+# ALLOWED_HOSTS configuration
+# Supports both explicit hosts and Render preview domains
+_allowed_hosts = env.list('ALLOWED_HOSTS', default=['*'] if DEBUG else [])
+
+# Auto-detect Render.com domains (production and PR previews)
+# Render sets RENDER_EXTERNAL_HOSTNAME for the current service
+_render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if _render_host:
+    _allowed_hosts.append(_render_host)
+
+# Allow all Render preview domains (pattern: *-pr-*.onrender.com)
+_render_service = os.environ.get('RENDER_SERVICE_NAME')
+if _render_service:
+    # Add base service domain
+    _allowed_hosts.append(f'{_render_service}.onrender.com')
+    # Also allow PR preview pattern
+    _allowed_hosts.append('.onrender.com')  # Allows all *.onrender.com subdomains
+
+ALLOWED_HOSTS = list(set(_allowed_hosts))  # Remove duplicates
 
 
 # Application definition
@@ -112,11 +130,32 @@ _default_cors_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=_default_cors_origins)
-# Allow Render/Vercel HTTPS domains via env: e.g. https://my-app.onrender.com
-CORS_ALLOWED_ORIGIN_REGEXES = [r"^https?://(localhost|127\.0\.0\.1):\d+$"]
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+# Auto-add Render backend URLs to CORS allowed origins
+if _render_host:
+    _default_cors_origins.append(f'https://{_render_host}')
+if _render_service:
+    _default_cors_origins.append(f'https://{_render_service}.onrender.com')
+
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=_default_cors_origins)
+
+# Allow Render/Vercel HTTPS domains via regex patterns
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://(localhost|127\.0\.0\.1):\d+$",
+    r"^https://.*\.onrender\.com$",  # All Render domains including PR previews
+    r"^https://.*\.vercel\.app$",     # All Vercel preview deployments
+]
+
+# CSRF trusted origins - add Render domains automatically
+_csrf_origins = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+if _render_host:
+    _csrf_origins.append(f'https://{_render_host}')
+if _render_service:
+    _csrf_origins.append(f'https://{_render_service}.onrender.com')
+    # Add wildcard pattern for PR previews
+    _csrf_origins.append('https://*.onrender.com')
+
+CSRF_TRUSTED_ORIGINS = list(set(_csrf_origins))  # Remove duplicates
 
 ROOT_URLCONF = 'backend.omni_stock.urls'
 
