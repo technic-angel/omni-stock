@@ -39,9 +39,3 @@ ENV PYTHONPATH=/usr/src/app
 EXPOSE 8000
 
 CMD ["gunicorn", "backend.omni_stock.wsgi:application", "--bind", "0.0.0.0:8000"]
-
-# Port Django runs on
-EXPOSE 8000
-
-# Default command to run the server (overridden by docker-compose)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
