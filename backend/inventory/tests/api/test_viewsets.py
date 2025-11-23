@@ -71,3 +71,32 @@ def test_collectible_patch_image_url():
 
     collectible.refresh_from_db()
     assert collectible.image_url == payload["image_url"]
+
+
+@pytest.mark.django_db
+def test_collectible_delete_requires_authentication():
+    collectible = CollectibleFactory.create(sku="DEL-AUTH-1")
+    client = APIClient()
+
+    url = f"/api/v1/collectibles/{collectible.pk}/"
+    resp = client.delete(url)
+
+    assert resp.status_code == 401
+    assert Collectible.objects.filter(pk=collectible.pk).exists()
+
+
+@pytest.mark.django_db
+def test_collectible_delete_succeeds_for_vendor_user():
+    collectible = CollectibleFactory.create(sku="DEL-OWN-1")
+    user = UserFactory.create(username="del_user")
+    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    collectible.user = user
+    collectible.save()
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    url = f"/api/v1/collectibles/{collectible.pk}/"
+    resp = client.delete(url)
+    assert resp.status_code in (200, 204)
+    assert not Collectible.objects.filter(pk=collectible.pk).exists()

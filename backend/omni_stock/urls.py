@@ -49,7 +49,28 @@ def health_view(request):
     from django.http import JsonResponse
     return JsonResponse({"status": "ok"})
 
+# Root endpoint - API info and links
+def root_view(request):
+    from django.http import JsonResponse
+    return JsonResponse({
+        "message": "Omni-Stock API",
+        "version": "1.0",
+        "endpoints": {
+            "admin": "/admin/",
+            "api": "/api/v1/",
+            "health": "/health/",
+            "docs": "/api/v1/schema/",
+            "auth": {
+                "register": "/api/v1/auth/register/",
+                "token": "/api/v1/auth/token/",
+                "refresh": "/api/v1/auth/token/refresh/",
+                "verify": "/api/v1/auth/token/verify/"
+            }
+        }
+    })
+
 urlpatterns += [
+    path('', root_view, name='root'),
     path('health/', health_view, name='health'),
 ]
 

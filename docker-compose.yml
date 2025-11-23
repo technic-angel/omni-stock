@@ -27,8 +27,8 @@ services:
   # 2. Backend Service (Django)
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: backend
+      dockerfile: Dockerfile
     container_name: omni_stock_backend
     # *** FIX 2: Use sh -c wrapper for robust command execution ***
     command: sh -c "python manage.py runserver 0.0.0.0:8000"
