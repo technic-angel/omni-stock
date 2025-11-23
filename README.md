@@ -68,6 +68,14 @@ Supabase checklist:
 - Optional DELETE policy for `authenticated` to allow cleanup
 - Frontend env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
+## Preview Deploys
+
+CI includes a preview workflow (non-draft PRs):
+- Frontend: builds and, if secrets are present, runs `npx vercel deploy --prebuilt`.
+  - Required secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
+- Backend: builds Docker image as a smoke step (no automatic Render deploy).
+  - If you want Render deploys, add a step with Render API key/service trigger.
+
 ## Environment & Secrets
 
 Local development uses a `.env` file (gitignored). Copy `dev.env` to `.env` and adjust values. Never commit real secrets. In CI, secrets are provided via GitHub Actions (e.g. `CODECOV_TOKEN`).
