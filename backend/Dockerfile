@@ -19,16 +19,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory inside the container
-WORKDIR /usr/src/app/backend
+WORKDIR /usr/src/app
 
 # Copy the requirements file and install dependencies first (for layer caching)
-# The build context is the repo root, so reference the backend folder explicitly.
-COPY backend/requirements.txt /usr/src/app/backend/requirements.txt
+# The build context (when invoked from backend/) contains requirements.txt directly.
+COPY requirements.txt ./requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Copy the backend application code
-COPY backend /usr/src/app/backend
+COPY . /usr/src/app/backend
+WORKDIR /usr/src/app/backend
 
 # Port Django runs on
 EXPOSE 8000
