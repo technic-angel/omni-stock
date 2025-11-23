@@ -5,6 +5,7 @@ import AppLayout from '../layout/AppLayout'
 import ProtectedRoute from './ProtectedRoute'
 import NotFoundPage from './NotFoundPage'
 import CollectiblesListPage from '../../features/inventory/pages/CollectiblesListPage'
+import CollectibleEditPage from '../../features/inventory/pages/CollectibleEditPage'
 import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import VendorOverviewPage from '../../features/vendors/pages/VendorOverviewPage'
 import LoginPage from '../../features/auth/pages/LoginPage'
@@ -16,6 +17,14 @@ const AppRoutes = () => {
       <Route element={<AppLayout />}>
         <Route index element={<CollectiblesListPage />} />
         <Route path="/inventory" element={<CollectiblesListPage />} />
+        <Route
+          path="/inventory/:collectibleId/edit"
+          element={(
+            <ProtectedRoute>
+              <CollectibleEditPage />
+            </ProtectedRoute>
+          )}
+        />
         <Route
           path="/dashboard"
           element={(

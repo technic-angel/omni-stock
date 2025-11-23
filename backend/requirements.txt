@@ -7,3 +7,4 @@ Pillow==10.4.0
 django-admin-thumbnails==0.2.9
 django-cors-headers==4.0.0
 drf-spectacular==0.29.0
+gunicorn==23.0.0
