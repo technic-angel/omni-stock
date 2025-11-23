@@ -265,68 +265,19 @@ The GitHub preview workflow already runs `npm run build` and `vercel deploy --pr
 
 ## Project Status
 
-**Current Version**: 1.0.0 MVP
-
-- ✅ User authentication (JWT tokens)
-- ✅ Vendor management (single-vendor MVP)
+**MVP Features:**
+- ✅ User authentication & authorization
 - ✅ Inventory CRUD operations
 - ✅ Image upload via Supabase
-- ✅ Dockerized development environment
-- ✅ CI/CD pipeline with preview deployments
-- ✅ Comprehensive test coverage (30+ backend tests, 16+ frontend tests)
-- 🚧 Advanced search with filters (planned)
-- 🚧 Bulk CSV import (planned)
-- 🚧 Real-time inventory sync (planned)
+- ✅ Vendor management
+- ✅ CI/CD pipeline with automated testing
+- 🚧 Advanced search (in progress)
+- 🚧 Bulk import/export (planned)
 
-## Development Approach & AI Transparency
+## Contributing
 
-This project was built with a **hybrid approach**: architectural decisions and debugging were human-driven, while AI tools (GitHub Copilot) assisted with boilerplate generation and syntax.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-**Human Contributions:**
-- All architectural decisions (service/selector pattern, React Query, domain-driven design)
-- Debugging complex issues (Render deployment, vendor scoping, CORS configuration)
-- Test writing and validation
-- Trade-off analysis between technologies
+## License
 
-**AI Assistance:**
-- Boilerplate code generation (serializers, test scaffolding)
-- Documentation formatting
-- Syntax suggestions and code completion
-
-**Why This Approach?**
-Modern software development increasingly involves AI tools. The key differentiator is understanding *why* patterns are chosen, not just *how* to implement them. This project demonstrates:
-- Deep understanding of Django and React patterns
-- Ability to debug complex deployment issues
-- Thoughtful technology selection with trade-off analysis
-- Production-ready code quality and testing practices
-
-See [TECHNICAL_DECISIONS.md](./TECHNICAL_DECISIONS.md) for detailed rationale behind architecture choices.
-
-## Key Learning Outcomes
-
-- **Backend Architecture**: Implemented service/selector pattern for separation of concerns and testability
-- **State Management**: Evaluated Redux vs React Query; chose React Query for better server-state handling
-- **DevOps**: Built complete CI/CD pipeline with GitHub Actions, automated testing, and preview deployments
-- **Security**: Implemented vendor-scoped permissions, JWT authentication, and environment-based configuration
-- **Testing**: Achieved high test coverage with pytest (backend) and Vitest (frontend)
-- **Deployment**: Configured Docker multi-stage builds, Render backend hosting, and Vercel frontend hosting
-
-## Known Limitations & Future Improvements
-
-### Current Limitations
-- **Single-vendor MVP**: Currently supports one vendor per user. Multi-vendor marketplace planned for v2.
-- **Basic search**: Uses PostgreSQL `icontains`. Planning full-text search with `pg_trgm` or Elasticsearch.
-- **No real-time updates**: List refreshes on manual action. WebSockets/SSE planned for collaborative features.
-- **No email verification**: Simple auth flow for MVP. Email confirmation planned.
-
-### Planned Improvements
-1. **Performance**: Add Redis caching layer for frequently accessed queries
-2. **Search**: Implement PostgreSQL full-text search with trigram similarity
-3. **Bulk Operations**: CSV import/export with background task processing (Celery)
-4. **Real-time**: WebSocket integration for live inventory updates
-5. **Monitoring**: Add Sentry for error tracking and performance monitoring
-
-## Technical Documentation
-
-- [TECHNICAL_DECISIONS.md](./TECHNICAL_DECISIONS.md) - Detailed architecture rationale and trade-offs
-- [INTERVIEW_PREP.md](./INTERVIEW_PREP.md) - Answers to common technical interview questions
+This project is private and proprietary.
