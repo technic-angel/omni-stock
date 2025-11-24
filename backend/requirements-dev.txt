@@ -4,4 +4,5 @@ pytest-cov
 factory-boy
 drf-spectacular
 codecov
+faker
 
