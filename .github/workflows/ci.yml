@@ -81,6 +81,12 @@ jobs:
       - name: Normalize generated schema
         run: |
           # Normalize the generated schema to remove volatile fields before comparison
+          if [ ! -f scripts/normalize_openapi.py ]; then
+            echo "ERROR: scripts/normalize_openapi.py not found!" >&2
+            echo "This script is required for OpenAPI schema validation." >&2
+            echo "Please ensure it is committed to the repository." >&2
+            exit 1
+          fi
           python3 scripts/normalize_openapi.py generated_schema.json generated_schema.json
 
       - name: Check for schema drift
