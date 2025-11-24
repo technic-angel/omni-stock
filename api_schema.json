@@ -1,1070 +1,1099 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "",
-        "version": "0.0.0"
+  "components": {
+    "schemas": {
+      "CardDetails": {
+        "description": "Serializer for the CardDetails nested object.",
+        "properties": {
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string"
+          },
+          "external_ids": {
+            "description": "JSON string of external IDs (portable across DBs)",
+            "nullable": true,
+            "type": "string"
+          },
+          "language": {
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_estimated_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "market_region": {
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "notes": {
+            "description": "Internal notes about the card",
+            "nullable": true,
+            "type": "string"
+          },
+          "print_run": {
+            "description": "Optional print run or edition info.",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "psa_grade": {
+            "description": "Numeric grade, e.g. 8.5 or 10.0",
+            "format": "decimal",
+            "nullable": true,
+            "pattern": "^-?\\d{0,2}(?:\\.\\d{0,1})?$",
+            "type": "string"
+          },
+          "release_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Collectible": {
+        "description": "Serializer for the Collectible model with nested card details support.",
+        "properties": {
+          "card_details": {
+            "$ref": "#/components/schemas/CardDetails"
+          },
+          "category": {
+            "description": "High-level category (e.g., TCG, Video Games, Collectibles).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "image_url": {
+            "description": "Public image URL stored in Supabase.",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "intake_price": {
+            "description": "The price paid for the item (cost basis).",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "name": {
+            "description": "The common name of the collectible item.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "price": {
+            "description": "The current market value or selling price.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "projected_price": {
+            "description": "The projected price based on market trends.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Current number of units in stock.",
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "type": "integer"
+          },
+          "sku": {
+            "description": "Stock Keeping Unit (Unique Identifier).",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "user": {
+            "description": "The user/vendor who owns this inventory item.",
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "vendor": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "name",
+          "sku",
+          "updated_at",
+          "user",
+          "vendor"
+        ],
+        "type": "object"
+      },
+      "PatchedCollectible": {
+        "description": "Serializer for the Collectible model with nested card details support.",
+        "properties": {
+          "card_details": {
+            "$ref": "#/components/schemas/CardDetails"
+          },
+          "category": {
+            "description": "High-level category (e.g., TCG, Video Games, Collectibles).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "image_url": {
+            "description": "Public image URL stored in Supabase.",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "intake_price": {
+            "description": "The price paid for the item (cost basis).",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "name": {
+            "description": "The common name of the collectible item.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "price": {
+            "description": "The current market value or selling price.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "projected_price": {
+            "description": "The projected price based on market trends.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Current number of units in stock.",
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": -9223372036854775808,
+            "type": "integer"
+          },
+          "sku": {
+            "description": "Stock Keeping Unit (Unique Identifier).",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "user": {
+            "description": "The user/vendor who owns this inventory item.",
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "vendor": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedVendor": {
+        "description": "Serializer for vendor CRUD.",
+        "properties": {
+          "contact_info": {
+            "description": "Free-form contact metadata (JSON string ok).",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Register": {
+        "description": "Serializer for user registration.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "username": {
+            "maxLength": 150,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "TokenObtainPair": {
+        "properties": {
+          "access": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "refresh": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "username": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "access",
+          "password",
+          "refresh",
+          "username"
+        ],
+        "type": "object"
+      },
+      "TokenRefresh": {
+        "properties": {
+          "access": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "refresh"
+        ],
+        "type": "object"
+      },
+      "TokenVerify": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "Vendor": {
+        "description": "Serializer for vendor CRUD.",
+        "properties": {
+          "contact_info": {
+            "description": "Free-form contact metadata (JSON string ok).",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "name",
+          "slug",
+          "updated_at"
+        ],
+        "type": "object"
+      }
     },
-    "paths": {
-        "/api/v1/auth/register/": {
-            "post": {
-                "operationId": "auth_register_create",
-                "description": "Public endpoint for registering a new user account.",
-                "tags": [
-                    "auth"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Register"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Register"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Register"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    },
-                    {}
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Register"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/token/": {
-            "post": {
-                "operationId": "auth_token_create",
-                "description": "Takes a set of user credentials and returns an access and refresh JSON web\ntoken pair to prove the authentication of those credentials.",
-                "tags": [
-                    "auth"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenObtainPair"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenObtainPair"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenObtainPair"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TokenObtainPair"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/token/refresh/": {
-            "post": {
-                "operationId": "auth_token_refresh_create",
-                "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
-                "tags": [
-                    "auth"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenRefresh"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenRefresh"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenRefresh"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TokenRefresh"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/token/verify/": {
-            "post": {
-                "operationId": "auth_token_verify_create",
-                "description": "Takes a token and indicates if it is valid.  This view provides no\ninformation about a token's fitness for a particular use.",
-                "tags": [
-                    "auth"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenVerify"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenVerify"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/TokenVerify"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/TokenVerify"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/collectibles/": {
-            "get": {
-                "operationId": "collectibles_list",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "tags": [
-                    "collectibles"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Collectible"
-                                    }
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "post": {
-                "operationId": "collectibles_create",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "tags": [
-                    "collectibles"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Collectible"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/collectibles/{id}/": {
-            "get": {
-                "operationId": "collectibles_retrieve",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Collectible Item.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "collectibles"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Collectible"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "put": {
-                "operationId": "collectibles_update",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Collectible Item.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "collectibles"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Collectible"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Collectible"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "patch": {
-                "operationId": "collectibles_partial_update",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Collectible Item.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "collectibles"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedCollectible"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedCollectible"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedCollectible"
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Collectible"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "delete": {
-                "operationId": "collectibles_destroy",
-                "description": "Inventory CRUD viewset with vendor scoping rules.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Collectible Item.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "collectibles"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No response body"
-                    }
-                }
-            }
-        },
-        "/api/v1/vendors/": {
-            "get": {
-                "operationId": "vendors_list",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "tags": [
-                    "vendors"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Vendor"
-                                    }
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "post": {
-                "operationId": "vendors_create",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "tags": [
-                    "vendors"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Vendor"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
-        },
-        "/api/v1/vendors/{id}/": {
-            "get": {
-                "operationId": "vendors_retrieve",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Vendor.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "vendors"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Vendor"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "put": {
-                "operationId": "vendors_update",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Vendor.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "vendors"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vendor"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Vendor"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "patch": {
-                "operationId": "vendors_partial_update",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Vendor.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "vendors"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedVendor"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedVendor"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/PatchedVendor"
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Vendor"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            },
-            "delete": {
-                "operationId": "vendors_destroy",
-                "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
-                "parameters": [
-                    {
-                        "in": "path",
-                        "name": "id",
-                        "schema": {
-                            "type": "integer"
-                        },
-                        "description": "A unique integer value identifying this Vendor.",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "vendors"
-                ],
-                "security": [
-                    {
-                        "jwtAuth": []
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No response body"
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "CardDetails": {
-                "type": "object",
-                "description": "Serializer for the CardDetails nested object.",
-                "properties": {
-                    "psa_grade": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,2}(?:\\.\\d{0,1})?$",
-                        "nullable": true,
-                        "description": "Numeric grade, e.g. 8.5 or 10.0"
-                    },
-                    "condition": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Human-readable condition (e.g., Mint, Near Mint).",
-                        "maxLength": 50
-                    },
-                    "external_ids": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "JSON string of external IDs (portable across DBs)"
-                    },
-                    "last_estimated_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "language": {
-                        "type": "string",
-                        "nullable": true,
-                        "maxLength": 50
-                    },
-                    "release_date": {
-                        "type": "string",
-                        "format": "date",
-                        "nullable": true
-                    },
-                    "print_run": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Optional print run or edition info.",
-                        "maxLength": 100
-                    },
-                    "market_region": {
-                        "type": "string",
-                        "nullable": true,
-                        "maxLength": 100
-                    },
-                    "notes": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Internal notes about the card"
-                    }
-                }
-            },
-            "Collectible": {
-                "type": "object",
-                "description": "Serializer for the Collectible model with nested card details support.",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "card_details": {
-                        "$ref": "#/components/schemas/CardDetails"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The common name of the collectible item.",
-                        "maxLength": 255
-                    },
-                    "sku": {
-                        "type": "string",
-                        "description": "Stock Keeping Unit (Unique Identifier).",
-                        "maxLength": 50
-                    },
-                    "location": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Physical location (e.g., 'Binder 3', 'Shelf A')",
-                        "maxLength": 100
-                    },
-                    "image_url": {
-                        "type": "string",
-                        "format": "uri",
-                        "nullable": true,
-                        "description": "Public image URL stored in Supabase.",
-                        "maxLength": 200
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
-                        "description": "Current number of units in stock."
-                    },
-                    "last_updated": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    },
-                    "intake_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The price paid for the item (cost basis)."
-                    },
-                    "current_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The current market value or selling price."
-                    },
-                    "projected_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The projected price based on market trends."
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "user": {
-                        "type": "integer",
-                        "nullable": true,
-                        "description": "The user/vendor who owns this inventory item."
-                    },
-                    "vendor": {
-                        "type": "integer",
-                        "nullable": true
-                    }
-                },
-                "required": [
-                    "id",
-                    "last_updated",
-                    "name",
-                    "sku"
-                ]
-            },
-            "PatchedCollectible": {
-                "type": "object",
-                "description": "Serializer for the Collectible model with nested card details support.",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "card_details": {
-                        "$ref": "#/components/schemas/CardDetails"
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The common name of the collectible item.",
-                        "maxLength": 255
-                    },
-                    "sku": {
-                        "type": "string",
-                        "description": "Stock Keeping Unit (Unique Identifier).",
-                        "maxLength": 50
-                    },
-                    "location": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Physical location (e.g., 'Binder 3', 'Shelf A')",
-                        "maxLength": 100
-                    },
-                    "image_url": {
-                        "type": "string",
-                        "format": "uri",
-                        "nullable": true,
-                        "description": "Public image URL stored in Supabase.",
-                        "maxLength": 200
-                    },
-                    "quantity": {
-                        "type": "integer",
-                        "maximum": 9223372036854775807,
-                        "minimum": -9223372036854775808,
-                        "format": "int64",
-                        "description": "Current number of units in stock."
-                    },
-                    "last_updated": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    },
-                    "intake_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The price paid for the item (cost basis)."
-                    },
-                    "current_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The current market value or selling price."
-                    },
-                    "projected_price": {
-                        "type": "string",
-                        "format": "decimal",
-                        "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
-                        "description": "The projected price based on market trends."
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "user": {
-                        "type": "integer",
-                        "nullable": true,
-                        "description": "The user/vendor who owns this inventory item."
-                    },
-                    "vendor": {
-                        "type": "integer",
-                        "nullable": true
-                    }
-                }
-            },
-            "PatchedVendor": {
-                "type": "object",
-                "description": "Serializer for vendor CRUD.",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 200
-                    },
-                    "slug": {
-                        "type": "string",
-                        "readOnly": true,
-                        "pattern": "^[-a-zA-Z0-9_]+$"
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "contact_info": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Free-form contact metadata (JSON string ok)."
-                    },
-                    "is_active": {
-                        "type": "boolean"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    }
-                }
-            },
-            "Register": {
-                "type": "object",
-                "description": "Serializer for user registration.",
-                "properties": {
-                    "username": {
-                        "type": "string",
-                        "maxLength": 150
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "password": {
-                        "type": "string",
-                        "writeOnly": true,
-                        "minLength": 8
-                    }
-                },
-                "required": [
-                    "password",
-                    "username"
-                ]
-            },
-            "TokenObtainPair": {
-                "type": "object",
-                "properties": {
-                    "username": {
-                        "type": "string",
-                        "writeOnly": true
-                    },
-                    "password": {
-                        "type": "string",
-                        "writeOnly": true
-                    },
-                    "access": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "refresh": {
-                        "type": "string",
-                        "readOnly": true
-                    }
-                },
-                "required": [
-                    "access",
-                    "password",
-                    "refresh",
-                    "username"
-                ]
-            },
-            "TokenRefresh": {
-                "type": "object",
-                "properties": {
-                    "access": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "refresh": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "access",
-                    "refresh"
-                ]
-            },
-            "TokenVerify": {
-                "type": "object",
-                "properties": {
-                    "token": {
-                        "type": "string",
-                        "writeOnly": true
-                    }
-                },
-                "required": [
-                    "token"
-                ]
-            },
-            "Vendor": {
-                "type": "object",
-                "description": "Serializer for vendor CRUD.",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "name": {
-                        "type": "string",
-                        "maxLength": 200
-                    },
-                    "slug": {
-                        "type": "string",
-                        "readOnly": true,
-                        "pattern": "^[-a-zA-Z0-9_]+$"
-                    },
-                    "description": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "contact_info": {
-                        "type": "string",
-                        "nullable": true,
-                        "description": "Free-form contact metadata (JSON string ok)."
-                    },
-                    "is_active": {
-                        "type": "boolean"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    }
-                },
-                "required": [
-                    "created_at",
-                    "id",
-                    "name",
-                    "slug",
-                    "updated_at"
-                ]
-            }
-        },
-        "securitySchemes": {
-            "jwtAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
-            }
-        }
+    "securitySchemes": {
+      "jwtAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
+  },
+  "info": {
+    "title": ""
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/v1/auth/register/": {
+      "post": {
+        "description": "Public endpoint for registering a new user account.",
+        "operationId": "auth_register_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/": {
+      "post": {
+        "description": "Takes a set of user credentials and returns an access and refresh JSON web\ntoken pair to prove the authentication of those credentials.",
+        "operationId": "auth_token_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenObtainPair"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/refresh/": {
+      "post": {
+        "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
+        "operationId": "auth_token_refresh_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRefresh"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/verify/": {
+      "post": {
+        "description": "Takes a token and indicates if it is valid.  This view provides no\ninformation about a token's fitness for a particular use.",
+        "operationId": "auth_token_verify_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenVerify"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/collectibles/": {
+      "get": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Collectible"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      },
+      "post": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collectible"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      }
+    },
+    "/api/v1/collectibles/{id}/": {
+      "delete": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Collectible Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      },
+      "get": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Collectible Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collectible"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      },
+      "patch": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Collectible Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCollectible"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCollectible"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCollectible"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collectible"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      },
+      "put": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "collectibles_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Collectible Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Collectible"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collectible"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "collectibles"
+        ]
+      }
+    },
+    "/api/v1/vendors/": {
+      "get": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Vendor"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "post": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/{id}/": {
+      "delete": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "get": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "patch": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "put": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      }
+    }
+  }
 }

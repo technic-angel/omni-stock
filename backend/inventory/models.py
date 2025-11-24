@@ -29,22 +29,28 @@ class Collectible(models.Model):
         unique=True,
         help_text="Stock Keeping Unit (Unique Identifier).",
     )
-    location = models.CharField(
+    description = models.TextField(blank=True, null=True)
+    condition = models.CharField(
         max_length=100,
         blank=True,
         null=True,
-        help_text="Physical location (e.g., 'Binder 3', 'Shelf A')",
+        help_text="Human-readable condition (e.g., Mint, Near Mint).",
+    )
+    category = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="High-level category (e.g., TCG, Video Games, Collectibles).",
     )
     image_url = models.URLField(blank=True, null=True, help_text="Public image URL stored in Supabase.")
     quantity = models.IntegerField(default=0, help_text="Current number of units in stock.")
-    last_updated = models.DateTimeField(auto_now=True)
     intake_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0.00,
         help_text="The price paid for the item (cost basis).",
     )
-    current_price = models.DecimalField(
+    price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0.00,
@@ -56,7 +62,8 @@ class Collectible(models.Model):
         default=0.00,
         help_text="The projected price based on market trends.",
     )
-    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Collectible Item"

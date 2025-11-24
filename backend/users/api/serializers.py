@@ -16,13 +16,17 @@ class RegisterSerializer(serializers.Serializer):
         max_length=150,
         validators=[UniqueValidator(queryset=User.objects.all(), message="A user with that username already exists.")],
     )
-    email = serializers.EmailField(required=False, allow_blank=True)
+    email = serializers.EmailField(
+        required=True,
+        allow_blank=False,
+        validators=[UniqueValidator(queryset=User.objects.all(), message="A user with that email already exists.")],
+    )
     password = serializers.CharField(write_only=True, min_length=8)
 
     def create(self, validated_data):
         return create_user(
             username=validated_data.get("username"),
-            email=validated_data.get("email", ""),
+            email=validated_data["email"],
             password=validated_data.get("password"),
         )
 
