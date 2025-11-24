@@ -160,7 +160,21 @@ if _render_service:
 
 CSRF_TRUSTED_ORIGINS = list(set(_csrf_origins))  # Remove duplicates
 
-FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
+# Smart FRONTEND_URL configuration
+# Try to auto-detect from CORS_ALLOWED_ORIGINS if not explicitly set
+_frontend_url_env = env('FRONTEND_URL', default=None)
+if _frontend_url_env:
+    FRONTEND_URL = _frontend_url_env
+else:
+    # Auto-detect from CORS_ALLOWED_ORIGINS (prefer Vercel over localhost)
+    _detected_frontend = None
+    for origin in CORS_ALLOWED_ORIGINS:
+        if 'vercel.app' in origin and origin.startswith('https://'):
+            _detected_frontend = origin
+            break
+        elif 'onrender.com' in origin and 'backend' not in origin and origin.startswith('https://'):
+            _detected_frontend = origin
+    FRONTEND_URL = _detected_frontend or 'http://localhost:5173'
 
 def _extract_origin(url: str | None) -> str | None:
     if not url:
