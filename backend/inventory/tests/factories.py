@@ -1,4 +1,5 @@
 import factory
+from decimal import Decimal
 from django.contrib.auth import get_user_model
 
 from backend.inventory.models import CardDetails, Collectible
@@ -30,6 +31,11 @@ class CollectibleFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Card {n}")
     sku = factory.Sequence(lambda n: f"SKU-{n:03d}")
     quantity = 1
+    category = "Cards"
+    condition = "Near Mint"
+    intake_price = Decimal("5.00")
+    price = Decimal("10.00")
+    projected_price = Decimal("12.00")
     vendor = factory.SubFactory(VendorFactory)
 
 

@@ -9,10 +9,13 @@ node_modules/
 
 # Build output
 /dist/
-Environments
 
- .env
- dev.env
+# Environment files (never commit secrets)
+.env
+.env.*
+dev.env
+frontend/.env
+frontend/.env.*
 
 Dependencies
 

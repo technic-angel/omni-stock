@@ -1,9 +1,21 @@
 """User domain models."""
 
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from backend.vendors.models import Vendor
+
+
+class User(AbstractUser):
+    """Custom user model with unique email requirement."""
+
+    email = models.EmailField("email address", unique=True)
+
+    def __str__(self) -> str:
+        if self.username:
+            return self.username
+        return self.email
 
 
 class UserProfile(models.Model):
@@ -39,3 +51,6 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile for {self.user.username}"
+
+
+__all__ = ["User", "UserProfile"]

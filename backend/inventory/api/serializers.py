@@ -32,8 +32,51 @@ class CollectibleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Collectible
-        fields = '__all__'
-        read_only_fields = ('last_updated',)
+        fields = [
+            'id',
+            'user',
+            'vendor',
+            'name',
+            'sku',
+            'description',
+            'condition',
+            'category',
+            'image_url',
+            'quantity',
+            'intake_price',
+            'price',
+            'projected_price',
+            'card_details',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = (
+            'id',
+            'user',
+            'vendor',
+            'created_at',
+            'updated_at',
+        )
+
+    def validate_quantity(self, value: int) -> int:
+        if value < 0:
+            raise serializers.ValidationError("Quantity cannot be negative.")
+        return value
+
+    def validate_intake_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Intake price cannot be negative.")
+        return value
+
+    def validate_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Price cannot be negative.")
+        return value
+
+    def validate_projected_price(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Projected price cannot be negative.")
+        return value
 
     def create(self, validated_data):
         card_details_data = validated_data.pop('card_details', None)
