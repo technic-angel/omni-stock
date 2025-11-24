@@ -58,15 +58,14 @@ def root_view(request):
     accept_header = request.META.get('HTTP_ACCEPT', '')
     
     if 'text/html' in accept_header:
-        # Redirect browsers to configured frontend URL (defaults to local Vite dev server)
-        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
-        return redirect(frontend_url)
+        # Redirect browsers to configured frontend URL (set via FRONTEND_URL env var)
+        return redirect(settings.FRONTEND_URL)
     
     # API clients get JSON response
     return JsonResponse({
         "message": "Omni-Stock API",
         "version": "1.0",
-        "frontend_url": getattr(settings, 'FRONTEND_URL', 'http://localhost:5173'),  # Update via env var
+        "frontend_url": settings.FRONTEND_URL,
         "endpoints": {
             "admin": "/admin/",
             "api": "/api/v1/",
