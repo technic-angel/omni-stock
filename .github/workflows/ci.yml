@@ -78,6 +78,11 @@ jobs:
           # expects it.
           python manage.py spectacular --format openapi-json > ../generated_schema.json
 
+      - name: Normalize generated schema
+        run: |
+          # Normalize the generated schema to remove volatile fields before comparison
+          python3 scripts/normalize_openapi.py generated_schema.json generated_schema.json
+
       - name: Check for schema drift
         run: |
           set -e
