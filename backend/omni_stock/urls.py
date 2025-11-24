@@ -52,9 +52,22 @@ def health_view(request):
 # Root endpoint - API info and links
 def root_view(request):
     from django.http import JsonResponse
+    from django.shortcuts import redirect
+    
+    # Check if request is from a browser (looks for text/html in Accept header)
+    accept_header = request.META.get('HTTP_ACCEPT', '')
+    
+    if 'text/html' in accept_header:
+        # Redirect browsers to frontend
+        # TODO: Update this URL when frontend is deployed to Vercel
+        frontend_url = 'http://localhost:5173'  # Vite dev server default
+        return redirect(frontend_url)
+    
+    # API clients get JSON response
     return JsonResponse({
         "message": "Omni-Stock API",
         "version": "1.0",
+        "frontend_url": "http://localhost:5173",  # Update with production URL
         "endpoints": {
             "admin": "/admin/",
             "api": "/api/v1/",

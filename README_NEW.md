@@ -27,9 +27,7 @@ A modern, full-stack inventory management system for collectibles. Built with Dj
 **Frontend**
 - React 18 + TypeScript
 - Vite 7.x build tool
-- TailwindCSS + shadcn/ui components
-- React Query for server state
-- React Hook Form + Zod validation
+- TailwindCSS for styling
 - Cypress for E2E testing
 
 **Infrastructure**
@@ -179,105 +177,113 @@ VITE_SUPABASE_URL=https://<your-project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-## Render Deployment (Backend)
+## Deployment
 
-The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
+### Backend (Render)
 
-1. In Render, create a new **Web Service**. If you leave the root directory blank, Render will use the repo-level `Dockerfile` (which already proxies into `backend/`). Alternatively, set the root to `backend/` explicitly.
-2. Set build command to `docker build -t omni-stock-backend .` (Render will infer from Dockerfile).
-3. Expose port `8000`.
-4. Add environment variables:
-   - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
-   - `DJANGO_SECRET_KEY` (strong random value)
-   - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
-   - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
-   - `POSTGRES_SSL_MODE=require` (Supabase/Postgres typically needs SSL)
-   - Any Supabase envs needed by future tasks
-5. Render will call `/health/` to verify the service; the endpoint returns `{"status":"ok"}`.
+1. **Create a Web Service** in Render
+2. **Configure Build Settings**:
+   - Root Directory: `backend`
+   - Build Command: `./build.sh`
+   - Start Command: `gunicorn omni_stock.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
+3. **Set Environment Variables**:
+   ```bash
+   DJANGO_SECRET_KEY=<generate-secure-key>
+   DEBUG=False
+   POSTGRES_DB=<your-db-name>
+   POSTGRES_USER=<your-db-user>
+   POSTGRES_PASSWORD=<your-db-password>
+   POSTGRES_HOST=<your-db-host>
+   POSTGRES_PORT=5432
+   POSTGRES_SSL_MODE=require
+   ```
+4. **Auto-Configuration**: The app automatically detects Render deployment and configures:
+   - `ALLOWED_HOSTS` with `.onrender.com` wildcard
+   - CORS settings for `*.onrender.com` and `*.vercel.app` domains
+   - CSRF trusted origins
 
-Static files are collected into `backend/staticfiles` (via `STATIC_ROOT`), and Gunicorn serves the WSGI app per Render’s requirements.
+The `/health/` endpoint is used for health checks and returns `{"status":"ok"}`.
 
-## Environment & Secrets
+### Frontend (Vercel)
 
-Local development uses a `.env` file (gitignored). Copy `dev.env` to `.env` and adjust values. Never commit real secrets. In CI, secrets are provided via GitHub Actions (e.g. `CODECOV_TOKEN`).
+1. **Create a New Project** in Vercel
+2. **Configure Build Settings**:
+   - Root Directory: `frontend`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+3. **Set Environment Variables**:
+   ```bash
+   VITE_API_BASE=https://your-backend.onrender.com
+   VITE_SUPABASE_URL=https://<your-project>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<your-anon-key>
+   ```
 
-`DJANGO_SECRET_KEY` must be set when `DEBUG=False` (the app will raise on start if missing in non-debug mode). For local dev you may use the placeholder.
+### Preview Deployments
 
-## Coverage & Code Quality
+Pull requests automatically trigger preview deployments:
+- **Frontend**: Deploys to Vercel (requires `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets)
+- **Backend**: Deploys to Render for non-draft PRs
 
-Coverage is uploaded to Codecov when `CODECOV_TOKEN` is present. The CI workflow enforces a minimum threshold and comments on pull requests with the current percentage.
+## Testing
 
-## Next Steps
-
-See `docs/project-roadmap.md` and runbooks under `docs/runbooks/` for operational guidance (e.g. index creation with `CONCURRENTLY`).
-
-## Repository Rules
-
-- **Agent/Automation rules**: Automation and contributors must follow the repository agent rules in `docs/project-roadmap.md` "Agent Execution Rules": explain before edits, create a branch per feature, update the todo list, avoid committing secrets, run tests before committing, and include an identifying line in automated commits.
-- **Merge protection rule**: Do not merge pull requests into `main` until all CI checks pass. Every PR must show green check runs in GitHub Actions before merging to `main`.
-
-## Try the demo (5 minutes)
-
-If you want to quickly run the app and exercise the core demo flow (register → login → create → delete), follow these steps. This is intentionally minimal — if you prefer a hosted demo link, add it here.
-
-1. Start the development stack (backend + db + frontend dev server):
+### Local Testing
 
 ```bash
-# from repo root
-make dev-up
-cd frontend
-npm install
-npm run dev
+# Run all tests with coverage
+make test-ci
+
+# Run specific test file
+TEST=backend/inventory/tests/api/test_card_details_api.py make test-docker
+
+# Run tests in dev container
+make dev-shell
+pytest backend/inventory/tests/
 ```
 
-2. Open the frontend dev URL (printed by Vite, usually http://localhost:5173) and register a new user.
-
-3. From the app: log in, create a collectible, confirm it appears in the list, then delete it to complete the smoke flow.
-
-4. Optional: run the Cypress smoke test skeleton (if you have Cypress installed):
+### E2E Testing
 
 ```bash
 cd frontend
-# install dev deps if not present
 npm install
-# run the (placeholder) smoke spec in headless mode
 npx cypress run --spec "cypress/integration/smoke.spec.ts"
 ```
 
-Demo checklist (for README / recruiter copy)
-- [ ] Live demo link (add URL here if hosted)
-- [ ] 2–3 minute screencast link (optional)
-- [ ] CI badge(s) and passing E2E smoke test on PR previews
+## Code Quality
 
-If you want, I can add a recorded screencast file under `docs/` and wire the Cypress test to run against PR previews.
+- **Test Coverage**: Automated coverage reports via Codecov
+- **CI/CD**: GitHub Actions runs tests on all PRs
+- **Code Standards**: Pre-commit hooks and linting configured
 
-## Vercel Deployment (Frontend)
+## Project Structure
 
-1. In Vercel, create a new project and point it at the `frontend/` directory.
-2. Set the build command to `npm run build` and the output directory to `dist`.
-3. Configure environment variables (in Vercel project settings):
-   - `VITE_API_BASE` (Render backend URL)
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-4. Deploy. The app will call the backend using `VITE_API_BASE`.
-
-The GitHub preview workflow already runs `npm run build` and `vercel deploy --prebuilt` when secrets are provided.
-
-## Project Status
-
-**MVP Features:**
-- ✅ User authentication & authorization
-- ✅ Inventory CRUD operations
-- ✅ Image upload via Supabase
-- ✅ Vendor management
-- ✅ CI/CD pipeline with automated testing
-- 🚧 Advanced search (in progress)
-- 🚧 Bulk import/export (planned)
+```
+omni-stock/
+├── backend/              # Django REST API
+│   ├── core/            # Core utilities and base classes
+│   ├── inventory/       # Inventory management app
+│   ├── users/           # User authentication
+│   ├── vendors/         # Vendor management
+│   └── omni_stock/      # Project settings
+├── frontend/            # React frontend
+│   ├── src/            # Source code
+│   ├── public/         # Static assets
+│   └── cypress/        # E2E tests
+├── docs/               # Documentation
+└── scripts/            # Utility scripts
+```
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+1. Create a feature branch from `main`
+2. Make your changes with descriptive commits
+3. Ensure all tests pass (`make test-ci`)
+4. Open a pull request
+5. Wait for CI checks to pass before merging
 
 ## License
 
 This project is private and proprietary.
+
+## Contact
+
+For questions or support, please open an issue on GitHub.

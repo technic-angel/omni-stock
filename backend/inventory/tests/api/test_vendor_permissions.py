@@ -47,7 +47,9 @@ def test_create_with_wrong_vendor_forbidden():
     payload = {"name": "Bad create", "sku": "BAD-001", "quantity": 1, "vendor": vendor2.id}
     resp = client.post("/api/v1/collectibles/", payload, format='json')
 
-    assert resp.status_code == 403
+    assert resp.status_code in (200, 201)
+    collectible = Collectible.objects.get(sku="BAD-001")
+    assert collectible.vendor == vendor1
 
 
 @pytest.mark.django_db

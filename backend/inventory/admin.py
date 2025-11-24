@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from backend.inventory.models import CardDetails, Collectible
-import admin_thumbnails
 
 
 class CardDetailsInline(admin.StackedInline):
@@ -11,32 +10,31 @@ class CardDetailsInline(admin.StackedInline):
     extra = 0
 
 
-@admin_thumbnails.thumbnail('image')
 class CollectibleAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'sku',
-        'image_thumbnail',
         'quantity',
-        'current_price',
-        'user',
-        'last_updated',
+        'price',
+        'vendor',
+        'updated_at',
     )
-    search_fields = ('name', 'sku', 'description', 'location')
-    list_filter = ('user', 'location', 'last_updated')
+    search_fields = ('name', 'sku', 'description', 'category', 'condition')
+    list_filter = ('vendor', 'category', 'condition')
     fieldsets = (
-        ('Owner & Identification', {'fields': ('user', 'name', 'sku')}),
-        ('Inventory & Location', {'fields': ('location', 'quantity', 'image')}),
+        ('Owner & Identification', {'fields': ('user', 'vendor', 'name', 'sku')}),
+        ('Inventory & Presentation', {'fields': ('quantity', 'image_url', 'category', 'condition')}),
         (
             'Pricing & Financials',
             {
-                'fields': ('intake_price', 'current_price', 'projected_price'),
+                'fields': ('intake_price', 'price', 'projected_price'),
                 'classes': ('collapse',),
             },
         ),
         ('Details', {'fields': ('description',), 'classes': ('collapse',)}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
     )
-    readonly_fields = ('last_updated', 'image_thumbnail')
+    readonly_fields = ('created_at', 'updated_at')
     inlines = (CardDetailsInline,)
 
     def save_model(self, request, obj, form, change):

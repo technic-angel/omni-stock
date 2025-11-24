@@ -32,9 +32,18 @@ def test_registration_creates_userprofile():
 
 @pytest.mark.django_db
 def test_register_duplicate_username():
-    User.objects.create_user(username="dupuser", password="hunter2")
+    User.objects.create_user(username="dupuser", password="hunter2", email="dup@example.com")
     client = APIClient()
-    payload = {"username": "dupuser", "password": "anotherpass123"}
+    payload = {"username": "dupuser", "password": "anotherpass123", "email": "unique@example.com"}
+    resp = client.post("/api/v1/auth/register/", payload, format="json")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_register_duplicate_email():
+    User.objects.create_user(username="dupemail", password="hunter2", email="dup@example.com")
+    client = APIClient()
+    payload = {"username": "anotheruser", "password": "anotherpass123", "email": "dup@example.com"}
     resp = client.post("/api/v1/auth/register/", payload, format="json")
     assert resp.status_code == 400
 
@@ -42,7 +51,15 @@ def test_register_duplicate_username():
 @pytest.mark.django_db
 def test_register_weak_password_rejected():
     client = APIClient()
-    payload = {"username": "weak", "password": "short"}
+    payload = {"username": "weak", "password": "short", "email": "weak@example.com"}
+    resp = client.post("/api/v1/auth/register/", payload, format="json")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_register_missing_email_rejected():
+    client = APIClient()
+    payload = {"username": "noemail", "password": "Validpass123"}
     resp = client.post("/api/v1/auth/register/", payload, format="json")
     assert resp.status_code == 400
 

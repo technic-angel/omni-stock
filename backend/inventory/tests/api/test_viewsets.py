@@ -74,6 +74,43 @@ def test_collectible_patch_image_url():
 
 
 @pytest.mark.django_db
+def test_collectible_create_accepts_pricing_fields():
+    client = APIClient()
+    user = UserFactory.create(username="pricing_user")
+    UserProfile.objects.create(user=user)
+    client.force_authenticate(user=user)
+
+    payload = {
+        "name": "Pricing Item",
+        "sku": "PRICE-001",
+        "quantity": 10,
+        "category": "Video Games",
+        "condition": "Lightly Used",
+        "intake_price": "12.50",
+        "price": "25.00",
+        "projected_price": "30.00",
+    }
+    resp = client.post("/api/v1/collectibles/", payload, format="json")
+    assert resp.status_code in (200, 201)
+    body = resp.json()
+    assert body["category"] == "Video Games"
+    assert body["condition"] == "Lightly Used"
+    assert body["price"] == "25.00"
+
+
+@pytest.mark.django_db
+def test_collectible_create_rejects_negative_quantity():
+    client = APIClient()
+    user = UserFactory.create(username="neg_quantity")
+    UserProfile.objects.create(user=user)
+    client.force_authenticate(user=user)
+
+    payload = {"name": "Bad quantity", "sku": "NEG-002", "quantity": -1}
+    resp = client.post("/api/v1/collectibles/", payload, format="json")
+    assert resp.status_code == 400
+
+
+@pytest.mark.django_db
 def test_collectible_delete_requires_authentication():
     collectible = CollectibleFactory.create(sku="DEL-AUTH-1")
     client = APIClient()

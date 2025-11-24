@@ -109,6 +109,8 @@ INSTALLED_APPS = [
     'backend.inventory.apps.InventoryConfig',
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
 MIDDLEWARE = [
     # CORS middleware should be placed as high as possible
     'corsheaders.middleware.CorsMiddleware',

@@ -9,10 +9,13 @@ node_modules/
 
 # Build output
 /dist/
-Environments
 
- .env
- dev.env
+# Environment files (never commit secrets)
+.env
+.env.*
+dev.env
+frontend/.env
+frontend/.env.*
 
 Dependencies
 
@@ -41,6 +44,9 @@ docs/local-master-plan.md
 docs/local/**
 # Ignore all docs in working tree (keep local only)
 docs/
+
+# Internal documentation and agent instructions
+documents/
 
 # Test artifacts and generated files
 generated_schema.json

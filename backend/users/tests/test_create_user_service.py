@@ -20,7 +20,14 @@ def test_create_user_service_extra_fields():
     user = create_user(
         username="extrauser",
         password="Strongpass123",
+        email="extra@example.com",
         extra_fields={"first_name": "Extra"},
     )
 
     assert user.first_name == "Extra"
+
+
+@pytest.mark.django_db
+def test_create_user_requires_email():
+    with pytest.raises(ValueError):
+        create_user(username="missingemail", password="Strongpass123", email="")

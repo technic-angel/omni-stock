@@ -43,6 +43,25 @@ def test_create_item_with_image_url():
 
 
 @pytest.mark.django_db
+def test_create_item_records_pricing_fields():
+    collectible = create_item(
+        data={
+            "name": "Price Card",
+            "sku": "PRICE-001",
+            "quantity": 1,
+            "intake_price": "11.00",
+            "price": "20.00",
+            "projected_price": "25.00",
+            "category": "Collectibles",
+            "condition": "Excellent",
+        },
+    )
+    assert str(collectible.price) == "20.00"
+    assert collectible.category == "Collectibles"
+    assert collectible.condition == "Excellent"
+
+
+@pytest.mark.django_db
 def test_update_item_updates_nested_details():
     collectible = CollectibleFactory.create(name="Old", quantity=1)
     CardDetails.objects.filter(collectible=collectible).delete()

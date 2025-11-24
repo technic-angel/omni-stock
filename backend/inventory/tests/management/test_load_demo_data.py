@@ -13,5 +13,11 @@ def test_load_demo_data_creates_items():
 
     assert Vendor.objects.filter(name='Demo Vendor').exists()
     assert Collectible.objects.filter(sku__startswith='DEMO-').count() == 3
-    # ensure card details were created for the demo collectibles
-    assert CardDetails.objects.count() >= 3
+    
+    # CardDetails are only created for Trading Cards category
+    # So we should have at least some CardDetails, but not necessarily all
+    trading_cards_count = Collectible.objects.filter(
+        sku__startswith='DEMO-',
+        category='Trading Cards'
+    ).count()
+    assert CardDetails.objects.count() == trading_cards_count
