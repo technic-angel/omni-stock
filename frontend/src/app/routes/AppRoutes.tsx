@@ -10,6 +10,8 @@ import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import VendorOverviewPage from '../../features/vendors/pages/VendorOverviewPage'
 import LoginPage from '../../features/auth/pages/LoginPage'
 import RegisterPage from '../../features/auth/pages/RegisterPage'
+import ApiTestPage from '../../pages/ApiTestPage'
+import DevComponentsPage from '../../pages/DevComponentsPage'
 
 const AppRoutes = () => {
   return (
@@ -41,6 +43,13 @@ const AppRoutes = () => {
             </ProtectedRoute>
           )}
         />
+        {/* Development Tools */}
+        {import.meta.env.DEV && (
+          <>
+            <Route path="/dev/api-test" element={<ApiTestPage />} />
+            <Route path="/dev/components" element={<DevComponentsPage />} />
+          </>
+        )}
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
