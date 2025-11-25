@@ -49,18 +49,6 @@ def health_view(request):
     from django.http import JsonResponse
     return JsonResponse({"status": "ok"})
 
-# Debug endpoint to check environment configuration
-def debug_config_view(request):
-    from django.http import JsonResponse
-    import os
-    return JsonResponse({
-        "FRONTEND_URL_setting": settings.FRONTEND_URL,
-        "FRONTEND_URL_env": os.environ.get('FRONTEND_URL', 'NOT_SET'),
-        "DEBUG": settings.DEBUG,
-        "ALLOWED_HOSTS": settings.ALLOWED_HOSTS,
-        "RENDER_EXTERNAL_HOSTNAME": os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'NOT_SET'),
-    })
-
 # Root endpoint - API info and links
 def root_view(request):
     from django.http import JsonResponse
@@ -95,7 +83,6 @@ def root_view(request):
 urlpatterns += [
     path('', root_view, name='root'),
     path('health/', health_view, name='health'),
-    path('debug/config/', debug_config_view, name='debug_config'),
 ]
 
 # Serving Media Files during development
