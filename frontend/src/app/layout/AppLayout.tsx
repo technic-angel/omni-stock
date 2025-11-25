@@ -1,53 +1,20 @@
-import React from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
+import Sidebar from './Sidebar'
+import TopNavbar from './TopNavbar'
 
-import { useAuth } from '../../features/auth/hooks/useAuth'
-const navLinkClass = (active: boolean) =>
-  `text-blue-600 ${active ? 'font-semibold' : ''}`
-
-const AppLayout = () => {
-  const location = useLocation()
-  const { isAuthenticated, logout } = useAuth()
-
-  const isActive = (path: string) => location.pathname === path
-
+export default function AppLayout() {
   return (
-    <div className="space-y-4 p-4">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold">Omni-Stock (Frontend)</h1>
-        <nav className="flex flex-wrap gap-2 text-sm">
-          <Link data-cy="nav-inventory" to="/inventory" className={navLinkClass(isActive('/inventory') || location.pathname === '/')}>
-            Inventory
-          </Link>
-          {isAuthenticated && (
-            <>
-              <Link data-cy="nav-dashboard" to="/dashboard" className={navLinkClass(isActive('/dashboard'))}>
-                Dashboard
-              </Link>
-              <Link data-cy="nav-vendors" to="/vendors" className={navLinkClass(isActive('/vendors'))}>
-                Vendors
-              </Link>
-            </>
-          )}
-          <Link data-cy="nav-register" to="/register" className={navLinkClass(isActive('/register'))}>
-            Register
-          </Link>
-          <Link data-cy="nav-login" to="/login" className={navLinkClass(isActive('/login'))}>
-            Login
-          </Link>
-          {isAuthenticated && (
-            <button data-cy="nav-logout" onClick={logout} className="text-red-600">
-              Logout
-            </button>
-          )}
-        </nav>
-      </header>
+    <div className="min-h-screen bg-brand-bg">
+      <Sidebar />
 
-      <div>
-        <Outlet />
+      {/* Main Content Area */}
+      <div className="md:pl-16 transition-all duration-300">
+        <TopNavbar />
+
+        <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+          <Outlet />
+        </main>
       </div>
     </div>
   )
 }
-
-export default AppLayout
