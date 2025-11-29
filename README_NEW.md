@@ -168,14 +168,18 @@ POSTGRES_SSL_MODE=prefer
 # CORS/CSRF
 CORS_ALLOWED_ORIGINS=http://localhost:5173
 CSRF_TRUSTED_ORIGINS=http://localhost:5173
+# Frontend redirect target (defaults to http://localhost:5173 if unset)
+FRONTEND_URL=https://omni-stock-three.vercel.app
 ```
 
 ### Frontend (.env.local)
 ```bash
 VITE_API_BASE=http://localhost:8000
+VITE_API_BASE_PROD=https://omni-stock.onrender.com
 VITE_SUPABASE_URL=https://<your-project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<your-anon-key>
 ```
+Set `VITE_API_BASE` (or `VITE_API_BASE_PROD`) to `https://omni-stock.onrender.com` in production so the deployed frontend calls the Render backend.
 
 ## Deployment
 
@@ -196,6 +200,7 @@ VITE_SUPABASE_ANON_KEY=<your-anon-key>
    POSTGRES_HOST=<your-db-host>
    POSTGRES_PORT=5432
    POSTGRES_SSL_MODE=require
+   FRONTEND_URL=https://omni-stock-three.vercel.app
    ```
 4. **Auto-Configuration**: The app automatically detects Render deployment and configures:
    - `ALLOWED_HOSTS` with `.onrender.com` wildcard
