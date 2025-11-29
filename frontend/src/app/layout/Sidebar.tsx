@@ -9,6 +9,7 @@ import {
   Building2, 
   Heart, 
   User,
+  Settings,
   LogOut,
   Menu,
   Gem
@@ -17,8 +18,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
-import { useLocalStorage } from '@/shared/hooks/useLocalStorage'
-import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { useLocalStorage } from '../../shared/hooks/useLocalStorage'
+import { useMediaQuery } from '../../shared/hooks/useMediaQuery'
 
 const navigation = [
   {
@@ -55,6 +56,11 @@ const userNavigation = [
     icon: User
   },
   {
+    name: 'Settings',
+    href: '/settings',
+    icon: Settings
+  },
+  {
     name: 'Logout',
     href: '/logout',
     icon: LogOut
@@ -77,10 +83,18 @@ export function Sidebar({ className }: SidebarProps) {
   }
 
   const NavigationContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
-    <div className="flex h-full flex-col">
+    <div 
+      className="flex h-full flex-col" 
+      onClick={(e) => {
+        // Toggle sidebar when clicking empty space (not on links)
+        if (!isMobile && e.target === e.currentTarget) {
+          setIsExpanded(!isExpanded)
+        }
+      }}
+    >
       {/* Logo */}
       <div 
-        className={`flex h-16 items-center px-4 border-b cursor-pointer transition-all duration-200 ${
+        className={`flex h-16 items-center px-4 border-b cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
           isExpanded ? 'justify-start' : 'justify-center'
         }`}
         onClick={() => !isMobile && setIsExpanded(!isExpanded)}
@@ -104,13 +118,13 @@ export function Sidebar({ className }: SidebarProps) {
               key={item.name}
               to={item.href}
               onClick={onLinkClick}
-              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:shadow-sm ${
                 isActive
-                  ? 'bg-brand-primary-soft text-brand-primary-dark border-r-2 border-brand-primary'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-brand-primary-soft text-brand-primary-dark border-r-2 border-brand-primary shadow-sm'
+                  : 'text-gray-600 hover:bg-brand-primary-soft/50 hover:text-brand-primary-dark hover:border-r-2 hover:border-brand-primary/30'
               } ${!isExpanded && !isMobile ? 'justify-center' : ''}`}
             >
-              <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-brand-primary' : 'text-gray-400 group-hover:text-gray-500'}`} />
+              <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-brand-primary' : 'text-gray-400 group-hover:text-brand-primary'}`} />
               {(isExpanded || isMobile) && (
                 <span className="ml-3">{item.name}</span>
               )}
@@ -132,13 +146,13 @@ export function Sidebar({ className }: SidebarProps) {
               key={item.name}
               to={item.href}
               onClick={onLinkClick}
-              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+              className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:shadow-sm ${
                 isActive
-                  ? 'bg-brand-primary-soft text-brand-primary-dark border-r-2 border-brand-primary'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-brand-primary-soft text-brand-primary-dark border-r-2 border-brand-primary shadow-sm'
+                  : 'text-gray-600 hover:bg-brand-primary-soft/50 hover:text-brand-primary-dark hover:border-r-2 hover:border-brand-primary/30'
               } ${!isExpanded && !isMobile ? 'justify-center' : ''}`}
             >
-              <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-brand-primary' : 'text-gray-400 group-hover:text-gray-500'}`} />
+              <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-brand-primary' : 'text-gray-400 group-hover:text-brand-primary'}`} />
               {(isExpanded || isMobile) && (
                 <span className="ml-3">{item.name}</span>
               )}
@@ -174,9 +188,15 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div 
-      className={`bg-white border-r border-gray-200 ${
+      className={`bg-white border-r border-gray-200 shadow-lg ${
         isExpanded ? 'w-64' : 'w-16'
       } transition-all duration-300 ease-in-out ${className}`}
+      onClick={(e) => {
+        // Toggle sidebar when clicking empty space
+        if (e.target === e.currentTarget) {
+          setIsExpanded(!isExpanded)
+        }
+      }}
     >
       <NavigationContent />
     </div>
