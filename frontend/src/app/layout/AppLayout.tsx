@@ -1,50 +1,31 @@
-import React from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
+import { Sidebar, MobileSidebarTrigger } from './Sidebar'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 
-import { useAuth } from '../../features/auth/hooks/useAuth'
-const navLinkClass = (active: boolean) =>
-  `text-blue-600 ${active ? 'font-semibold' : ''}`
-
-const AppLayout = () => {
-  const location = useLocation()
-  const { isAuthenticated, logout } = useAuth()
-
-  const isActive = (path: string) => location.pathname === path
+export function AppLayout() {
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   return (
-    <div className="space-y-4 p-4">
-      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-2xl font-bold">Omni-Stock (Frontend)</h1>
-        <nav className="flex flex-wrap gap-2 text-sm">
-          <Link data-cy="nav-inventory" to="/inventory" className={navLinkClass(isActive('/inventory') || location.pathname === '/')}>
-            Inventory
-          </Link>
-          {isAuthenticated && (
-            <>
-              <Link data-cy="nav-dashboard" to="/dashboard" className={navLinkClass(isActive('/dashboard'))}>
-                Dashboard
-              </Link>
-              <Link data-cy="nav-vendors" to="/vendors" className={navLinkClass(isActive('/vendors'))}>
-                Vendors
-              </Link>
-            </>
-          )}
-          <Link data-cy="nav-register" to="/register" className={navLinkClass(isActive('/register'))}>
-            Register
-          </Link>
-          <Link data-cy="nav-login" to="/login" className={navLinkClass(isActive('/login'))}>
-            Login
-          </Link>
-          {isAuthenticated && (
-            <button data-cy="nav-logout" onClick={logout} className="text-red-600">
-              Logout
-            </button>
-          )}
-        </nav>
-      </header>
+    <div className="flex h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sidebar className="hidden md:flex md:flex-col" />
+      )}
 
-      <div>
-        <Outlet />
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile Header */}
+        {isMobile && (
+          <header className="flex h-16 items-center gap-4 border-b bg-white px-4 md:hidden">
+            <MobileSidebarTrigger />
+            <h1 className="text-lg font-semibold">Omni-Stock</h1>
+          </header>
+        )}
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto p-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   )
