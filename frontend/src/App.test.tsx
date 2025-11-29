@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock child components to avoid importing heavier runtime code that can
 // cause duplicate React/runtime mismatches in the test environment.
@@ -13,12 +13,24 @@ vi.mock('./features/auth/pages/RegisterPage', () => ({
   default: () => <div role="main">Mock Register</div>,
 }))
 
+// Mock useMediaQuery hook
+vi.mock('./shared/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn(() => false), // Default to desktop
+}))
+
+// Mock useLocalStorage hook
+vi.mock('./shared/hooks/useLocalStorage', () => ({
+  useLocalStorage: vi.fn((key, defaultValue) => [defaultValue, vi.fn()]),
+}))
+
 import App from './App'
 
 describe('App', () => {
   it('renders the main application component', () => {
     render(<App />)
-    const mainElement = screen.getByRole('main')
-    expect(mainElement).toBeInTheDocument()
+    // Check for the layout main element (not the mocked component)
+    const mainElements = screen.getAllByRole('main')
+    expect(mainElements.length).toBeGreaterThan(0)
+    expect(mainElements[0]).toBeInTheDocument()
   })
 })
