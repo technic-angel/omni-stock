@@ -58,16 +58,14 @@ def root_view(request):
     accept_header = request.META.get('HTTP_ACCEPT', '')
     
     if 'text/html' in accept_header:
-        # Redirect browsers to frontend
-        # TODO: Update this URL when frontend is deployed to Vercel
-        frontend_url = 'http://localhost:5173'  # Vite dev server default
-        return redirect(frontend_url)
+        # Redirect browsers to configured frontend URL (set via FRONTEND_URL env var)
+        return redirect(settings.FRONTEND_URL)
     
     # API clients get JSON response
     return JsonResponse({
         "message": "Omni-Stock API",
         "version": "1.0",
-        "frontend_url": "http://localhost:5173",  # Update with production URL
+        "frontend_url": settings.FRONTEND_URL,
         "endpoints": {
             "admin": "/admin/",
             "api": "/api/v1/",
