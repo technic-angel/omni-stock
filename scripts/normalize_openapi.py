@@ -49,6 +49,34 @@ def normalize(obj: dict) -> dict:
 
     data = strip_x(data)
 
+    # Normalize integer fields to be environment-independent
+    # Different Python/DB versions generate different int bounds (int32 vs int64)
+    def normalize_integers(obj):
+        if isinstance(obj, dict):
+            # Normalize integer type fields
+            if obj.get("type") == "integer":
+                # Remove format, maximum, minimum for consistency
+                # These vary between environments but the actual model constraints are the same
+                obj.pop("format", None)
+                # Keep maximum/minimum only if they're explicit model constraints
+                # Otherwise remove to avoid environment-dependent values
+                max_val = obj.get("maximum")
+                min_val = obj.get("minimum")
+                # Common int32 bounds: -2147483648 to 2147483647
+                # Common int64 bounds: -9223372036854775808 to 9223372036854775807
+                # If these are default bounds, remove them
+                if max_val in (2147483647, 9223372036854775807):
+                    obj.pop("maximum", None)
+                if min_val in (-2147483648, -9223372036854775808):
+                    obj.pop("minimum", None)
+            # Recurse into nested structures
+            return {k: normalize_integers(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [normalize_integers(i) for i in obj]
+        return obj
+
+    data = normalize_integers(data)
+
     return data
 
 
