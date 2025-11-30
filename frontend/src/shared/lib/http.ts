@@ -33,11 +33,51 @@ export function setUnauthorizedHandler(handler: () => void) {
   onUnauthorized = handler
 }
 
+/**
+ * Determine the API base URL based on environment
+ * 
+ * For PR previews:
+ * - Vercel URL: omni-stock-{hash}-melissa-berumens-projects.vercel.app
+ * - Render URL: omni-stock-pr-{PR_NUMBER}.onrender.com
+ * 
+ * Priority:
+ * 1. VITE_API_BASE (explicit override)
+ * 2. VITE_RENDER_PR_NUMBER (for PR previews, auto-set from VERCEL_GIT_PULL_REQUEST_ID)
+ * 3. VITE_API_BASE_PROD (production fallback)
+ * 4. /api (local development)
+ */
+function getApiBaseUrl(): string {
+  // If explicitly set via env var, use that
+  if (import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE
+  }
+  
+  // For PR preview deployments - set VITE_RENDER_PR_NUMBER in vercel.json or Vercel settings
+  // In Vercel, set: VITE_RENDER_PR_NUMBER = $VERCEL_GIT_PULL_REQUEST_ID
+  const prNumber = import.meta.env.VITE_RENDER_PR_NUMBER
+  if (prNumber) {
+    return `https://omni-stock-pr-${prNumber}.onrender.com/api/v1`
+  }
+  
+  // Production deployment
+  if (import.meta.env.VITE_API_BASE_PROD) {
+    return import.meta.env.VITE_API_BASE_PROD
+  }
+  
+  // Check if we're on Vercel (production or preview) without explicit config
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    // Default to main production backend if no PR number
+    return 'https://omni-stock.onrender.com/api/v1'
+  }
+  
+  // Default fallback for local development
+  return '/api'
+}
+
 // Create a configured axios instance
 export const http = axios.create({
   // Base URL - all requests will be prefixed with this
-  // Example: http.get('/v1/users') → GET /api/v1/users
-  baseURL: import.meta.env.VITE_API_BASE ?? '/api',
+  baseURL: getApiBaseUrl(),
   
   // Don't wait more than 10 seconds for a response
   timeout: 10000,

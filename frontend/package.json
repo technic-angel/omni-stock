@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "VITE_RENDER_PR_NUMBER=$VERCEL_GIT_PULL_REQUEST_ID vite build",
+    "build:local": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "cypress:open": "cypress open",
