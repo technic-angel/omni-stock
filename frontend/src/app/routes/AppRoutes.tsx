@@ -2,7 +2,9 @@ import React from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import AppLayout from '../layout/AppLayout'
+import GuestLayout from '../layout/GuestLayout'
 import ProtectedRoute from './ProtectedRoute'
+import PublicRoute from './PublicRoute'
 import NotFoundPage from './NotFoundPage'
 import CollectiblesListPage from '../../features/inventory/pages/CollectiblesListPage'
 import CollectibleEditPage from '../../features/inventory/pages/CollectibleEditPage'
@@ -10,40 +12,58 @@ import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import VendorOverviewPage from '../../features/vendors/pages/VendorOverviewPage'
 import LoginPage from '../../features/auth/pages/LoginPage'
 import RegisterPage from '../../features/auth/pages/RegisterPage'
+import LogoutPage from '../../features/auth/pages/LogoutPage'
+import LandingPage from '../../features/landing/pages/LandingPage'
 
+/**
+ * AppRoutes - Main routing configuration
+ * 
+ * 📚 LEARNING: Route Organization Pattern
+ * 
+ * Routes are organized into three groups:
+ * 1. Public landing page (standalone, no layout)
+ * 2. Guest routes (GuestLayout) - Login, Register, Password Reset
+ * 3. Protected routes (AppLayout) - Dashboard, Inventory, Profile
+ * 
+ * PublicRoute: Redirects authenticated users AWAY (to /dashboard)
+ * ProtectedRoute: Redirects unauthenticated users TO login
+ */
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route index element={<CollectiblesListPage />} />
-        <Route path="/inventory" element={<CollectiblesListPage />} />
-        <Route
-          path="/inventory/:collectibleId/edit"
-          element={(
-            <ProtectedRoute>
-              <CollectibleEditPage />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/dashboard"
-          element={(
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          )}
-        />
-        <Route
-          path="/vendors"
-          element={(
-            <ProtectedRoute>
-              <VendorOverviewPage />
-            </ProtectedRoute>
-          )}
-        />
+      {/* Public landing page - standalone layout */}
+      <Route
+        index
+        element={(
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        )}
+      />
+
+      {/* Guest routes - minimal layout with centered content */}
+      <Route
+        element={(
+          <PublicRoute>
+            <GuestLayout />
+          </PublicRoute>
+        )}
+      >
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Route>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+
+      {/* Logout route - accessible to anyone, handles its own redirect */}
+      <Route path="/logout" element={<LogoutPage />} />
+
+      {/* Protected app routes - full app layout with sidebar */}
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/inventory" element={<CollectiblesListPage />} />
+        <Route path="/inventory/:collectibleId/edit" element={<CollectibleEditPage />} />
+        <Route path="/vendors" element={<VendorOverviewPage />} />
+      </Route>
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

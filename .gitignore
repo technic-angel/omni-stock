@@ -60,3 +60,4 @@ coverage.xml
 # Vite dev server artifacts
 /frontend/frontend.pid
 /frontend/frontend-dev.log
+backend/media/
