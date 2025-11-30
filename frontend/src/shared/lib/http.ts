@@ -41,13 +41,14 @@ export function setUnauthorizedHandler(handler: () => void) {
  * - Render URL: omni-stock-pr-{PR_NUMBER}.onrender.com
  * 
  * Priority:
- * 1. VITE_API_BASE (explicit override)
+ * 1. VITE_API_BASE (explicit override - must include full path like /api/v1)
  * 2. VITE_RENDER_PR_NUMBER (for PR previews, auto-set from VERCEL_GIT_PULL_REQUEST_ID)
- * 3. VITE_API_BASE_PROD (production fallback)
- * 4. /api (local development)
+ * 3. VITE_API_BASE_PROD (production - will have /api/v1 appended if missing)
+ * 4. Vercel.app detection (uses production backend)
+ * 5. /api (local development)
  */
 function getApiBaseUrl(): string {
-  // If explicitly set via env var, use that
+  // If explicitly set via env var, use that (assume it's complete)
   if (import.meta.env.VITE_API_BASE) {
     return import.meta.env.VITE_API_BASE
   }
@@ -59,9 +60,14 @@ function getApiBaseUrl(): string {
     return `https://omni-stock-pr-${prNumber}.onrender.com/api/v1`
   }
   
-  // Production deployment
+  // Production deployment - append /api/v1 if not already present
   if (import.meta.env.VITE_API_BASE_PROD) {
-    return import.meta.env.VITE_API_BASE_PROD
+    let baseUrl = import.meta.env.VITE_API_BASE_PROD
+    // Ensure /api/v1 suffix
+    if (!baseUrl.includes('/api/v1')) {
+      baseUrl = baseUrl.replace(/\/$/, '') + '/api/v1'
+    }
+    return baseUrl
   }
   
   // Check if we're on Vercel (production or preview) without explicit config
