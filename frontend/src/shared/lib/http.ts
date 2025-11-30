@@ -36,56 +36,30 @@ export function setUnauthorizedHandler(handler: () => void) {
 /**
  * Determine the API base URL based on environment
  * 
- * For PR previews:
- * - Vercel URL: omni-stock-{hash}-melissa-berumens-projects.vercel.app
- * - Render URL: omni-stock-pr-{PR_NUMBER}.onrender.com
- * 
- * Priority:
- * 1. VITE_API_BASE (explicit override - must include full path like /api/v1)
- * 2. VITE_RENDER_PR_NUMBER (for PR previews, auto-set from VERCEL_GIT_PULL_REQUEST_ID)
- * 3. VITE_API_BASE_PROD (production - will have /api/v1 appended if missing)
- * 4. Vercel.app detection (uses production backend)
- * 5. /api (local development)
+ * PRODUCTION: https://omni-stock.onrender.com/api/v1
+ * LOCAL DEV:  http://localhost:8000/api/v1 (from VITE_API_BASE)
  */
 function getApiBaseUrl(): string {
-  // If explicitly set via env var, use that (assume it's complete)
+  // Local development - use VITE_API_BASE from .env
   if (import.meta.env.VITE_API_BASE) {
     return import.meta.env.VITE_API_BASE
   }
   
-  // For PR preview deployments - set VITE_RENDER_PR_NUMBER in vercel.json or Vercel settings
-  // In Vercel, set: VITE_RENDER_PR_NUMBER = $VERCEL_GIT_PULL_REQUEST_ID
-  const prNumber = import.meta.env.VITE_RENDER_PR_NUMBER
-  if (prNumber) {
-    return `https://omni-stock-pr-${prNumber}.onrender.com/api/v1`
-  }
-  
-  // Production deployment - append /api/v1 if not already present
-  if (import.meta.env.VITE_API_BASE_PROD) {
-    let baseUrl = import.meta.env.VITE_API_BASE_PROD
-    // Ensure /api/v1 suffix
-    if (!baseUrl.includes('/api/v1')) {
-      baseUrl = baseUrl.replace(/\/$/, '') + '/api/v1'
-    }
-    return baseUrl
-  }
-  
-  // Check if we're on Vercel (production or preview) without explicit config
+  // Production/Preview on Vercel - ALWAYS use the production Render backend
+  // This is the simplest, most reliable approach
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    // Default to main production backend if no PR number
     return 'https://omni-stock.onrender.com/api/v1'
   }
   
-  // Default fallback for local development
-  return '/api'
+  // Fallback for local dev without .env
+  return 'http://localhost:8000/api/v1'
 }
 
 const apiBaseUrl = getApiBaseUrl()
 
-// Log the API base URL in non-production for debugging
-if (import.meta.env.DEV || (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))) {
+// Log the API base URL for debugging on Vercel
+if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
   console.log('[HTTP] API Base URL:', apiBaseUrl)
-  console.log('[HTTP] VITE_RENDER_PR_NUMBER:', import.meta.env.VITE_RENDER_PR_NUMBER)
 }
 
 // Create a configured axios instance
