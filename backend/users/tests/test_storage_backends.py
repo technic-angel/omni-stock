@@ -81,8 +81,13 @@ def test_storage_backend_respects_upload_to_parameter():
     This test verifies:
     1. Files are saved in the correct subdirectory
     2. upload_to='profile_pictures/' creates profile_pictures/ folder
-    3. Directory structure is maintained
+    3. Directory structure is maintained (for local storage)
     """
+    # Skip if using cloud storage (directory checks don't apply)
+    storage_backend = settings.STORAGES["default"]["BACKEND"]
+    if storage_backend != 'django.core.files.storage.FileSystemStorage':
+        pytest.skip("This test only runs with local FileSystemStorage")
+    
     # ARRANGE
     user = User.objects.create_user(
         username="diruser",
@@ -100,10 +105,9 @@ def test_storage_backend_respects_upload_to_parameter():
     assert result.profile_picture.name.startswith('profile_pictures/'), \
         f"File should be in profile_pictures/ subdirectory, got: {result.profile_picture.name}"
     
-    # Verify full directory path exists
+    # Verify file exists on disk (local storage only)
     full_path = os.path.join(settings.MEDIA_ROOT, result.profile_picture.name)
-    directory = os.path.dirname(full_path)
-    assert os.path.exists(directory), f"Directory should exist: {directory}"
+    assert os.path.exists(full_path), f"File should exist at {full_path}"
 
 
 @pytest.mark.django_db
