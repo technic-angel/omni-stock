@@ -74,10 +74,18 @@ function getApiBaseUrl(): string {
   return '/api'
 }
 
+const apiBaseUrl = getApiBaseUrl()
+
+// Log the API base URL in non-production for debugging
+if (import.meta.env.DEV || (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))) {
+  console.log('[HTTP] API Base URL:', apiBaseUrl)
+  console.log('[HTTP] VITE_RENDER_PR_NUMBER:', import.meta.env.VITE_RENDER_PR_NUMBER)
+}
+
 // Create a configured axios instance
 export const http = axios.create({
   // Base URL - all requests will be prefixed with this
-  baseURL: getApiBaseUrl(),
+  baseURL: apiBaseUrl,
   
   // Don't wait more than 10 seconds for a response
   timeout: 10000,
