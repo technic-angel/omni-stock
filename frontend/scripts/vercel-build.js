@@ -5,7 +5,7 @@
  * This script sets VITE_RENDER_PR_NUMBER from VERCEL_GIT_PULL_REQUEST_ID
  * before running the Vite build.
  */
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 // Debug: Log all Vercel-related environment variables
 console.log('🔍 Vercel Environment Variables:');
