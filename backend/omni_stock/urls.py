@@ -26,7 +26,14 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 # Register view (user sign-up)
-from backend.users.api.viewsets import RegisterView
+from backend.users.api.viewsets import (
+    RegisterView,
+    CurrentUserView,
+    ChangePasswordView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
+    LogoutView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,6 +48,11 @@ urlpatterns = [
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/v1/auth/register/', RegisterView.as_view(), name='auth_register'),
+    path('api/v1/auth/me/', CurrentUserView.as_view(), name='current_user'),
+    path('api/v1/auth/logout/', LogoutView.as_view(), name='auth_logout'),
+    path('api/v1/auth/password/change/', ChangePasswordView.as_view(), name='password_change'),
+    path('api/v1/auth/password/reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('api/v1/auth/password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     # Add your API paths here later: path('api/v1/auth/', include('auth.urls')),
 ]
 
@@ -75,7 +87,8 @@ def root_view(request):
                 "register": "/api/v1/auth/register/",
                 "token": "/api/v1/auth/token/",
                 "refresh": "/api/v1/auth/token/refresh/",
-                "verify": "/api/v1/auth/token/verify/"
+                "verify": "/api/v1/auth/token/verify/",
+                "me": "/api/v1/auth/me/"
             }
         }
     })
