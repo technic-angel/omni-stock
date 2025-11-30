@@ -1,20 +1,37 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Provider } from 'react-redux'
+import { configureStore } from '@reduxjs/toolkit'
 
 import ProtectedRoute from './ProtectedRoute'
-import { AuthContext } from '../../features/auth/providers/AuthProvider'
+import authReducer from '../../store/slices/authSlice'
+
+// Mock tokenStore
+vi.mock('../../shared/lib/tokenStore', () => ({
+  tokenStore: {
+    getAccess: vi.fn(() => null),
+    setAccess: vi.fn(),
+    clear: vi.fn(),
+  }
+}))
+
+const createTestStore = (isAuthenticated: boolean) => {
+  return configureStore({
+    reducer: { auth: authReducer },
+    preloadedState: {
+      auth: {
+        accessToken: isAuthenticated ? 'test-token' : null,
+        isAuthenticated,
+      }
+    },
+  })
+}
 
 const renderWithAuth = (isAuthenticated: boolean) => {
+  const store = createTestStore(isAuthenticated)
   return render(
-    <AuthContext.Provider
-      value={{
-        accessToken: isAuthenticated ? 'token' : null,
-        isAuthenticated,
-        setAccessToken: () => {},
-        logout: () => {},
-      }}
-    >
+    <Provider store={store}>
       <MemoryRouter initialEntries={['/protected']}>
         <Routes>
           <Route
@@ -25,10 +42,10 @@ const renderWithAuth = (isAuthenticated: boolean) => {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<div data-testid="login-page">Login</div>} />
+          <Route path="/" element={<div data-testid="landing-page">Landing</div>} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>,
+    </Provider>,
   )
 }
 
@@ -38,9 +55,9 @@ describe('ProtectedRoute', () => {
     expect(screen.getByTestId('protected')).toBeInTheDocument()
   })
 
-  it('redirects when unauthenticated', () => {
+  it('redirects to landing page when unauthenticated', () => {
     renderWithAuth(false)
     expect(screen.queryByTestId('protected')).not.toBeInTheDocument()
-    expect(screen.getByTestId('login-page')).toBeInTheDocument()
+    expect(screen.getByTestId('landing-page')).toBeInTheDocument()
   })
 })

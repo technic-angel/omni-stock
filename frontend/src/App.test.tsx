@@ -23,14 +23,25 @@ vi.mock('./shared/hooks/useLocalStorage', () => ({
   useLocalStorage: vi.fn((key, defaultValue) => [defaultValue, vi.fn()]),
 }))
 
+// Mock tokenStore
+vi.mock('./shared/lib/tokenStore', () => ({
+  tokenStore: {
+    getAccess: vi.fn(() => null),
+    setAccess: vi.fn(),
+    getRefresh: vi.fn(() => null),
+    setRefresh: vi.fn(),
+    setTokens: vi.fn(),
+    clear: vi.fn(),
+  }
+}))
+
 import App from './App'
 
 describe('App', () => {
   it('renders the main application component', () => {
     render(<App />)
-    // Check for the layout main element (not the mocked component)
-    const mainElements = screen.getAllByRole('main')
-    expect(mainElements.length).toBeGreaterThan(0)
-    expect(mainElements[0]).toBeInTheDocument()
+    // When unauthenticated, app renders landing page which has heading
+    const heading = screen.getByRole('heading', { name: /track your collectibles/i })
+    expect(heading).toBeInTheDocument()
   })
 })

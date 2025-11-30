@@ -11,16 +11,16 @@ export type Vendor = {
 }
 
 export async function fetchVendors() {
-  const { data } = await http.get<Vendor[]>('/v1/vendors/')
+  const { data } = await http.get<Vendor[]>('/vendors/')
   return data
 }
 
 export async function fetchCurrentVendor() {
-  const { data } = await http.get<Vendor>('/v1/vendors/me/')
+  const { data } = await http.get<Vendor>('/vendors/me/')
   return data
 }
 
 export async function createVendor(payload: Partial<Vendor>) {
-  const { data } = await http.post<Vendor>('/v1/vendors/', payload)
+  const { data } = await http.post<Vendor>('/vendors/', payload)
   return data
 }

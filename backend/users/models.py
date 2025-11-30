@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from backend.users.validators import validate_image_file, validate_profile_picture_size
 from backend.vendors.models import Vendor
 
 
@@ -35,6 +36,13 @@ class UserProfile(models.Model):
     )
     phone = models.CharField(max_length=40, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/",
+        blank=True,
+        null=True,
+        validators=[validate_image_file, validate_profile_picture_size],
+        help_text="User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+    )
     metadata = models.TextField(
         blank=True,
         null=True,

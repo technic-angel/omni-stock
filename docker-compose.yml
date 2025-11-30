@@ -50,6 +50,14 @@ services:
       DEBUG: True # Added DEBUG back for completeness from earlier version
       PYTHONPATH: /usr/src/app
       DJANGO_SETTINGS_MODULE: backend.omni_stock.settings
+      # File Storage Configuration
+      USE_SUPABASE_STORAGE: ${USE_SUPABASE_STORAGE}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET}
+      SUPABASE_STORAGE_ENDPOINT: ${SUPABASE_STORAGE_ENDPOINT}
+      SUPABASE_STORAGE_ACCESS_KEY: ${SUPABASE_STORAGE_ACCESS_KEY}
+      SUPABASE_STORAGE_SECRET_KEY: ${SUPABASE_STORAGE_SECRET_KEY}
+      SUPABASE_STORAGE_CUSTOM_DOMAIN: ${SUPABASE_STORAGE_CUSTOM_DOMAIN}
+      SUPABASE_STORAGE_REGION: ${SUPABASE_STORAGE_REGION}
     depends_on:
       # Ensures the database service starts before the API attempts to connect
       db:

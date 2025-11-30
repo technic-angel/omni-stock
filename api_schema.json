@@ -56,6 +56,27 @@
         },
         "type": "object"
       },
+      "ChangePassword": {
+        "description": "Serializer for password change.\n\nRequires current password verification before allowing password change.\nValidates new password against Django's password validators.",
+        "properties": {
+          "new_password": {
+            "description": "New password (min 8 characters)",
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "old_password": {
+            "description": "Current password for verification",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "new_password",
+          "old_password"
+        ],
+        "type": "object"
+      },
       "Collectible": {
         "description": "Serializer for the Collectible model with nested card details support.",
         "properties": {
@@ -154,6 +175,94 @@
         ],
         "type": "object"
       },
+      "CurrentUser": {
+        "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "title": "Email address",
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserProfile"
+              }
+            ],
+            "readOnly": true
+          },
+          "username": {
+            "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+            "maxLength": 150,
+            "pattern": "^[\\w.@+-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "id",
+          "profile",
+          "username"
+        ],
+        "type": "object"
+      },
+      "Logout": {
+        "description": "Serializer for logout (token blacklisting).\n\nAccepts a refresh token and blacklists it to prevent further use.",
+        "properties": {
+          "refresh": {
+            "description": "Refresh token to blacklist",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ],
+        "type": "object"
+      },
+      "PasswordResetConfirm": {
+        "description": "Serializer for confirming password reset with token.\n\nVerifies the token and sets the new password.",
+        "properties": {
+          "new_password": {
+            "description": "New password (min 8 characters)",
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "token": {
+            "description": "Reset token from email link",
+            "type": "string"
+          },
+          "uid": {
+            "description": "User ID from reset link",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "new_password",
+          "token",
+          "uid"
+        ],
+        "type": "object"
+      },
+      "PasswordResetRequest": {
+        "description": "Serializer for requesting a password reset.\n\nSends an email with reset link if the email exists.\nAlways succeeds to prevent email enumeration.",
+        "properties": {
+          "email": {
+            "description": "Email address associated with your account",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
       "PatchedCollectible": {
         "description": "Serializer for the Collectible model with nested card details support.",
         "properties": {
@@ -238,6 +347,44 @@
           "vendor": {
             "nullable": true,
             "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedUpdateProfilePicture": {
+        "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
+        "properties": {
+          "bio": {
+            "description": "User bio/description",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address (must be unique)",
+            "format": "email",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture": {
+            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
+            "format": "binary",
+            "nullable": true,
+            "type": "string"
+          },
+          "username": {
+            "description": "Username (must be unique)",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "vendor_id": {
+            "description": "ID of vendor to associate with (null to clear)",
+            "nullable": true,
             "type": "integer"
           }
         },
@@ -363,6 +510,96 @@
         ],
         "type": "object"
       },
+      "UpdateProfilePicture": {
+        "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
+        "properties": {
+          "bio": {
+            "description": "User bio/description",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "description": "Email address (must be unique)",
+            "format": "email",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture": {
+            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
+            "format": "binary",
+            "nullable": true,
+            "type": "string"
+          },
+          "username": {
+            "description": "Username (must be unique)",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "vendor_id": {
+            "description": "ID of vendor to associate with (null to clear)",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "UserProfile": {
+        "description": "Serializer for UserProfile model.\n\nThis handles the profile-specific fields like bio, phone, and profile_picture.\nThe profile_picture field is automatically converted to a full URL by DRF.",
+        "properties": {
+          "bio": {
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "phone": {
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture": {
+            "description": "User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "vendor_id": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "vendor_name": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at",
+          "vendor_id",
+          "vendor_name"
+        ],
+        "type": "object"
+      },
       "Vendor": {
         "description": "Serializer for vendor CRUD.",
         "properties": {
@@ -425,6 +662,394 @@
   },
   "openapi": "3.0.3",
   "paths": {
+    "/api/v1/auth/logout/": {
+      "post": {
+        "description": "POST /api/v1/auth/logout/\n\nLogout by blacklisting the refresh token.\n\n- Requires authentication (JWT token)\n- Blacklists the provided refresh token\n- After logout, the refresh token can no longer be used to get new access tokens\n\nRequest body:\n    {\n        \"refresh\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJI...\"\n    }\n\nResponse:\n    {\"detail\": \"Successfully logged out.\"}",
+        "operationId": "auth_logout_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Logout"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me/": {
+      "get": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      },
+      "patch": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_partial_update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "UserWithProfile": {
+                  "summary": "User with Profile",
+                  "value": {
+                    "email": "melissa@example.com",
+                    "id": 1,
+                    "profile": {
+                      "bio": "Django developer",
+                      "created_at": "2025-11-29T10:00:00Z",
+                      "id": 1,
+                      "phone": "555-1234",
+                      "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                      "updated_at": "2025-11-29T10:00:00Z"
+                    },
+                    "username": "melissa"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      },
+      "put": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "UserWithProfile": {
+                  "summary": "User with Profile",
+                  "value": {
+                    "email": "melissa@example.com",
+                    "id": 1,
+                    "profile": {
+                      "bio": "Django developer",
+                      "created_at": "2025-11-29T10:00:00Z",
+                      "id": 1,
+                      "phone": "555-1234",
+                      "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                      "updated_at": "2025-11-29T10:00:00Z"
+                    },
+                    "username": "melissa"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfilePicture"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfilePicture"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfilePicture"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/change/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/change/\n\nChange password for the authenticated user.\n\nRequires:\n- Authentication (JWT token)\n- Current password for verification\n- New password (min 8 characters, validated against Django password validators)\n\nRequest body:\n    {\n        \"old_password\": \"current_password\",\n        \"new_password\": \"new_secure_password\"\n    }\n\nResponse:\n    {\"detail\": \"Password changed successfully.\"}",
+        "operationId": "auth_password_change_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePassword"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/reset/\n\nRequest a password reset email.\n\n- Public endpoint (no authentication required)\n- Rate limited to 1 request per 5 minutes per user\n- Always returns success to prevent email enumeration\n\nRequest body:\n    {\n        \"email\": \"user@example.com\"\n    }\n\nResponse:\n    {\"detail\": \"If an account with that email exists, a password reset link has been sent.\"}",
+        "operationId": "auth_password_reset_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequest"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/confirm/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/reset/confirm/\n\nConfirm password reset with token and set new password.\n\n- Public endpoint (no authentication required)\n- Requires valid reset token from email\n- Token expires after 24 hours\n\nRequest body:\n    {\n        \"uid\": 1,\n        \"token\": \"abc123...\",\n        \"new_password\": \"new_secure_password\"\n    }\n\nResponse:\n    {\"detail\": \"Password has been reset successfully.\"}",
+        "operationId": "auth_password_reset_confirm_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetConfirm"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/register/": {
       "post": {
         "description": "Public endpoint for registering a new user account.",

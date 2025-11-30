@@ -98,7 +98,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party Apps
     'rest_framework',
-    'rest_framework_simplejwt', 
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # For logout functionality
     # Third-party utilities
     'corsheaders',
     'admin_thumbnails',
@@ -267,6 +268,52 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# File Storage Configuration
+# --------------------------
+# Dynamically choose storage backend based on environment
+# Local: FileSystemStorage (saves to backend/media/)
+# Production: SupabaseStorage (uploads to Supabase cloud)
+USE_SUPABASE_STORAGE = env.bool('USE_SUPABASE_STORAGE', default=False)
+
+if USE_SUPABASE_STORAGE:
+    # Supabase Storage Configuration
+    # These are S3-compatible settings for django-storages
+    AWS_ACCESS_KEY_ID = env('SUPABASE_STORAGE_ACCESS_KEY')
+    AWS_SECRET_ACCESS_KEY = env('SUPABASE_STORAGE_SECRET_KEY')
+    AWS_STORAGE_BUCKET_NAME = env('SUPABASE_STORAGE_BUCKET', default='omni-stock-media')
+    AWS_S3_ENDPOINT_URL = env('SUPABASE_STORAGE_ENDPOINT')
+    AWS_S3_CUSTOM_DOMAIN = env('SUPABASE_STORAGE_CUSTOM_DOMAIN', default=None)
+    
+    # S3 settings for Supabase compatibility
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',  # Cache for 1 day
+    }
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_FILE_OVERWRITE = False  # Don't overwrite files with same name
+    
+    # Django 4.2+ STORAGES format (replaces deprecated DEFAULT_FILE_STORAGE)
+    STORAGES = {
+        "default": {
+            "BACKEND": "backend.core.storage_backends.SupabaseStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    # Local development: Use FileSystemStorage (default)
+    # Files saved to backend/media/ directory
+    # Django 4.2+ STORAGES format (replaces deprecated DEFAULT_FILE_STORAGE)
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -294,6 +341,7 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,  # Blacklist old tokens on rotation
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
