@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { setUnauthorizedHandler } from './http'
+import { setUnauthorizedHandler, http } from './http'
 import { tokenStore } from './tokenStore'
 
 // Mock tokenStore
@@ -47,6 +47,22 @@ describe('http client', () => {
       // Just verify the mock is set up correctly
       expect(tokenStore.getAccess).toBeDefined()
       expect(typeof tokenStore.getAccess).toBe('function')
+    })
+  })
+
+  describe('axios instance configuration', () => {
+    it('should have a baseURL configured', () => {
+      // The http instance should have a baseURL set
+      expect(http.defaults.baseURL).toBeDefined()
+    })
+
+    it('should have correct default headers', () => {
+      expect(http.defaults.headers['Content-Type']).toBe('application/json')
+      expect(http.defaults.headers['Accept']).toBe('application/json')
+    })
+
+    it('should have a 10 second timeout', () => {
+      expect(http.defaults.timeout).toBe(10000)
     })
   })
 })
