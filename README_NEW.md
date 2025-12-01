@@ -164,6 +164,8 @@ POSTGRES_PASSWORD=<secure-password>
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 POSTGRES_SSL_MODE=prefer
+# Optional single connection string (e.g., Supabase)
+DATABASE_URL=postgresql://user:password@host:5432/dbname
 
 # CORS/CSRF
 CORS_ALLOWED_ORIGINS=http://localhost:5173
@@ -200,6 +202,7 @@ Set `VITE_API_BASE` (or `VITE_API_BASE_PROD`) to `https://omni-stock.onrender.co
    POSTGRES_HOST=<your-db-host>
    POSTGRES_PORT=5432
    POSTGRES_SSL_MODE=require
+   # or DATABASE_URL=postgresql://user:password@host:5432/dbname
    FRONTEND_URL=https://omni-stock-three.vercel.app
    ```
 4. **Auto-Configuration**: The app automatically detects Render deployment and configures:

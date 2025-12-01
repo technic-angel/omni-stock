@@ -40,25 +40,38 @@ export function setUnauthorizedHandler(handler: () => void) {
  * LOCAL DEV:  http://localhost:8000/api/v1 (from VITE_API_BASE)
  */
 function getApiBaseUrl(): string {
-  // Check if we're on Vercel FIRST - always use hardcoded production URL
-  // This prevents any misconfigured Vercel env vars from breaking things
-  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return 'https://omni-stock.onrender.com/api/v1'
+  const explicitBase = import.meta.env.VITE_API_BASE?.trim()
+  if (explicitBase) {
+    return explicitBase
   }
-  
-  // Local development - use VITE_API_BASE from .env (only checked when NOT on Vercel)
-  if (import.meta.env.VITE_API_BASE) {
-    return import.meta.env.VITE_API_BASE
+
+  if (typeof window !== 'undefined') {
+    const { hostname, origin } = window.location
+
+    if (hostname.endsWith('.vercel.app')) {
+      const renderHost = hostname.replace('.vercel.app', '.onrender.com')
+      return `https://${renderHost}/api/v1`
+    }
+
+    if (hostname.endsWith('.onrender.com')) {
+      return `${origin}/api/v1`
+    }
   }
-  
-  // Fallback for local dev without .env
-  return 'http://localhost:8000/api/v1'
+
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8000/api/v1'
+  }
+
+  return 'https://omni-stock.onrender.com/api/v1'
 }
 
 const apiBaseUrl = getApiBaseUrl()
 
-// Log the API base URL for debugging on Vercel
-if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+// Log the API base URL for debugging on hosted environments
+if (
+  typeof window !== 'undefined' &&
+  (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('onrender.com'))
+) {
   console.log('[HTTP] API Base URL:', apiBaseUrl)
 }
 
@@ -128,4 +141,3 @@ http.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
