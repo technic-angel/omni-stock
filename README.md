@@ -166,8 +166,6 @@ POSTGRES_PASSWORD=<secure-password>
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
 POSTGRES_SSL_MODE=prefer
-# Optional single connection string (Supabase/Render managed DBs)
-# DATABASE_URL=postgresql://user:password@host:5432/dbname?sslmode=require
 
 # CORS/CSRF
 CORS_ALLOWED_ORIGINS=http://localhost:5173
@@ -194,7 +192,6 @@ The backend `Dockerfile` at `backend/Dockerfile` is Render-ready:
 3. Expose port `8000`.
 4. Add environment variables:
    - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`
-     - or a single `DATABASE_URL` if your provider supplies it (e.g., Supabase connection string)
    - `DJANGO_SECRET_KEY` (strong random value)
    - `ALLOWED_HOSTS` (comma-separated domains, e.g., `your-service.onrender.com`)
    - `CORS_ALLOWED_ORIGINS` / `CSRF_TRUSTED_ORIGINS` (comma-separated HTTPS origins)
