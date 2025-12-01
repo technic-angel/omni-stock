@@ -249,7 +249,6 @@ if _database_url:
         sslmode_values = query_params.get('sslmode')
         if sslmode_values:
             db_settings['OPTIONS']['sslmode'] = sslmode_values[-1]
-*** End Patch
 
 
 # Password validation

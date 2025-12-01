@@ -39,10 +39,40 @@ export function setUnauthorizedHandler(handler: () => void) {
  * PRODUCTION: https://omni-stock.onrender.com/api/v1
  * LOCAL DEV:  http://localhost:8000/api/v1 (from VITE_API_BASE)
  */
+function ensureApiPath(urlStr: string): string {
+  if (!urlStr) {
+    return urlStr
+  }
+
+  try {
+    const url = new URL(urlStr)
+    const normalized = url.pathname.replace(/\/+$/, '')
+
+    if (!normalized || normalized === '') {
+      url.pathname = '/api/v1'
+    } else if (normalized === '/api') {
+      url.pathname = '/api/v1'
+    } else if (!normalized.startsWith('/api/')) {
+      url.pathname = `${normalized}/api/v1`
+    }
+
+    let finalUrl = url.toString()
+    if (finalUrl.endsWith('/')) {
+      finalUrl = finalUrl.slice(0, -1)
+    }
+    return finalUrl
+  } catch {
+    if (urlStr.endsWith('/api') || urlStr.endsWith('/api/')) {
+      return `${urlStr.replace(/\/+$/, '')}/v1`
+    }
+    return urlStr.endsWith('/') ? `${urlStr}api/v1` : `${urlStr}/api/v1`
+  }
+}
+
 function getApiBaseUrl(): string {
   const explicitBase = import.meta.env.VITE_API_BASE?.trim()
   if (explicitBase) {
-    return explicitBase
+    return ensureApiPath(explicitBase)
   }
 
   if (typeof window !== 'undefined') {
