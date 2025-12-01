@@ -21,6 +21,14 @@ jobs:
       - name: Install frontend deps
         working-directory: frontend
         run: npm ci
+      - name: Set preview API base env
+        run: |
+          if [ -n "${{ github.event.number }}" ]; then
+            echo "VITE_API_BASE=https://omni-stock-pr-${{ github.event.number }}.onrender.com" >> "$GITHUB_ENV"
+            echo "✅ Set VITE_API_BASE to https://omni-stock-pr-${{ github.event.number }}.onrender.com" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ github.event.number not available; VITE_API_BASE not overridden." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Build frontend
         working-directory: frontend
         run: npm run build
