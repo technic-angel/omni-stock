@@ -40,17 +40,16 @@ export function setUnauthorizedHandler(handler: () => void) {
  * LOCAL DEV:  http://localhost:8000/api/v1 (from VITE_API_BASE)
  */
 function getApiBaseUrl(): string {
-  // Check if we're on Vercel FIRST - always use hardcoded production URL
-  // This prevents any misconfigured Vercel env vars from breaking things
+  const envBase = (import.meta.env.VITE_API_BASE || '').trim()
+  if (envBase.length > 0) {
+    return envBase
+  }
+
+  // No explicit env override, fall back based on host
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
     return 'https://omni-stock.onrender.com/api/v1'
   }
-  
-  // Local development - use VITE_API_BASE from .env (only checked when NOT on Vercel)
-  if (import.meta.env.VITE_API_BASE) {
-    return import.meta.env.VITE_API_BASE
-  }
-  
+
   // Fallback for local dev without .env
   return 'http://localhost:8000/api/v1'
 }
@@ -128,4 +127,3 @@ http.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
