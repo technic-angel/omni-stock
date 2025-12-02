@@ -1,0 +1,11 @@
+{
+  "name": "omni-stock-tooling",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed:supabase-images": "node scripts/seed_supabase_images.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.86.0"
+  }
+}
