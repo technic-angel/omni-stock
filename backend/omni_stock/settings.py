@@ -215,41 +215,46 @@ WSGI_APPLICATION = 'backend.omni_stock.wsgi.application'
 
 # Database Configuration
 # This is where we dynamically set the database based on environment variables
-DATABASES = {
-    'default': {
+_database_url = env('DATABASE_URL', default='').strip()
+db_settings = None
+
+if _database_url:
+    parsed = urlparse(_database_url)
+    if parsed.scheme in ('postgres', 'postgresql'):
+        db_settings = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': parsed.path.lstrip('/') or 'postgres',
+            'USER': unquote(parsed.username or 'postgres'),
+            'PASSWORD': unquote(parsed.password or ''),
+            'HOST': parsed.hostname or 'localhost',
+            'PORT': str(parsed.port or '5432'),
+            'OPTIONS': {},
+        }
+
+        query_params = parse_qs(parsed.query)
+        sslmode_values = query_params.get('sslmode')
+        if sslmode_values:
+            db_settings['OPTIONS']['sslmode'] = sslmode_values[-1]
+        else:
+            db_settings['OPTIONS']['sslmode'] = 'prefer'
+
+if not db_settings:
+    # Fallback for local docker-compose or tests when DATABASE_URL is absent.
+    db_settings = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('POSTGRES_DB', default='postgres'),
         'USER': env('POSTGRES_USER', default='postgres'),
         'PASSWORD': env('POSTGRES_PASSWORD', default=''),
-        'HOST': env('POSTGRES_HOST', default='localhost'), # This must be 'db', the service name in docker-compose.yml
+        'HOST': env('POSTGRES_HOST', default='db'),
         'PORT': env('POSTGRES_PORT', default='5432'),
         'OPTIONS': {
             'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
         },
     }
+
+DATABASES = {
+    'default': db_settings,
 }
-
-_database_url = env('DATABASE_URL', default='').strip()
-if _database_url:
-    parsed = urlparse(_database_url)
-    if parsed.scheme in ('postgres', 'postgresql'):
-        db_settings = DATABASES['default']
-        if parsed.path and parsed.path != '/':
-            db_settings['NAME'] = parsed.path.lstrip('/')
-        if parsed.username:
-            db_settings['USER'] = unquote(parsed.username)
-        if parsed.password:
-            db_settings['PASSWORD'] = unquote(parsed.password)
-        if parsed.hostname:
-            db_settings['HOST'] = parsed.hostname
-        if parsed.port:
-            db_settings['PORT'] = str(parsed.port)
-
-        db_settings.setdefault('OPTIONS', {})
-        query_params = parse_qs(parsed.query)
-        sslmode_values = query_params.get('sslmode')
-        if sslmode_values:
-            db_settings['OPTIONS']['sslmode'] = sslmode_values[-1]
 
 
 # Password validation
