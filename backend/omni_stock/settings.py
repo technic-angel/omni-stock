@@ -229,7 +229,7 @@ DATABASES = {
     }
 }
 
-_database_url = env('DATABASE_URL')
+_database_url = env('DATABASE_URL', default='').strip()
 if _database_url:
     parsed = urlparse(_database_url)
     if parsed.scheme in ('postgres', 'postgresql'):
