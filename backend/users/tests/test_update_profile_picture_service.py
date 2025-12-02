@@ -11,6 +11,13 @@ from PIL import Image
 from backend.users.models import UserProfile
 from backend.users.services.update_profile_picture import update_profile_picture
 
+SUPABASE_TESTS_ENABLED = os.environ.get('RUN_SUPABASE_TESTS') == '1'
+
+pytestmark = pytest.mark.skipif(
+    not SUPABASE_TESTS_ENABLED,
+    reason="Supabase storage tests require real credentials. Set RUN_SUPABASE_TESTS=1 locally to enable.",
+)
+
 User = get_user_model()
 
 
