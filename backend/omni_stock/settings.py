@@ -251,6 +251,11 @@ if _database_url:
         if sslmode_values:
             db_settings['OPTIONS']['sslmode'] = sslmode_values[-1]
 
+        from pprint import pprint
+        print("DATABASE_URL:", _database_url)
+        print("DJANGO DATABASES['default']:")
+        pprint(DATABASES['default'])
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
