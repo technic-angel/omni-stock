@@ -39,8 +39,17 @@ export function setUnauthorizedHandler(handler: () => void) {
  * PRODUCTION: https://omni-stock.onrender.com/api/v1
  * LOCAL DEV:  http://localhost:8000/api/v1 (from VITE_API_BASE)
  */
+function ensureApiPath(url: string): string {
+  if (!url) return ''
+  if (url.endsWith('/api/v1')) {
+    return url
+  }
+  const normalized = url.replace(/\/+$/, '')
+  return `${normalized}/api/v1`
+}
+
 function getApiBaseUrl(): string {
-  const envBase = (import.meta.env.VITE_API_BASE || '').trim()
+  const envBase = ensureApiPath((import.meta.env.VITE_API_BASE || '').trim())
   if (envBase.length > 0) {
     return envBase
   }
