@@ -49,7 +49,7 @@ const LoginPage = () => {
       {/* Card */}
       <div className="bg-white rounded-lg shadow-lg border p-8">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
-          Welcome Back
+          Login to Your Account
         </h1>
 
         {/* Server Error */}
