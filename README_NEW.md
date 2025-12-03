@@ -142,6 +142,14 @@ This project uses Supabase for image storage. To set up:
 
 ### Seed Test Images
 
+Install the root tooling dependencies once:
+
+```bash
+npm install
+```
+
+Then run the seed script with your Supabase credentials:
+
 ```bash
 SUPABASE_URL=https://<your-project>.supabase.co \
 SUPABASE_ANON_KEY=<your-anon-key> \
