@@ -13,9 +13,21 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 const images = [
-  { name: 'sample1.svg', content: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#0ea5e9"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 1</text></svg>' },
-  { name: 'sample2.svg', content: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#6366f1"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 2</text></svg>' },
-  { name: 'sample3.svg', content: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#10b981"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 3</text></svg>' },
+  {
+    name: 'sample1.svg',
+    content:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#0ea5e9"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 1</text></svg>',
+  },
+  {
+    name: 'sample2.svg',
+    content:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#6366f1"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 2</text></svg>',
+  },
+  {
+    name: 'sample3.svg',
+    content:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#10b981"/><text x="50%" y="50%" font-size="32" fill="#fff" dominant-baseline="middle" text-anchor="middle">Sample 3</text></svg>',
+  },
 ]
 
 async function download(image) {

@@ -11,11 +11,13 @@
     "test": "vitest",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md}\" \"cypress/**/*.{ts,tsx}\" \"scripts/**/*.{js,mjs}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,md}\" \"cypress/**/*.{ts,tsx}\" \"scripts/**/*.{js,mjs}\"",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:run:ci": "cypress run --headless --spec \"cypress/integration/smoke.spec.ts\"",
-    "test:smoke": "npm run cypress:run:ci"
+    "test:smoke": "npm run cypress:run:ci",
+    "seed:supabase-images": "node ./scripts/seed_supabase_images.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
