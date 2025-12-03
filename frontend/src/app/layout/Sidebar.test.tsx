@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter, useLocation } from 'react-router-dom'
@@ -23,7 +24,7 @@ vi.mock("react-router-dom", async () => {
 });
 
 // TODO: Test wrapper component for React Router
-const renderWithRouter = (component: React.ReactElement) => {
+const renderWithRouter = (component: ReactElement) => {
   return render(
     <BrowserRouter future={routerFuture}>
       {component}
