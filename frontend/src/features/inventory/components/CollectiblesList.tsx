@@ -46,7 +46,8 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
       await deleteMutation.mutateAsync(deleteTarget.id)
       setDeleteTarget(null)
     } catch (mutationError: any) {
-      const detail = mutationError?.response?.data?.detail ?? mutationError?.message ?? 'Unable to delete item.'
+      const detail =
+        mutationError?.response?.data?.detail ?? mutationError?.message ?? 'Unable to delete item.'
       setDeleteError(detail)
     } finally {
       setPendingDeleteId(null)
@@ -67,7 +68,11 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
 
   return (
     <>
-      {deleteError && <div className="mb-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">{deleteError}</div>}
+      {deleteError && (
+        <div className="mb-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+          {deleteError}
+        </div>
+      )}
       <ul className="space-y-2" data-cy="collectible-list">
         {data.results.map((c: CollectibleType) => (
           <li
@@ -76,8 +81,12 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
             data-cy="collectible-row"
             onClick={() => onSelect?.(c)}
           >
-            <div className="font-medium" data-cy="collectible-name">{c.name}</div>
-            <div className="text-sm text-gray-600">{c.language} — {c.market_region}</div>
+            <div className="font-medium" data-cy="collectible-name">
+              {c.name}
+            </div>
+            <div className="text-sm text-gray-600">
+              {c.language} — {c.market_region}
+            </div>
             <div className="mt-2 flex gap-2">
               <button
                 data-cy="collectible-edit"

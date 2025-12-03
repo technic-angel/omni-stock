@@ -13,7 +13,7 @@ vi.mock('../../shared/lib/tokenStore', () => ({
     getAccess: vi.fn(() => null),
     setAccess: vi.fn(),
     clear: vi.fn(),
-  }
+  },
 }))
 
 const createTestStore = (preloadedState = {}) => {
@@ -45,7 +45,7 @@ const TestApp = ({ store, initialRoute = '/dashboard' }: { store: any; initialRo
 describe('ProtectedRoute with Redux', () => {
   it('redirects to landing page when not authenticated', () => {
     const store = createTestStore({
-      auth: { accessToken: null, isAuthenticated: false }
+      auth: { accessToken: null, isAuthenticated: false },
     })
 
     render(<TestApp store={store} />)
@@ -57,7 +57,7 @@ describe('ProtectedRoute with Redux', () => {
 
   it('shows protected content when authenticated', () => {
     const store = createTestStore({
-      auth: { accessToken: 'valid-token', isAuthenticated: true }
+      auth: { accessToken: 'valid-token', isAuthenticated: true },
     })
 
     render(<TestApp store={store} />)
@@ -69,7 +69,7 @@ describe('ProtectedRoute with Redux', () => {
 
   it('redirects after token is cleared (logout)', () => {
     const store = createTestStore({
-      auth: { accessToken: 'valid-token', isAuthenticated: true }
+      auth: { accessToken: 'valid-token', isAuthenticated: true },
     })
 
     const { rerender } = render(<TestApp store={store} />)
@@ -77,7 +77,7 @@ describe('ProtectedRoute with Redux', () => {
 
     // Simulate logout by creating new store with cleared auth
     const loggedOutStore = createTestStore({
-      auth: { accessToken: null, isAuthenticated: false }
+      auth: { accessToken: null, isAuthenticated: false },
     })
 
     rerender(<TestApp store={loggedOutStore} />)

@@ -14,7 +14,7 @@ vi.mock('../../shared/lib/tokenStore', () => ({
     getAccess: vi.fn(() => null),
     setAccess: vi.fn(),
     clear: vi.fn(),
-  }
+  },
 }))
 
 const createTestStore = (isAuthenticated: boolean) => {
@@ -24,7 +24,7 @@ const createTestStore = (isAuthenticated: boolean) => {
       auth: {
         accessToken: isAuthenticated ? 'test-token' : null,
         isAuthenticated,
-      }
+      },
     },
   })
 }

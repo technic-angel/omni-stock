@@ -5,7 +5,7 @@
 describe('Omni-Stock smoke flow', () => {
   const user = {
     email: `e2e_test_user+${Date.now()}@example.com`,
-    password: 'TestPass123!'
+    password: 'TestPass123!',
   }
 
   before(() => {

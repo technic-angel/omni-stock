@@ -88,7 +88,19 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
           <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
         </label>
         <div className="text-xs text-gray-500">
-          Current image: {collectible.image_url ? <a href={collectible.image_url} target="_blank" rel="noreferrer" className="text-blue-600">preview</a> : 'none'}
+          Current image:{' '}
+          {collectible.image_url ? (
+            <a
+              href={collectible.image_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600"
+            >
+              preview
+            </a>
+          ) : (
+            'none'
+          )}
         </div>
         <label className="block text-sm">
           Replace Image
@@ -99,7 +111,10 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
             {...register('image_file')}
           />
         </label>
-        <button className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50" disabled={isPending}>
+        <button
+          className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          disabled={isPending}
+        >
           {isPending ? 'Saving…' : 'Save Changes'}
         </button>
       </form>

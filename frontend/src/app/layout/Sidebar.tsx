@@ -2,18 +2,18 @@
 
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  Home, 
-  Package, 
-  Plus, 
-  Building2, 
+import {
+  Home,
+  Package,
+  Plus,
+  Building2,
   Heart,
   Settings,
   LogOut,
   Menu,
   ChevronLeft,
   ChevronRight,
-  Search
+  Search,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '../../components/ui/sheet'
@@ -30,7 +30,7 @@ const ENABLE_SEARCH = false
 const PRIMARY_NAVIGATION = [
   { name: 'Dashboard', href: '/dashboard', icon: Home, shortcut: '⌘1' },
   { name: 'Inventory', href: '/inventory', icon: Package, shortcut: '⌘2' },
-  { name: 'Add Item', href: '/inventory/add', icon: Plus, shortcut: '⌘3' }
+  { name: 'Add Item', href: '/inventory/add', icon: Plus, shortcut: '⌘3' },
 ]
 
 // Quick access section - organized management tools
@@ -38,7 +38,7 @@ const PRIMARY_NAVIGATION = [
 const QUICK_ACCESS = [
   { name: 'Vendors', href: '/vendors', icon: Building2, color: 'text-blue-500' },
   { name: 'Wishlist', href: '/wishlist', icon: Heart, color: 'text-pink-500' },
-  { name: 'Categories', href: '/categories', icon: Package, color: 'text-green-500' }
+  { name: 'Categories', href: '/categories', icon: Package, color: 'text-green-500' },
 ]
 
 // User role - placeholder for future multi-vendor/RBAC support
@@ -60,12 +60,15 @@ export function Sidebar({ className }: SidebarProps) {
   }
 
   const NavigationContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
-    <div 
-      className="flex h-full flex-col bg-white" 
+    <div
+      className="flex h-full flex-col bg-white"
       onClick={(e) => {
         // Toggle sidebar when clicking empty space (not on links)
         const target = e.target as Element
-        if (!isMobile && (e.target === e.currentTarget || target.closest?.('.sidebar-toggle-area'))) {
+        if (
+          !isMobile &&
+          (e.target === e.currentTarget || target.closest?.('.sidebar-toggle-area'))
+        ) {
           setIsExpanded(!isExpanded)
         }
       }}
@@ -73,7 +76,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Header with Logo */}
       <div className="px-2 py-6 border-b border-gray-100">
         {/* Logo */}
-        <div 
+        <div
           className={`flex items-center cursor-pointer transition-all duration-300 hover:bg-gray-50 rounded-lg p-1 -m-1 overflow-hidden ${
             isExpanded ? 'justify-start' : 'justify-center'
           }`}
@@ -81,33 +84,33 @@ export function Sidebar({ className }: SidebarProps) {
         >
           {/* Logo Icon & Wordmark */}
 
-          <div className={`flex items-center justify-center ${
-            isMobile || isExpanded 
-              ? 'w-auto' 
-              : 'w-16 h-16'
-          } transition-all duration-500`}>
+          <div
+            className={`flex items-center justify-center ${
+              isMobile || isExpanded ? 'w-auto' : 'w-16 h-16'
+            } transition-all duration-500`}
+          >
             {isMobile ? (
               // Mobile-only version: Always show horizontal logo (drawer context)
-              <img 
-                src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" 
-                alt="Omni-Stock" 
+              <img
+                src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+                alt="Omni-Stock"
                 className="h-20 w-auto object-contain max-w-[240px]"
               />
             ) : (
               // Desktop-only version: Cross-fade between icon and horizontal logo
               <div className="relative flex items-center justify-center">
                 {/* Icon - fades out when expanded */}
-                <img 
-                  src="/branding/omni-stock-icon-gem-tiffany.svg" 
-                  alt="Omni-Stock" 
+                <img
+                  src="/branding/omni-stock-icon-gem-tiffany.svg"
+                  alt="Omni-Stock"
                   className={`h-16 w-16 object-contain transition-opacity duration-500 absolute ${
                     isExpanded ? 'opacity-0' : 'opacity-100'
                   }`}
                 />
                 {/* Horizontal - fades in when expanded */}
-                <img 
-                  src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" 
-                  alt="Omni-Stock" 
+                <img
+                  src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+                  alt="Omni-Stock"
                   className={`h-30 w-auto object-contain max-w-[300px] transition-opacity duration-500 ${
                     isExpanded ? 'opacity-100' : 'opacity-0'
                   }`}
@@ -128,13 +131,11 @@ export function Sidebar({ className }: SidebarProps) {
             </div>
           )}
         </div>
-        
+
         {/* Search Bar */}
         {(isExpanded || isMobile) && (
           <div className="mt-4">
-            <div className={`relative ${
-              ENABLE_SEARCH ? '' : 'opacity-50 pointer-events-none'
-            }`}>
+            <div className={`relative ${ENABLE_SEARCH ? '' : 'opacity-50 pointer-events-none'}`}>
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
@@ -156,7 +157,7 @@ export function Sidebar({ className }: SidebarProps) {
           {PRIMARY_NAVIGATION.map((item) => {
             const Icon = item.icon
             const isActive = isActivePath(item.href)
-            
+
             return (
               <Link
                 key={item.name}
@@ -169,13 +170,15 @@ export function Sidebar({ className }: SidebarProps) {
                 } ${!isExpanded && !isMobile ? 'justify-center' : 'justify-between'}`}
               >
                 <div className="flex items-center">
-                  <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                  {(isExpanded || isMobile) && (
-                    <span className="ml-3">{item.name}</span>
-                  )}
+                  <Icon
+                    className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}
+                  />
+                  {(isExpanded || isMobile) && <span className="ml-3">{item.name}</span>}
                 </div>
                 {(isExpanded || isMobile) && item.shortcut && (
-                  <span className={`text-xs ${isActive ? 'text-brand-primary-soft' : 'text-gray-400'}`}>
+                  <span
+                    className={`text-xs ${isActive ? 'text-brand-primary-soft' : 'text-gray-400'}`}
+                  >
                     {item.shortcut}
                   </span>
                 )}
@@ -183,7 +186,7 @@ export function Sidebar({ className }: SidebarProps) {
             )
           })}
         </nav>
-        
+
         {/* Quick Access Section */}
         {(isExpanded || isMobile) && (
           <div className="mt-8">
@@ -197,7 +200,7 @@ export function Sidebar({ className }: SidebarProps) {
               {QUICK_ACCESS.map((item) => {
                 const Icon = item.icon
                 const isActive = isActivePath(item.href)
-                
+
                 return (
                   <Link
                     key={item.name}
@@ -221,42 +224,38 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* User Account Section */}
       <div className="border-t border-gray-100 sidebar-toggle-area">
-      {/* User Profile */}
-      {(isExpanded || isMobile) && (
-        <div className="p-4 transition-opacity duration-700">
-          <div className="flex items-center space-x-4">
-            {/* Avatar - grows smoothly with navbar expansion */}
-            <div className={`flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-sm transition-all duration-700 ${
-              isExpanded || isMobile 
-                ? 'w-14 h-14 text-lg' 
-                : 'w-10 h-10 text-xs'
-            }`}>
+        {/* User Profile */}
+        {(isExpanded || isMobile) && (
+          <div className="p-4 transition-opacity duration-700">
+            <div className="flex items-center space-x-4">
+              {/* Avatar - grows smoothly with navbar expansion */}
+              <div
+                className={`flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-sm transition-all duration-700 ${
+                  isExpanded || isMobile ? 'w-14 h-14 text-lg' : 'w-10 h-10 text-xs'
+                }`}
+              >
+                JD
+              </div>
+              {/* User Info - visible when expanded */}
+              <div className="flex-1 min-w-0">
+                <div className="text-base font-medium text-gray-900 truncate">John Doe</div>
+                {/* Post-MVP: Display dynamic role and vendor info */}
+                <div className="text-sm text-gray-500 truncate">{USER_ROLE} • TechCorp</div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </div>
+          </div>
+        )}
+
+        {/* Collapsed User Profile */}
+        {!isExpanded && !isMobile && (
+          <div className="p-1">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs shadow-sm mx-auto cursor-pointer hover:shadow-md transition-all duration-700">
               JD
             </div>
-            {/* User Info - visible when expanded */}
-            <div className="flex-1 min-w-0">
-              <div className="text-base font-medium text-gray-900 truncate">
-                John Doe
-              </div>
-              {/* Post-MVP: Display dynamic role and vendor info */}
-              <div className="text-sm text-gray-500 truncate">
-                {USER_ROLE} • TechCorp
-              </div>
-            </div>
-            <ChevronRight className="h-4 w-4 text-gray-400" />
           </div>
-        </div>
-      )}
-      
-      {/* Collapsed User Profile */}
-      {(!isExpanded && !isMobile) && (
-        <div className="p-1">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs shadow-sm mx-auto cursor-pointer hover:shadow-md transition-all duration-700">
-            JD
-          </div>
-        </div>
-      )}
-        
+        )}
+
         {/* Settings and Logout */}
         <div className="p-4">
           {(isExpanded || isMobile) && (
@@ -279,7 +278,7 @@ export function Sidebar({ className }: SidebarProps) {
               </Link>
             </div>
           )}
-          {(!isExpanded && !isMobile) && (
+          {!isExpanded && !isMobile && (
             <div className="space-y-2">
               <button className="w-full p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:shadow-sm group">
                 <Settings className="h-5 w-5 text-gray-500 mx-auto group-hover:text-gray-700" />
@@ -300,11 +299,7 @@ export function Sidebar({ className }: SidebarProps) {
         {/* Mobile menu button */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="md:hidden"
-            >
+            <Button variant="ghost" size="sm" className="md:hidden">
               <Menu className="h-6 w-6" />
               <span className="sr-only">Open sidebar</span>
             </Button>
@@ -318,7 +313,7 @@ export function Sidebar({ className }: SidebarProps) {
   }
 
   return (
-    <div 
+    <div
       className={`bg-white border-r border-gray-200 shadow-sm overflow-hidden ${
         isExpanded ? 'w-64' : 'w-16'
       } transition-all duration-700 ease-in-out ${className}`}
@@ -330,8 +325,8 @@ export function Sidebar({ className }: SidebarProps) {
 
 export function MobileSidebarTrigger() {
   const isMobile = useMediaQuery('(max-width: 768px)')
-  
+
   if (!isMobile) return null
-  
+
   return <Sidebar />
 }

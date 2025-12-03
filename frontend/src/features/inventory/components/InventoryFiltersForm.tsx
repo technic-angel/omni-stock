@@ -33,11 +33,19 @@ const InventoryFiltersForm = ({ defaultFilters, onChange }: Props) => {
     >
       <label className="flex flex-col text-sm">
         Language
-        <input className="rounded border p-2" placeholder="e.g. English" {...register('language')} />
+        <input
+          className="rounded border p-2"
+          placeholder="e.g. English"
+          {...register('language')}
+        />
       </label>
       <label className="flex flex-col text-sm">
         Market Region
-        <input className="rounded border p-2" placeholder="e.g. US" {...register('market_region')} />
+        <input
+          className="rounded border p-2"
+          placeholder="e.g. US"
+          {...register('market_region')}
+        />
       </label>
       <div className="flex items-end gap-2">
         <button className="rounded bg-blue-600 px-4 py-2 text-white" type="submit">

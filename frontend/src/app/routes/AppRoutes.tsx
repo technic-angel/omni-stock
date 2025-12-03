@@ -17,14 +17,14 @@ import LandingPage from '../../features/landing/pages/LandingPage'
 
 /**
  * AppRoutes - Main routing configuration
- * 
+ *
  * 📚 LEARNING: Route Organization Pattern
- * 
+ *
  * Routes are organized into three groups:
  * 1. Public landing page (standalone, no layout)
  * 2. Guest routes (GuestLayout) - Login, Register, Password Reset
  * 3. Protected routes (AppLayout) - Dashboard, Inventory, Profile
- * 
+ *
  * PublicRoute: Redirects authenticated users AWAY (to /dashboard)
  * ProtectedRoute: Redirects unauthenticated users TO login
  */
@@ -34,20 +34,20 @@ const AppRoutes = () => {
       {/* Public landing page - standalone layout */}
       <Route
         index
-        element={(
+        element={
           <PublicRoute>
             <LandingPage />
           </PublicRoute>
-        )}
+        }
       />
 
       {/* Guest routes - minimal layout with centered content */}
       <Route
-        element={(
+        element={
           <PublicRoute>
             <GuestLayout />
           </PublicRoute>
-        )}
+        }
       >
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -57,7 +57,13 @@ const AppRoutes = () => {
       <Route path="/logout" element={<LogoutPage />} />
 
       {/* Protected app routes - full app layout with sidebar */}
-      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/inventory" element={<CollectiblesListPage />} />
         <Route path="/inventory/:collectibleId/edit" element={<CollectibleEditPage />} />

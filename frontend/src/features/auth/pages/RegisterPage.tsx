@@ -8,9 +8,9 @@ import { RegisterInput, registerSchema } from '../schema/authSchema'
 
 /**
  * RegisterPage - New user registration form
- * 
+ *
  * 📚 LEARNING: Same pattern as LoginPage
- * 
+ *
  * The form handling pattern is identical:
  * 1. Zod schema (registerSchema) - adds email validation
  * 2. useForm with zodResolver
@@ -54,9 +54,7 @@ const RegisterPage = () => {
     <div className="w-full max-w-md">
       {/* Card */}
       <div className="bg-white rounded-lg shadow-lg border p-8">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
-          Create Account
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Create Account</h1>
 
         {/* Server Error */}
         {serverError && (
@@ -100,9 +98,7 @@ const RegisterPage = () => {
               placeholder="you@example.com"
               {...register('email')}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
           </div>
 
           {/* Password Field */}
@@ -127,7 +123,10 @@ const RegisterPage = () => {
 
           {/* Confirm Password Field */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm Password
             </label>
             <input
@@ -159,7 +158,10 @@ const RegisterPage = () => {
         {/* Login Link */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-brand-primary hover:text-brand-primary-dark font-medium">
+          <Link
+            to="/login"
+            className="text-brand-primary hover:text-brand-primary-dark font-medium"
+          >
             Log in
           </Link>
         </p>

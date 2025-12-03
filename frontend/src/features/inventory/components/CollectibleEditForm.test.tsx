@@ -33,7 +33,9 @@ describe('CollectibleEditForm', () => {
     )
 
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Updated Name' } })
-    const form = screen.getByRole('button', { name: /save changes/i }).closest('form') as HTMLFormElement
+    const form = screen
+      .getByRole('button', { name: /save changes/i })
+      .closest('form') as HTMLFormElement
     fireEvent.submit(form)
 
     await waitFor(() => expect(mutateSpy).toHaveBeenCalled())

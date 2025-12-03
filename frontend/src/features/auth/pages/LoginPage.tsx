@@ -10,14 +10,14 @@ import { setCredentials } from '../../../store/slices/authSlice'
 
 /**
  * LoginPage - User login form
- * 
+ *
  * 📚 Now using Redux for auth state!
  * Instead of useAuth() context, we dispatch(setCredentials(token))
  */
 const LoginPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const dispatch = useAppDispatch()  // Redux dispatch
+  const dispatch = useAppDispatch() // Redux dispatch
   const { mutateAsync, isPending } = useLogin()
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -48,9 +48,7 @@ const LoginPage = () => {
     <div className="w-full max-w-md">
       {/* Card */}
       <div className="bg-white rounded-lg shadow-lg border p-8">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
-          Login to Your Account
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Login to Your Account</h1>
 
         {/* Server Error */}
         {serverError && (
@@ -113,7 +111,10 @@ const LoginPage = () => {
         {/* Register Link */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Don’t have an account?{' '}
-          <Link to="/register" className="text-brand-primary hover:text-brand-primary-dark font-medium">
+          <Link
+            to="/register"
+            className="text-brand-primary hover:text-brand-primary-dark font-medium"
+          >
             Create one
           </Link>
         </p>

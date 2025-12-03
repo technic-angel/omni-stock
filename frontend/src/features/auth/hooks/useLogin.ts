@@ -1,8 +1,8 @@
 /**
  * useLogin Hook - React Query Mutation
- * 
+ *
  * 📚 LOGIN FLOW SUMMARY
- * 
+ *
  * 1. User submits form → Component calls mutateAsync({ username, password })
  * 2. React Query calls mutationFn → Which calls login() from authApi
  * 3. login() makes POST /api/v1/auth/token/
@@ -11,7 +11,7 @@
  * 6. login() stores tokens in localStorage
  * 7. mutateAsync resolves with the tokens
  * 8. Component updates AuthContext and redirects to dashboard
- * 
+ *
  * Now every future request automatically includes the access token!
  * (Thanks to our axios interceptor)
  */
@@ -31,7 +31,7 @@ export const useLogin = () => {
 
 /**
  * 📚 THE COMPLETE DATA FLOW (Visual)
- * 
+ *
  *  ┌─────────────────────────────────────────────────────────────┐
  *  │                        FRONTEND                             │
  *  │                                                             │

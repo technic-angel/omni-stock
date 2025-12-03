@@ -20,13 +20,21 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
     formState: { errors },
   } = useForm<CollectibleInput>({
     resolver: zodResolver(collectibleSchema),
-    defaultValues: { name: '', sku: '', quantity: 0, language: '', market_region: '', image_file: undefined },
+    defaultValues: {
+      name: '',
+      sku: '',
+      quantity: 0,
+      language: '',
+      market_region: '',
+      image_file: undefined,
+    },
   })
 
   const onSubmit = async (values: CollectibleInput) => {
     let imageUrl: string | undefined
     if (values.image_file) {
-      const file = values.image_file instanceof File ? values.image_file : (values.image_file as any)
+      const file =
+        values.image_file instanceof File ? values.image_file : (values.image_file as any)
       imageUrl = file ? await uploadImageToSupabase(file as File) : undefined
     }
     const payload = { ...values, image_url: imageUrl }
@@ -76,7 +84,10 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
             {...register('image_file')}
           />
         </label>
-        <button className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50" disabled={isPending}>
+        <button
+          className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          disabled={isPending}
+        >
           {isPending ? 'Saving…' : 'Create'}
         </button>
       </form>

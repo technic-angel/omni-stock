@@ -19,11 +19,12 @@ const mockedUseCollectibles = vi.mocked(useCollectibles)
 const mockedUseDeleteCollectible = vi.mocked(useDeleteCollectible)
 
 describe('CollectiblesList', () => {
-  const renderComponent = () => render(
-    <MemoryRouter future={routerFuture}>
-      <CollectiblesList filters={{}} />
-    </MemoryRouter>,
-  )
+  const renderComponent = () =>
+    render(
+      <MemoryRouter future={routerFuture}>
+        <CollectiblesList filters={{}} />
+      </MemoryRouter>,
+    )
 
   it('shows loading state', () => {
     mockedUseCollectibles.mockReturnValue({ isLoading: true } as any)

@@ -30,7 +30,11 @@ const ConfirmDialog = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="w-full max-w-md rounded bg-white p-6 shadow-lg" data-testid="confirm-dialog">
         <h2 className="text-lg font-semibold">{title}</h2>
         {description && <p className="mt-2 text-sm text-gray-600">{description}</p>}
