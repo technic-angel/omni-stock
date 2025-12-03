@@ -12,11 +12,10 @@ class Command(BaseCommand):
         parser.add_argument('--overwrite', action='store_true', help='Overwrite existing demo vendor if present')
 
     def handle(self, *args, **options):
-        from django.contrib.auth import get_user_model
-
         from backend.inventory.models import CardDetails, Collectible
         from backend.users.models import UserProfile
         from backend.vendors.models import Vendor
+        from django.contrib.auth import get_user_model
 
         try:
             from faker import Faker

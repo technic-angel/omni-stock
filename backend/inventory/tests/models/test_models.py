@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 import pytest
-
 from backend.inventory.models import CardDetails
 from backend.inventory.tests.factories import CardDetailsFactory, CollectibleFactory, VendorFactory
 

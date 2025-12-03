@@ -1,10 +1,9 @@
 import pytest
-from django.contrib.auth import get_user_model
-
 from backend.users.models import UserProfile
 from backend.vendors.selectors.get_vendor import get_vendor
 from backend.vendors.selectors.list_vendors import list_vendors
 from backend.vendors.services.create_vendor import create_vendor
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

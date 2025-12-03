@@ -1,5 +1,4 @@
 import pytest
-
 from backend.vendors.models import Vendor
 from backend.vendors.services.create_vendor import create_vendor
 

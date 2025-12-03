@@ -10,12 +10,11 @@ This module covers:
 from decimal import Decimal
 
 import pytest
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-
 from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
 from backend.users.models import UserProfile
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
 
 User = get_user_model()
 

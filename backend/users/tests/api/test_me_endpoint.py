@@ -1,11 +1,10 @@
 """Tests for /api/v1/auth/me/ endpoint (CurrentUserView)."""
 
 import pytest
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-
 from backend.users.models import UserProfile
 from backend.users.services.create_user import create_user
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
