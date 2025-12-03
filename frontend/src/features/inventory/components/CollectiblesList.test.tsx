@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 import CollectiblesList from './CollectiblesList'
+import { routerFuture } from '../../../app/routes/routerFuture'
 import { useCollectibles } from '../hooks/useCollectibles'
 import { useDeleteCollectible } from '../hooks/useDeleteCollectible'
 
@@ -19,7 +20,7 @@ const mockedUseDeleteCollectible = vi.mocked(useDeleteCollectible)
 
 describe('CollectiblesList', () => {
   const renderComponent = () => render(
-    <MemoryRouter>
+    <MemoryRouter future={routerFuture}>
       <CollectiblesList filters={{}} />
     </MemoryRouter>,
   )

@@ -5,6 +5,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import authReducer from './slices/authSlice'
 import ProtectedRoute from '../app/routes/ProtectedRoute'
+import { routerFuture } from '../app/routes/routerFuture'
 
 // Mock tokenStore
 vi.mock('../../shared/lib/tokenStore', () => ({
@@ -24,7 +25,7 @@ const createTestStore = (preloadedState = {}) => {
 
 const TestApp = ({ store, initialRoute = '/dashboard' }: { store: any; initialRoute?: string }) => (
   <Provider store={store}>
-    <MemoryRouter initialEntries={[initialRoute]}>
+    <MemoryRouter initialEntries={[initialRoute]} future={routerFuture}>
       <Routes>
         <Route path="/" element={<div>Landing Page</div>} />
         <Route path="/login" element={<div>Login Page</div>} />

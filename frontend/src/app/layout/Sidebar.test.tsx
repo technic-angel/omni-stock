@@ -4,6 +4,7 @@ import { BrowserRouter, useLocation } from 'react-router-dom'
 import { Sidebar, MobileSidebarTrigger } from './Sidebar'
 import { useLocalStorage } from '@/shared/hooks/useLocalStorage';
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery';
+import { routerFuture } from '../routes/routerFuture'
 
 vi.mock('../../shared/hooks/useLocalStorage', () => ({
   useLocalStorage: vi.fn(),
@@ -24,7 +25,7 @@ vi.mock("react-router-dom", async () => {
 // TODO: Test wrapper component for React Router
 const renderWithRouter = (component: React.ReactElement) => {
   return render(
-    <BrowserRouter>
+    <BrowserRouter future={routerFuture}>
       {component}
     </BrowserRouter>
   )

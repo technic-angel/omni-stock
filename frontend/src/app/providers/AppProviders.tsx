@@ -7,6 +7,7 @@ import { store } from '../../store'
 import { clearCredentials } from '../../store/slices/authSlice'
 import { setUnauthorizedHandler } from '../../shared/lib/http'
 import AuthProvider from '../../features/auth/providers/AuthProvider'
+import { routerFuture } from '../routes/routerFuture'
 
 type Props = {
   children: ReactNode
@@ -26,9 +27,7 @@ const AppProviders = ({ children }: Props) => {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BrowserRouter>
-            {children}
-          </BrowserRouter>
+          <BrowserRouter future={routerFuture}>{children}</BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>
     </Provider>

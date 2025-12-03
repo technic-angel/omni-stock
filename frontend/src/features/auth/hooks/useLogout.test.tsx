@@ -10,6 +10,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { configureStore } from '@reduxjs/toolkit'
 
 import { useLogout } from './useLogout'
+import { routerFuture } from '../../../app/routes/routerFuture'
 import authReducer, { setCredentials } from '../../../store/slices/authSlice'
 import * as authApi from '../api/authApi'
 
@@ -49,7 +50,7 @@ describe('useLogout', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
+        <MemoryRouter future={routerFuture}>
           {children}
         </MemoryRouter>
       </QueryClientProvider>

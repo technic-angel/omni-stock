@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { configureStore } from '@reduxjs/toolkit'
 
 import LogoutPage from './LogoutPage'
+import { routerFuture } from '../../../app/routes/routerFuture'
 import authReducer, { setCredentials } from '../../../store/slices/authSlice'
 import * as authApi from '../api/authApi'
 
@@ -48,7 +49,7 @@ describe('LogoutPage', () => {
     return render(
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
+        <MemoryRouter future={routerFuture}>
             <LogoutPage />
           </MemoryRouter>
         </QueryClientProvider>
