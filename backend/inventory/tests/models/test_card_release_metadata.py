@@ -1,4 +1,5 @@
 import pytest
+
 from backend.inventory.tests.factories import CardDetailsFactory, CollectibleFactory
 
 

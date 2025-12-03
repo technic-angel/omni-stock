@@ -27,5 +27,5 @@ src = ["backend"]
 extend-exclude = ["migrations"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]  # errors, flake8 warnings, import sorting
+select = ["E", "F"]  # errors and flake8 warnings; import sorting enforced via isort
 ignore = ["E501"]  # defer to black for formatting

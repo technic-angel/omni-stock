@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+
 from backend.inventory.tests.factories import CardDetailsFactory, CollectibleFactory
 
 

@@ -1,9 +1,10 @@
 import pytest
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+
 from backend.users.models import UserProfile
 from backend.vendors.models import Vendor
 from backend.vendors.services.create_vendor import create_vendor
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
 
 User = get_user_model()
 

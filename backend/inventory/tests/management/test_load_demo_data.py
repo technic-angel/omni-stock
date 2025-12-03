@@ -1,7 +1,8 @@
 import pytest
+from django.core.management import call_command
+
 from backend.inventory.models import CardDetails, Collectible
 from backend.vendors.models import Vendor
-from django.core.management import call_command
 
 
 @pytest.mark.django_db
