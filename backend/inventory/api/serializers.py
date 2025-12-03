@@ -1,5 +1,8 @@
 """Inventory domain serializers."""
 
+from urllib.parse import urlparse
+
+from django.conf import settings
 from rest_framework import serializers
 
 from backend.inventory.models import CardDetails, Collectible
@@ -76,6 +79,19 @@ class CollectibleSerializer(serializers.ModelSerializer):
     def validate_projected_price(self, value):
         if value < 0:
             raise serializers.ValidationError("Projected price cannot be negative.")
+        return value
+
+    def validate_image_url(self, value):
+        if not value:
+            return value
+
+        parsed = urlparse(value)
+        if parsed.scheme != 'https':
+            raise serializers.ValidationError("Image URLs must use HTTPS.")
+
+        allowed_hosts = getattr(settings, 'ALLOWED_IMAGE_URL_HOSTS', [])
+        if allowed_hosts and parsed.hostname not in allowed_hosts:
+            raise serializers.ValidationError("Image host is not allowed.")
         return value
 
     def create(self, validated_data):

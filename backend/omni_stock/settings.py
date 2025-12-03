@@ -84,6 +84,7 @@ if _render_service:
 
 ALLOWED_HOSTS = list(set(_allowed_hosts))  # Remove duplicates
 
+ALLOWED_IMAGE_URL_HOSTS = env.list('ALLOWED_IMAGE_URL_HOSTS', default=[])
 
 # Application definition
 

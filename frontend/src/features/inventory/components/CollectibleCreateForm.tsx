@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Card from '../../../shared/components/Card'
 import { useCreateCollectible } from '../hooks/useCreateCollectible'
 import { collectibleSchema, CollectibleInput } from '../schema/itemSchema'
-import { uploadImageToSupabase } from '../../../shared/lib/supabase'
+import { useCollectibleImageUpload } from '../hooks/useCollectibleImageUpload'
 
 type Props = {
   onCreated?: () => void
@@ -13,6 +13,12 @@ type Props = {
 
 const CollectibleCreateForm = ({ onCreated }: Props) => {
   const { mutateAsync, isPending } = useCreateCollectible()
+  const {
+    upload,
+    isUploading,
+    error: uploadError,
+    resetError: resetUploadError,
+  } = useCollectibleImageUpload()
   const {
     register,
     handleSubmit,
@@ -30,12 +36,17 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
     },
   })
 
+  const imageFileInput = register('image_file')
+
   const onSubmit = async (values: CollectibleInput) => {
     let imageUrl: string | undefined
-    if (values.image_file) {
-      const file =
-        values.image_file instanceof File ? values.image_file : (values.image_file as any)
-      imageUrl = file ? await uploadImageToSupabase(file as File) : undefined
+    const file = values.image_file instanceof File ? values.image_file : undefined
+    if (file) {
+      try {
+        imageUrl = await upload(file)
+      } catch {
+        return
+      }
     }
     const payload = { ...values, image_url: imageUrl }
     delete (payload as any).image_file
@@ -81,14 +92,19 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
             type="file"
             accept="image/*"
             className="mt-1 w-full rounded border p-2"
-            {...register('image_file')}
+            {...imageFileInput}
+            onChange={(event) => {
+              resetUploadError()
+              imageFileInput.onChange(event)
+            }}
           />
+          {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
         </label>
         <button
           className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-          disabled={isPending}
+          disabled={isPending || isUploading}
         >
-          {isPending ? 'Saving…' : 'Create'}
+          {isPending || isUploading ? 'Saving…' : 'Create'}
         </button>
       </form>
     </Card>

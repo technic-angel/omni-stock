@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import CollectibleEditForm from './CollectibleEditForm'
 
 const mutateSpy = vi.fn().mockResolvedValue({})
+const uploadSpy = vi.fn().mockResolvedValue('https://example.com/new-image.jpg')
 
 vi.mock('../hooks/useUpdateCollectible', () => ({
   useUpdateCollectible: () => ({
@@ -13,8 +14,13 @@ vi.mock('../hooks/useUpdateCollectible', () => ({
   }),
 }))
 
-vi.mock('../../../shared/lib/supabase', () => ({
-  uploadImageToSupabase: vi.fn().mockResolvedValue('https://example.com/new-image.jpg'),
+vi.mock('../hooks/useCollectibleImageUpload', () => ({
+  useCollectibleImageUpload: () => ({
+    upload: uploadSpy,
+    isUploading: false,
+    error: null,
+    resetError: vi.fn(),
+  }),
 }))
 
 describe('CollectibleEditForm', () => {

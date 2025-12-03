@@ -5,6 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import CollectibleCreateForm from './CollectibleCreateForm'
 
 const mutateSpy = vi.fn().mockResolvedValue({})
+const uploadSpy = vi.fn().mockResolvedValue('https://example.com/image.jpg')
 
 vi.mock('../hooks/useCreateCollectible', () => ({
   useCreateCollectible: () => ({
@@ -12,8 +13,13 @@ vi.mock('../hooks/useCreateCollectible', () => ({
     isPending: false,
   }),
 }))
-vi.mock('../../../shared/lib/supabase', () => ({
-  uploadImageToSupabase: vi.fn().mockResolvedValue('https://example.com/image.jpg'),
+vi.mock('../hooks/useCollectibleImageUpload', () => ({
+  useCollectibleImageUpload: () => ({
+    upload: uploadSpy,
+    isUploading: false,
+    error: null,
+    resetError: vi.fn(),
+  }),
 }))
 
 describe('CollectibleCreateForm', () => {
@@ -31,5 +37,6 @@ describe('CollectibleCreateForm', () => {
     fireEvent.submit(form)
     await waitFor(() => expect(mutateSpy).toHaveBeenCalled(), { timeout: 2000 })
     expect(onCreated).toHaveBeenCalled()
+    expect(uploadSpy).toHaveBeenCalled()
   })
 })
