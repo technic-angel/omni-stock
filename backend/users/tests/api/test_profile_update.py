@@ -2,8 +2,8 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
 from backend.users.models import UserProfile
 from backend.vendors.models import Vendor

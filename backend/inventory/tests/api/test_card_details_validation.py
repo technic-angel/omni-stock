@@ -1,9 +1,8 @@
 import pytest
-
 from rest_framework.test import APIClient
 
-from backend.inventory.tests.factories import UserFactory, VendorFactory
 from backend.inventory.models import Collectible
+from backend.inventory.tests.factories import UserFactory, VendorFactory
 from backend.users.models import UserProfile
 
 

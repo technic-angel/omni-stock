@@ -1,17 +1,13 @@
 """Service for password reset operations."""
 
-import secrets
-from datetime import timedelta
-from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.conf import settings
-from django.utils import timezone
 
 User = get_user_model()
 

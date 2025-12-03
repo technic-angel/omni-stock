@@ -1,0 +1,31 @@
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = "backend"
+exclude = '''
+/(
+  \.git
+  | \.venv
+  | __pycache__
+  | build
+  | dist
+  | migrations
+  | node_modules
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["backend"]
+skip = [".venv", "venv", "node_modules", "migrations", "__pycache__"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["backend"]
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # errors, flake8 warnings, import sorting
+ignore = ["E501"]  # defer to black for formatting

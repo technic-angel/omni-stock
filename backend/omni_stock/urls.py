@@ -14,10 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include # Import 'include'
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path  # Import 'include'
 
 # SimpleJWT views for token obtain/refresh/verify
 from rest_framework_simplejwt.views import (
@@ -25,14 +25,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+
 # Register view (user sign-up)
 from backend.users.api.viewsets import (
-    RegisterView,
-    CurrentUserView,
     ChangePasswordView,
-    PasswordResetRequestView,
-    PasswordResetConfirmView,
+    CurrentUserView,
     LogoutView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
+    RegisterView,
 )
 
 urlpatterns = [
@@ -65,7 +66,7 @@ def health_view(request):
 def root_view(request):
     from django.http import JsonResponse
     from django.shortcuts import redirect
-    
+
     # Check if request is from a browser (looks for text/html in Accept header)
     accept_header = request.META.get('HTTP_ACCEPT', '')
     

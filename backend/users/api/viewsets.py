@@ -1,20 +1,20 @@
 """User domain viewsets and API endpoints."""
 
-from rest_framework.generics import GenericAPIView, RetrieveAPIView, RetrieveUpdateAPIView
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from drf_spectacular.utils import OpenApiExample, extend_schema
+from rest_framework import status
+from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
-from drf_spectacular.utils import extend_schema, OpenApiExample
 
 from backend.users.api.serializers import (
-    RegisterSerializer,
-    CurrentUserSerializer,
-    UpdateProfilePictureSerializer,
     ChangePasswordSerializer,
-    PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer,
+    CurrentUserSerializer,
     LogoutSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegisterSerializer,
+    UpdateProfilePictureSerializer,
 )
 from backend.users.selectors.get_current_user import get_current_user_with_profile
 

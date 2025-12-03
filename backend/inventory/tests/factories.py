@@ -1,10 +1,10 @@
-import factory
 from decimal import Decimal
+
+import factory
 from django.contrib.auth import get_user_model
 
 from backend.inventory.models import CardDetails, Collectible
 from backend.vendors.models import Vendor
-
 
 User = get_user_model()
 

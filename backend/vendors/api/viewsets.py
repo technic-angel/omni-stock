@@ -1,12 +1,12 @@
 """Vendor domain viewsets."""
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.permissions import IsAuthenticated
 
 from backend.core.permissions import resolve_user_vendor
-from backend.vendors.models import Vendor
 from backend.vendors.api.serializers import VendorSerializer
+from backend.vendors.models import Vendor
 from backend.vendors.selectors.get_vendor import get_vendor
 from backend.vendors.selectors.list_vendors import list_vendors
 

@@ -161,10 +161,10 @@ def test_me_endpoint_only_returns_own_data():
         email="user1@example.com",
         password="pass123"
     )
-    user2 = create_user(
+    create_user(
         username="user2",
         email="user2@example.com",
-        password="pass123"
+        password="pass123",
     )
     
     # Authenticate as user1
@@ -179,4 +179,3 @@ def test_me_endpoint_only_returns_own_data():
     assert data["username"] == "user1"
     assert data["email"] == "user1@example.com"
     assert data["username"] != "user2"
-

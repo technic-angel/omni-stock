@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional
 
 from django.db import transaction
 
-from backend.inventory.models import CardDetails, Collectible
 from backend.core.validators import validate_image_url
+from backend.inventory.models import CardDetails, Collectible
 
 
 def update_item(

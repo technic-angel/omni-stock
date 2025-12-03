@@ -1,10 +1,10 @@
 """User domain serializers."""
 
 from django.contrib.auth import get_user_model
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from drf_spectacular.utils import extend_schema_field
-from drf_spectacular.types import OpenApiTypes
 
 from backend.users.models import UserProfile
 from backend.users.services.create_user import create_user
@@ -148,7 +148,7 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         """Update user profile via service layer."""
         from backend.users.services.update_user_profile import update_user_profile
-        
+
         # Extract fields
         profile_picture = validated_data.get('profile_picture')
         vendor_id = validated_data.get('vendor_id')
@@ -203,8 +203,9 @@ class ChangePasswordSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         """Verify old password and validate new password."""
-        from backend.users.services.change_password import change_password
         from django.core.exceptions import ValidationError as DjangoValidationError
+
+        from backend.users.services.change_password import change_password
         
         user = self.context['request'].user
         
@@ -263,8 +264,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         """Verify token and validate new password."""
-        from backend.users.services.password_reset import confirm_password_reset
         from django.core.exceptions import ValidationError as DjangoValidationError
+
+        from backend.users.services.password_reset import confirm_password_reset
         
         try:
             confirm_password_reset(
@@ -294,8 +296,8 @@ class LogoutSerializer(serializers.Serializer):
     
     def validate_refresh(self, value):
         """Validate and blacklist the refresh token."""
-        from rest_framework_simplejwt.tokens import RefreshToken
         from rest_framework_simplejwt.exceptions import TokenError
+        from rest_framework_simplejwt.tokens import RefreshToken
         
         try:
             token = RefreshToken(value)

@@ -7,14 +7,14 @@ This module covers:
 - Input validation and error handling
 - JWT token authentication flow
 """
-import pytest
 from decimal import Decimal
 
-from rest_framework.test import APIClient
+import pytest
 from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
 
-from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
 from backend.inventory.models import Collectible
+from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
 from backend.users.models import UserProfile
 
 User = get_user_model()

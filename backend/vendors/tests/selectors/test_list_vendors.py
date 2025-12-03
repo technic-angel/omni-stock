@@ -2,11 +2,9 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from backend.users.models import UserProfile
-from backend.vendors.models import Vendor
-from backend.vendors.selectors.list_vendors import list_vendors
 from backend.vendors.selectors.get_vendor import get_vendor
+from backend.vendors.selectors.list_vendors import list_vendors
 from backend.vendors.services.create_vendor import create_vendor
-
 
 User = get_user_model()
 
@@ -14,7 +12,7 @@ User = get_user_model()
 @pytest.mark.django_db
 def test_list_vendors_scopes_to_user_profile_vendor():
     vendor_a = create_vendor(name="Vendor A")
-    vendor_b = create_vendor(name="Vendor B")
+    create_vendor(name="Vendor B")
 
     user = User.objects.create_user(username="vendor_user", email="user@example.com", password="Strongpass123")
     UserProfile.objects.create(user=user, vendor=vendor_a)

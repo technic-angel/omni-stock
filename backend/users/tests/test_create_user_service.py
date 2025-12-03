@@ -1,8 +1,8 @@
 import pytest
-
-from backend.users.services.create_user import create_user
 from django.contrib.auth import get_user_model
+
 from backend.users.models import UserProfile
+from backend.users.services.create_user import create_user
 
 User = get_user_model()
 

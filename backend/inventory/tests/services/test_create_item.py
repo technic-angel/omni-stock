@@ -1,11 +1,10 @@
 import pytest
 
-from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
-
 from backend.inventory.models import CardDetails, Collectible
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.delete_item import delete_item
 from backend.inventory.services.update_item import update_item
+from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
 
 
 @pytest.mark.django_db
