@@ -8,9 +8,7 @@ export function AppLayout() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Desktop Sidebar */}
-      {!isMobile && (
-        <Sidebar className="hidden md:flex md:flex-col" />
-      )}
+      {!isMobile && <Sidebar className="hidden md:flex md:flex-col" />}
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">

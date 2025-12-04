@@ -10,12 +10,13 @@ import { MemoryRouter } from 'react-router-dom'
 import { configureStore } from '@reduxjs/toolkit'
 
 import { useLogout } from './useLogout'
+import { routerFuture } from '../../../app/routes/routerFuture'
 import authReducer, { setCredentials } from '../../../store/slices/authSlice'
 import * as authApi from '../api/authApi'
 
 // Mock the auth API
 vi.mock('../api/authApi', () => ({
-  logout: vi.fn()
+  logout: vi.fn(),
 }))
 
 // Mock navigate
@@ -24,7 +25,7 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
   }
 })
 
@@ -34,24 +35,22 @@ describe('useLogout', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Create fresh store with logged-in state
     store = configureStore({
-      reducer: { auth: authReducer }
+      reducer: { auth: authReducer },
     })
     store.dispatch(setCredentials('test-token'))
-    
+
     queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } }
+      defaultOptions: { queries: { retry: false } },
     })
   })
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          {children}
-        </MemoryRouter>
+        <MemoryRouter future={routerFuture}>{children}</MemoryRouter>
       </QueryClientProvider>
     </Provider>
   )
@@ -95,8 +94,11 @@ describe('useLogout', () => {
 
   it('should return isLoggingOut state', async () => {
     let resolveLogout: () => void
-    vi.mocked(authApi.logout).mockImplementation(() => 
-      new Promise(resolve => { resolveLogout = resolve })
+    vi.mocked(authApi.logout).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveLogout = resolve
+        }),
     )
 
     const { result } = renderHook(() => useLogout(), { wrapper })

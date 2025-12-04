@@ -1,26 +1,26 @@
 /**
  * AuthProvider - Global Authentication State
- * 
+ *
  * 📚 WHAT IS CONTEXT?
- * 
+ *
  * React Context lets you share state across many components without
  * "prop drilling" (passing props through every level).
- * 
+ *
  * Instead of:
  *   <App token={token}>
  *     <Dashboard token={token}>
  *       <Sidebar token={token}>
  *         <UserMenu token={token} />   // Finally uses it!
- * 
+ *
  * With Context:
  *   <AuthProvider>
  *     <App>
  *       <Dashboard>
  *         <Sidebar>
  *           <UserMenu />  // Just calls useAuth() to get token!
- * 
+ *
  * 📚 HOW IT WORKS
- * 
+ *
  * 1. AuthProvider wraps the entire app
  * 2. It holds the token in React state
  * 3. Any component can call useAuth() to get/set the token
@@ -49,9 +49,7 @@ type Props = {
 
 const AuthProvider = ({ children }: Props) => {
   // Initialize state from localStorage (so we stay logged in on refresh!)
-  const [accessToken, setAccessTokenState] = useState<string | null>(
-    () => tokenStore.getAccess()
-  )
+  const [accessToken, setAccessTokenState] = useState<string | null>(() => tokenStore.getAccess())
 
   // Update both React state AND localStorage
   const setAccessToken = (token: string | null) => {
@@ -61,8 +59,8 @@ const AuthProvider = ({ children }: Props) => {
 
   // Logout: clear tokens and call backend to blacklist
   const logout = async () => {
-    await apiLogout()  // Clear localStorage + call backend
-    setAccessTokenState(null)  // Update React state
+    await apiLogout() // Clear localStorage + call backend
+    setAccessTokenState(null) // Update React state
   }
 
   // Memoize to prevent unnecessary re-renders
@@ -83,7 +81,7 @@ export default AuthProvider
 
 /**
  * 📚 HOW AUTH STATE FLOWS THROUGH THE APP
- * 
+ *
  *                    ┌─────────────────────┐
  *                    │    AuthProvider     │
  *                    │   (wraps whole app) │
@@ -103,6 +101,6 @@ export default AuthProvider
  *    │ setAccess   │     │ isAuth?     │     │ show user   │
  *    │ Token()     │     │ → redirect  │     │ avatar      │
  *    └─────────────┘     └─────────────┘     └─────────────┘
- * 
+ *
  * All components can use: const { isAuthenticated, logout } = useAuth()
  */

@@ -5,13 +5,13 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from backend.core.permissions import VendorScopedPermission, resolve_user_vendor
+from backend.inventory.api.serializers import CollectibleSerializer
 from backend.inventory.models import Collectible
 from backend.inventory.selectors.get_item import get_item
 from backend.inventory.selectors.list_items import list_items
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.delete_item import delete_item
 from backend.inventory.services.update_item import update_item
-from backend.inventory.api.serializers import CollectibleSerializer
 
 
 class CollectibleViewSet(viewsets.ModelViewSet):

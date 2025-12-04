@@ -9,7 +9,7 @@ type Props = {
 
 const ProtectedRoute = ({ children }: Props) => {
   // 📚 Redux: select isAuthenticated from store
-  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated)
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
   const location = useLocation()
 
   if (!isAuthenticated) {

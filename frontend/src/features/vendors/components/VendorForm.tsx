@@ -38,11 +38,19 @@ const VendorForm = ({ onCreated }: Props) => {
         </label>
         <label className="block text-sm">
           Description
-          <textarea className="mt-1 w-full rounded border p-2" rows={2} {...register('description')} />
+          <textarea
+            className="mt-1 w-full rounded border p-2"
+            rows={2}
+            {...register('description')}
+          />
         </label>
         <label className="block text-sm">
           Contact Info
-          <textarea className="mt-1 w-full rounded border p-2" rows={2} {...register('contact_info')} />
+          <textarea
+            className="mt-1 w-full rounded border p-2"
+            rows={2}
+            {...register('contact_info')}
+          />
         </label>
         <div className="flex justify-end">
           <button

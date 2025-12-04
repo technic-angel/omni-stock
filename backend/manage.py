@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 # Ensure scripts executed from the backend folder can still import the

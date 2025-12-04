@@ -1,12 +1,8 @@
 import pytest
-
 from rest_framework.test import APIClient
-from django.urls import reverse
 
-from django.contrib.auth import get_user_model
-
-from backend.inventory.tests.factories import CollectibleFactory, UserFactory
 from backend.inventory.models import Collectible
+from backend.inventory.tests.factories import CollectibleFactory, UserFactory
 from backend.users.models import UserProfile
 
 

@@ -22,13 +22,7 @@ describe('ConfirmDialog', () => {
   it('invokes callbacks', () => {
     const onConfirm = vi.fn()
     const onCancel = vi.fn()
-    render(
-      <ConfirmDialog
-        {...baseProps}
-        onConfirm={onConfirm}
-        onCancel={onCancel}
-      />,
-    )
+    render(<ConfirmDialog {...baseProps} onConfirm={onConfirm} onCancel={onCancel} />)
 
     fireEvent.click(screen.getByText('Cancel'))
     expect(onCancel).toHaveBeenCalled()

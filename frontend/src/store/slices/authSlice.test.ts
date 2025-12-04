@@ -7,7 +7,7 @@ vi.mock('../../shared/lib/tokenStore', () => ({
     getAccess: vi.fn(() => null),
     setAccess: vi.fn(),
     clear: vi.fn(),
-  }
+  },
 }))
 
 describe('authSlice', () => {
@@ -19,9 +19,9 @@ describe('authSlice', () => {
   describe('setCredentials', () => {
     it('should set the access token and mark user as authenticated', () => {
       const token = 'test-jwt-token-123'
-      
+
       const nextState = authReducer(initialState, setCredentials(token))
-      
+
       expect(nextState.accessToken).toBe(token)
       expect(nextState.isAuthenticated).toBe(true)
     })
@@ -32,9 +32,9 @@ describe('authSlice', () => {
         isAuthenticated: true,
       }
       const newToken = 'new-token-456'
-      
+
       const nextState = authReducer(stateWithToken, setCredentials(newToken))
-      
+
       expect(nextState.accessToken).toBe(newToken)
       expect(nextState.isAuthenticated).toBe(true)
     })
@@ -46,16 +46,16 @@ describe('authSlice', () => {
         accessToken: 'some-token',
         isAuthenticated: true,
       }
-      
+
       const nextState = authReducer(stateWithToken, clearCredentials())
-      
+
       expect(nextState.accessToken).toBeNull()
       expect(nextState.isAuthenticated).toBe(false)
     })
 
     it('should work even if already logged out', () => {
       const nextState = authReducer(initialState, clearCredentials())
-      
+
       expect(nextState.accessToken).toBeNull()
       expect(nextState.isAuthenticated).toBe(false)
     })

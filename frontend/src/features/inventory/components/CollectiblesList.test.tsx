@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 import CollectiblesList from './CollectiblesList'
+import { routerFuture } from '../../../app/routes/routerFuture'
 import { useCollectibles } from '../hooks/useCollectibles'
 import { useDeleteCollectible } from '../hooks/useDeleteCollectible'
 
@@ -18,11 +19,12 @@ const mockedUseCollectibles = vi.mocked(useCollectibles)
 const mockedUseDeleteCollectible = vi.mocked(useDeleteCollectible)
 
 describe('CollectiblesList', () => {
-  const renderComponent = () => render(
-    <MemoryRouter>
-      <CollectiblesList filters={{}} />
-    </MemoryRouter>,
-  )
+  const renderComponent = () =>
+    render(
+      <MemoryRouter future={routerFuture}>
+        <CollectiblesList filters={{}} />
+      </MemoryRouter>,
+    )
 
   it('shows loading state', () => {
     mockedUseCollectibles.mockReturnValue({ isLoading: true } as any)

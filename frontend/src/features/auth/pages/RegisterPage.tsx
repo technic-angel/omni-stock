@@ -2,15 +2,16 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { AxiosError } from 'axios'
 
 import { useRegister } from '../hooks/useRegister'
 import { RegisterInput, registerSchema } from '../schema/authSchema'
 
 /**
  * RegisterPage - New user registration form
- * 
+ *
  * 📚 LEARNING: Same pattern as LoginPage
- * 
+ *
  * The form handling pattern is identical:
  * 1. Zod schema (registerSchema) - adds email validation
  * 2. useForm with zodResolver
@@ -37,15 +38,21 @@ const RegisterPage = () => {
       await mutateAsync(values)
       // After registration, redirect to login
       navigate('/login', { replace: true })
-    } catch (err: any) {
+    } catch (err) {
       // Handle specific field errors from the API
-      const errorData = err?.response?.data
+      const error = err as AxiosError<{
+        detail?: string
+        username?: string[]
+        password?: string[]
+        email?: string[]
+      }>
+      const errorData = error.response?.data
       if (errorData?.username) {
         setServerError(`Username: ${errorData.username[0]}`)
       } else if (errorData?.email) {
         setServerError(`Email: ${errorData.email[0]}`)
       } else {
-        setServerError(errorData?.detail || err.message || 'Registration failed')
+        setServerError(errorData?.detail || error.message || 'Registration failed')
       }
     }
   }
@@ -54,9 +61,7 @@ const RegisterPage = () => {
     <div className="w-full max-w-md">
       {/* Card */}
       <div className="bg-white rounded-lg shadow-lg border p-8">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
-          Create Account
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Create Account</h1>
 
         {/* Server Error */}
         {serverError && (
@@ -100,9 +105,7 @@ const RegisterPage = () => {
               placeholder="you@example.com"
               {...register('email')}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
           </div>
 
           {/* Password Field */}
@@ -127,7 +130,10 @@ const RegisterPage = () => {
 
           {/* Confirm Password Field */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm Password
             </label>
             <input
@@ -159,7 +165,10 @@ const RegisterPage = () => {
         {/* Login Link */}
         <p className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="text-brand-primary hover:text-brand-primary-dark font-medium">
+          <Link
+            to="/login"
+            className="text-brand-primary hover:text-brand-primary-dark font-medium"
+          >
             Log in
           </Link>
         </p>

@@ -5,12 +5,12 @@ import { Button } from '../../components/ui/button'
 
 /**
  * GuestLayout - Minimal layout for unauthenticated pages (login, register, etc.)
- * 
+ *
  * 📚 LEARNING: Layout Components
- * 
+ *
  * This component wraps auth pages with a consistent header and centers the content.
  * It uses <Outlet /> from React Router to render the child route's component.
- * 
+ *
  * The pattern:
  * <Route element={<GuestLayout />}>
  *   <Route path="/login" element={<LoginPage />} />   <- Renders in <Outlet />
@@ -25,9 +25,9 @@ const GuestLayout = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo - links back to landing */}
           <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" 
-              alt="Omni-Stock" 
+            <img
+              src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+              alt="Omni-Stock"
               className="h-10 w-auto"
             />
           </Link>

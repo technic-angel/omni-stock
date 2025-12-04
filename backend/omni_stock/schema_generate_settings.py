@@ -1,4 +1,4 @@
-from .settings import *
+from .settings import *  # noqa: F401,F403
 
 # Override database settings to use SQLite in-memory so manage.py commands
 # (like spectacular) don't require PostgreSQL or psycopg on the runner.
