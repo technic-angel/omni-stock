@@ -16,6 +16,7 @@ from backend.users.api.serializers import (
     PasswordResetRequestSerializer,
     RegisterSerializer,
     UpdateProfilePictureSerializer,
+    CheckEmailExistsSerializer
 )
 from backend.users.selectors.get_current_user import get_current_user_with_profile
 
@@ -137,18 +138,6 @@ class CurrentUserView(RetrieveUpdateAPIView):
         # Return with CurrentUserSerializer for consistent output
         output_serializer = CurrentUserSerializer(updated_instance)
         return Response(output_serializer.data)
-
-
-__all__ = [
-    "RegisterView",
-    "CompleteProfileView",
-    "CurrentUserView",
-    "ChangePasswordView",
-    "PasswordResetRequestView",
-    "PasswordResetConfirmView",
-    "LogoutView",
-]
-
 
 @extend_schema(tags=["auth"])
 class ChangePasswordView(GenericAPIView):
@@ -281,3 +270,40 @@ class LogoutView(GenericAPIView):
             {"detail": "Successfully logged out."},
             status=status.HTTP_200_OK
         )
+
+class CheckEmailView(GenericAPIView):
+    """
+    POST /api/v1/auth/register/check-email/
+    
+    Check if an email is already registered.
+    
+    - Public endpoint (no authentication required)
+    
+    Request body:
+        {
+            "email": "user@example.com"
+        }
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = CheckEmailExistsSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(
+            result,
+            status=status.HTTP_200_OK
+        )
+
+__all__ = [
+    "RegisterView",
+    "CompleteProfileView",
+    "CurrentUserView",
+    "ChangePasswordView",
+    "PasswordResetRequestView",
+    "PasswordResetConfirmView",
+    "LogoutView",
+    "CheckEmailView",
+]

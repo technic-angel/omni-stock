@@ -28,6 +28,7 @@ from backend.users.api.viewsets import (
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
+    CheckEmailView,
 )
 
 urlpatterns = [
@@ -49,6 +50,7 @@ urlpatterns = [
     path('api/v1/auth/password/reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
     path('api/v1/auth/password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('api/v1/auth/profile/complete/', CompleteProfileView.as_view(), name='complete_profile'),
+    path('api/v1/auth/register/check-email/', CheckEmailView.as_view(), name='check_email'),
     # Add your API paths here later: path('api/v1/auth/', include('auth.urls')),
 ]
 
