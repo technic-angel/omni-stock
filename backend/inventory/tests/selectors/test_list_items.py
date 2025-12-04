@@ -1,6 +1,8 @@
 import pytest
 from django.core.exceptions import ObjectDoesNotExist
 
+from backend.inventory.selectors.get_item import get_item
+from backend.inventory.selectors.list_items import list_items
 from backend.inventory.tests.factories import (
     CardDetailsFactory,
     CollectibleFactory,
@@ -8,9 +10,6 @@ from backend.inventory.tests.factories import (
     VendorFactory,
 )
 from backend.users.models import UserProfile
-
-from backend.inventory.selectors.get_item import get_item
-from backend.inventory.selectors.list_items import list_items
 
 
 @pytest.mark.django_db

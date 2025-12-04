@@ -13,7 +13,7 @@ interface AuthState {
 // Initialize from localStorage (persist login across refreshes)
 const initialState: AuthState = {
   accessToken: tokenStore.getAccess(),
-  isAuthenticated: Boolean(tokenStore.getAccess())
+  isAuthenticated: Boolean(tokenStore.getAccess()),
 }
 
 // Create the slice
@@ -27,17 +27,16 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       tokenStore.setAccess(action.payload)
     },
-    
+
     // Called on logout
     clearCredentials: (state) => {
       state.accessToken = null
       state.isAuthenticated = false
       tokenStore.clear()
-    }
-  }
+    },
+  },
 })
 
 // Export actions and reducer
 export const { setCredentials, clearCredentials } = authSlice.actions
 export default authSlice.reducer
-

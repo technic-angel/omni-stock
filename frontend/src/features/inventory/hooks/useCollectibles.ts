@@ -10,6 +10,6 @@ export function useCollectibles(filters: InventoryFiltersInput = {}) {
     queryKey: ['collectibles', params],
     queryFn: () => fetchCollectibles(params),
     staleTime: 60_000,
-    keepPreviousData: true
+    keepPreviousData: true,
   })
 }

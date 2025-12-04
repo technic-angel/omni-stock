@@ -1,14 +1,13 @@
 import pytest
-
 from rest_framework.test import APIClient
 
+from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import (
     CardDetailsFactory,
     CollectibleFactory,
     UserFactory,
     VendorFactory,
 )
-from backend.inventory.models import Collectible
 from backend.users.models import UserProfile
 
 
@@ -19,7 +18,11 @@ def test_collectible_list_includes_card_details():
 
     # create a collectible and attach CardDetails
     collectible = CollectibleFactory.create(name="Card With Details", sku="DETAIL-001")
-    details = CardDetailsFactory.create(collectible=collectible, language="Spanish", market_region="Spain")
+    CardDetailsFactory.create(
+        collectible=collectible,
+        language="Spanish",
+        market_region="Spain",
+    )
 
     # prepare and authenticate a user attached to the same vendor
     user = UserFactory.create(username="api_tester")

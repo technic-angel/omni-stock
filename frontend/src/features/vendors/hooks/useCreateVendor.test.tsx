@@ -8,7 +8,9 @@ import * as api from '../api/vendorsApi'
 
 describe('useCreateVendor', () => {
   it('creates a vendor and invalidates vendors query', async () => {
-    const spy = vi.spyOn(api, 'createVendor').mockResolvedValue({ id: 1, name: 'New Vendor' } as any)
+    const spy = vi
+      .spyOn(api, 'createVendor')
+      .mockResolvedValue({ id: 1, name: 'New Vendor' } as any)
     const queryClient = new QueryClient()
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
 

@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 
 import ProtectedRoute from './ProtectedRoute'
+import { routerFuture } from './routerFuture'
 import authReducer from '../../store/slices/authSlice'
 
 // Mock tokenStore
@@ -13,7 +14,7 @@ vi.mock('../../shared/lib/tokenStore', () => ({
     getAccess: vi.fn(() => null),
     setAccess: vi.fn(),
     clear: vi.fn(),
-  }
+  },
 }))
 
 const createTestStore = (isAuthenticated: boolean) => {
@@ -23,7 +24,7 @@ const createTestStore = (isAuthenticated: boolean) => {
       auth: {
         accessToken: isAuthenticated ? 'test-token' : null,
         isAuthenticated,
-      }
+      },
     },
   })
 }
@@ -32,7 +33,7 @@ const renderWithAuth = (isAuthenticated: boolean) => {
   const store = createTestStore(isAuthenticated)
   return render(
     <Provider store={store}>
-      <MemoryRouter initialEntries={['/protected']}>
+      <MemoryRouter initialEntries={['/protected']} future={routerFuture}>
         <Routes>
           <Route
             path="/protected"

@@ -3,11 +3,17 @@ import { Link } from 'react-router-dom'
 import { Package, TrendingUp, BarChart3, Shield, Zap, Users } from 'lucide-react'
 
 import { Button } from '../../../components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../../components/ui/card'
 
 /**
  * LandingPage - Public landing page for non-authenticated users
- * 
+ *
  * This page serves as the entry point for new visitors. It showcases
  * the value proposition of Omni-Stock and encourages sign-up.
  */
@@ -19,9 +25,9 @@ const LandingPage = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" 
-              alt="Omni-Stock" 
+            <img
+              src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+              alt="Omni-Stock"
               className="h-10 w-auto"
             />
           </Link>
@@ -45,11 +51,15 @@ const LandingPage = () => {
           <span className="block text-brand-primary">With Confidence</span>
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          The all-in-one inventory management platform for collectors and vendors. 
-          Track, value, and manage your collectibles effortlessly.
+          The all-in-one inventory management platform for collectors and vendors. Track, value, and
+          manage your collectibles effortlessly.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" asChild className="bg-brand-primary hover:bg-brand-primary-dark text-lg px-8">
+          <Button
+            size="lg"
+            asChild
+            className="bg-brand-primary hover:bg-brand-primary-dark text-lg px-8"
+          >
             <Link to="/register">Get Started</Link>
           </Button>
           <Button size="lg" variant="outline" asChild className="text-lg px-8">
@@ -107,13 +117,15 @@ const LandingPage = () => {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Ready to Start Tracking?
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Start Tracking?</h2>
         <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
           Join collectors who trust Omni-Stock to manage their inventory.
         </p>
-        <Button size="lg" asChild className="bg-brand-primary hover:bg-brand-primary-dark text-lg px-8">
+        <Button
+          size="lg"
+          asChild
+          className="bg-brand-primary hover:bg-brand-primary-dark text-lg px-8"
+        >
           <Link to="/register">Create Account</Link>
         </Button>
       </section>
@@ -140,9 +152,7 @@ interface FeatureCardProps {
 const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
   <Card className="text-center hover:shadow-lg transition-shadow duration-300">
     <CardHeader>
-      <div className="mx-auto mb-4 p-3 bg-gray-50 rounded-full w-fit">
-        {icon}
-      </div>
+      <div className="mx-auto mb-4 p-3 bg-gray-50 rounded-full w-fit">{icon}</div>
       <CardTitle className="text-xl">{title}</CardTitle>
     </CardHeader>
     <CardContent>

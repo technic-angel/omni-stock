@@ -1,6 +1,5 @@
 """Service for updating user profile pictures."""
 
-import os
 from typing import Optional
 
 from django.core.files.uploadedfile import UploadedFile

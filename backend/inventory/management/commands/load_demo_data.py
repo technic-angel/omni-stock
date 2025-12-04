@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand
-from decimal import Decimal
 import random
+from decimal import Decimal
+
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -12,9 +13,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from django.contrib.auth import get_user_model
-        from backend.vendors.models import Vendor
-        from backend.inventory.models import Collectible, CardDetails
+
+        from backend.inventory.models import CardDetails, Collectible
         from backend.users.models import UserProfile
+        from backend.vendors.models import Vendor
 
         try:
             from faker import Faker

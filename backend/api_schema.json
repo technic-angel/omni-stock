@@ -175,18 +175,96 @@
         ],
         "type": "object"
       },
+      "CompleteProfile": {
+        "description": "Serializer used during onboarding to capture the rest of the user's profile details.",
+        "properties": {
+          "birthdate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "phone_number": {
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleEnum"
+          },
+          "username": {
+            "maxLength": 150,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
       "CurrentUser": {
         "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
         "properties": {
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Optional invite code to link this user to an existing company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Display name for the vendor or company.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
           "email": {
             "format": "email",
-            "maxLength": 254,
+            "readOnly": true,
             "title": "Email address",
             "type": "string"
           },
           "id": {
             "readOnly": true,
             "type": "integer"
+          },
+          "phone_number": {
+            "description": "Contact phone number in E.164 format.",
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
           },
           "profile": {
             "allOf": [
@@ -195,6 +273,27 @@
               }
             ],
             "readOnly": true
+          },
+          "profile_completed": {
+            "description": "Indicates whether the user has finished the onboarding form.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleEnum"
+              }
+            ],
+            "description": "Controls the user's permissions within a company.\n\n* `admin` - Administrator\n* `vendor_manager` - Vendor Manager\n* `staff` - Staff\n* `solo` - Solo\n* `viewer` - Viewer",
+            "readOnly": true
+          },
+          "tos_accepted_at": {
+            "description": "Timestamp when the user accepted terms of service.",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
           },
           "username": {
             "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
@@ -207,6 +306,9 @@
           "email",
           "id",
           "profile",
+          "profile_completed",
+          "role",
+          "tos_accepted_at",
           "username"
         ],
         "type": "object"
@@ -360,6 +462,30 @@
             "nullable": true,
             "type": "string"
           },
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Invite code tying this user to a company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Company/vendor name displayed in the app.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
@@ -368,6 +494,12 @@
           "phone": {
             "description": "Phone number",
             "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number in E.164 format.",
+            "maxLength": 20,
             "nullable": true,
             "type": "string"
           },
@@ -434,6 +566,16 @@
       "Register": {
         "description": "Serializer for user registration.",
         "properties": {
+          "company_code": {
+            "description": "Optional invite code to join an existing company.",
+            "maxLength": 40,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Optional vendor/company name shown in the app.",
+            "maxLength": 255,
+            "type": "string"
+          },
           "email": {
             "format": "email",
             "type": "string"
@@ -454,6 +596,17 @@
           "username"
         ],
         "type": "object"
+      },
+      "RoleEnum": {
+        "description": "* `admin` - Administrator\n* `vendor_manager` - Vendor Manager\n* `staff` - Staff\n* `solo` - Solo\n* `viewer` - Viewer",
+        "enum": [
+          "admin",
+          "vendor_manager",
+          "staff",
+          "solo",
+          "viewer"
+        ],
+        "type": "string"
       },
       "TokenObtainPair": {
         "properties": {
@@ -518,6 +671,30 @@
             "nullable": true,
             "type": "string"
           },
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Invite code tying this user to a company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Company/vendor name displayed in the app.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
@@ -526,6 +703,12 @@
           "phone": {
             "description": "Phone number",
             "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number in E.164 format.",
+            "maxLength": 20,
             "nullable": true,
             "type": "string"
           },
@@ -1044,6 +1227,52 @@
             "jwtAuth": []
           },
           {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/profile/complete/": {
+      "post": {
+        "description": "Authenticated endpoint for completing the onboarding profile form.",
+        "operationId": "auth_profile_complete_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteProfile"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
         ],
         "tags": [
           "auth"

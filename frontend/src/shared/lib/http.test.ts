@@ -14,8 +14,8 @@ vi.mock('./tokenStore', () => ({
     getRefresh: vi.fn(),
     setRefresh: vi.fn(),
     clear: vi.fn(),
-    setTokens: vi.fn()
-  }
+    setTokens: vi.fn(),
+  },
 }))
 
 describe('http client', () => {
@@ -33,10 +33,10 @@ describe('http client', () => {
     it('should allow setting a new handler', () => {
       const handler1 = vi.fn()
       const handler2 = vi.fn()
-      
+
       setUnauthorizedHandler(handler1)
       setUnauthorizedHandler(handler2)
-      
+
       // Should not throw when overwriting
       expect(true).toBe(true)
     })

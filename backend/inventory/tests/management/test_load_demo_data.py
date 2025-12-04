@@ -1,5 +1,4 @@
 import pytest
-
 from django.core.management import call_command
 
 from backend.inventory.models import CardDetails, Collectible

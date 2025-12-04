@@ -31,3 +31,13 @@ test-ci:
     # therefore appears at ./backend/coverage.xml on the host. After the run we move it up to ./coverage.xml.
 	docker compose $(S_COMPOSE) run --rm backend bash -lc "cd /usr/src/app && pytest --maxfail=1 --disable-warnings --cov=. --cov-report=xml:backend/coverage.xml" && \
 	mv backend/coverage.xml coverage.xml || echo 'Coverage XML not found at backend/coverage.xml (tests may have failed)'
+
+.PHONY: lint-backend format-backend
+
+lint-backend:
+    # Run Ruff lint inside the backend container
+	docker compose $(S_COMPOSE) run --rm backend bash -lc "cd /usr/src/app && ruff check backend"
+
+format-backend:
+    # Run isort + black inside the backend container
+	docker compose $(S_COMPOSE) run --rm backend bash -lc "cd /usr/src/app && isort backend && black backend"

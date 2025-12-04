@@ -32,7 +32,7 @@ vi.mock('./shared/lib/tokenStore', () => ({
     setRefresh: vi.fn(),
     setTokens: vi.fn(),
     clear: vi.fn(),
-  }
+  },
 }))
 
 import App from './App'

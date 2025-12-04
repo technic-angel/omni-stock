@@ -1,9 +1,9 @@
+from types import SimpleNamespace
+
 import pytest
 
-from backend.inventory.models import Collectible, CardDetails
-from backend.vendors.models import Vendor
-from backend.inventory.tests.factories import VendorFactory, CollectibleFactory, CardDetailsFactory
-from types import SimpleNamespace
+from backend.inventory.models import CardDetails
+from backend.inventory.tests.factories import CardDetailsFactory, CollectibleFactory, VendorFactory
 
 
 @pytest.mark.django_db

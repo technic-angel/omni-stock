@@ -5,4 +5,6 @@ factory-boy
 drf-spectacular
 codecov
 faker
-
+ruff
+black
+isort

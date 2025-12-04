@@ -33,10 +33,19 @@ const VendorProfileCard = () => {
   }, [data])
 
   if (isLoading) return <div>Loading vendor…</div>
-  if (error) return <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">Failed to load vendor profile.</div>
+  if (error)
+    return (
+      <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        Failed to load vendor profile.
+      </div>
+    )
 
   if (!data) {
-    return <Card title="Vendor Profile"><p className="text-sm text-gray-500">No vendor profile found.</p></Card>
+    return (
+      <Card title="Vendor Profile">
+        <p className="text-sm text-gray-500">No vendor profile found.</p>
+      </Card>
+    )
   }
 
   return (
@@ -47,7 +56,9 @@ const VendorProfileCard = () => {
           {data.description && <p className="text-gray-600 mt-1">{data.description}</p>}
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Contact Info</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+            Contact Info
+          </h3>
           {typeof contactInfo === 'string' ? (
             <p className="text-sm text-gray-900">{contactInfo}</p>
           ) : contactInfo ? (

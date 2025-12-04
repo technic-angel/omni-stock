@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from django.test import override_settings
 
 from backend.inventory.api.serializers import CollectibleSerializer
 from backend.inventory.models import Collectible
@@ -45,6 +46,37 @@ def test_collectible_serializer_image_url():
     assert obj.image_url == payload["image_url"]
     assert obj.created_at is not None
     assert obj.updated_at is not None
+
+
+@pytest.mark.django_db
+def test_collectible_serializer_rejects_non_https_image_url():
+    payload = {"name": "Image Card", "sku": "SER-IMG-HTTP", "quantity": 1, "image_url": "http://example.com/img.png"}
+    ser = CollectibleSerializer(data=payload)
+    assert not ser.is_valid()
+    assert "image_url" in ser.errors
+
+
+@pytest.mark.django_db
+@override_settings(ALLOWED_IMAGE_URL_HOSTS=["images.example.com"])
+def test_collectible_serializer_respects_allowed_image_hosts():
+    allowed_payload = {
+        "name": "Allowed Image",
+        "sku": "SER-IMG-ALLOW",
+        "quantity": 1,
+        "image_url": "https://images.example.com/path/img.png",
+    }
+    ser = CollectibleSerializer(data=allowed_payload)
+    assert ser.is_valid(), ser.errors
+
+    blocked_payload = {
+        "name": "Blocked Image",
+        "sku": "SER-IMG-BLOCK",
+        "quantity": 1,
+        "image_url": "https://cdn.example.com/img.png",
+    }
+    ser = CollectibleSerializer(data=blocked_payload)
+    assert not ser.is_valid()
+    assert "image_url" in ser.errors
 
 
 @pytest.mark.django_db

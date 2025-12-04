@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Card from '../../../shared/components/Card'
 import type { Collectible } from '../../../shared/types'
 import { collectibleSchema, CollectibleInput } from '../schema/itemSchema'
-import { uploadImageToSupabase } from '../../../shared/lib/supabase'
 import { useUpdateCollectible } from '../hooks/useUpdateCollectible'
+import { useCollectibleImageUpload } from '../hooks/useCollectibleImageUpload'
 
 type Props = {
   collectible: Collectible
@@ -26,6 +26,12 @@ const mapCollectibleToForm = (collectible: Collectible): CollectibleInput => ({
 const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
   const { mutateAsync, isPending } = useUpdateCollectible(collectible.id)
   const {
+    upload,
+    isUploading,
+    error: uploadError,
+    resetError: resetUploadError,
+  } = useCollectibleImageUpload()
+  const {
     register,
     handleSubmit,
     reset,
@@ -39,12 +45,18 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
     reset(mapCollectibleToForm(collectible))
   }, [collectible, reset])
 
+  const imageFileInput = register('image_file')
+
   const onSubmit = async (values: CollectibleInput) => {
     let imageUrl = collectible.image_url
     if (values.image_file) {
       const file = values.image_file instanceof File ? values.image_file : undefined
       if (file) {
-        imageUrl = await uploadImageToSupabase(file)
+        try {
+          imageUrl = await upload(file)
+        } catch {
+          return
+        }
       }
     } else if (values.image_url) {
       imageUrl = values.image_url
@@ -88,7 +100,19 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
           <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
         </label>
         <div className="text-xs text-gray-500">
-          Current image: {collectible.image_url ? <a href={collectible.image_url} target="_blank" rel="noreferrer" className="text-blue-600">preview</a> : 'none'}
+          Current image:{' '}
+          {collectible.image_url ? (
+            <a
+              href={collectible.image_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600"
+            >
+              preview
+            </a>
+          ) : (
+            'none'
+          )}
         </div>
         <label className="block text-sm">
           Replace Image
@@ -96,11 +120,19 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
             type="file"
             accept="image/*"
             className="mt-1 w-full rounded border p-2"
-            {...register('image_file')}
+            {...imageFileInput}
+            onChange={(event) => {
+              resetUploadError()
+              imageFileInput.onChange(event)
+            }}
           />
         </label>
-        <button className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50" disabled={isPending}>
-          {isPending ? 'Saving…' : 'Save Changes'}
+        {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+        <button
+          className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+          disabled={isPending || isUploading}
+        >
+          {isPending || isUploading ? 'Saving…' : 'Save Changes'}
         </button>
       </form>
     </Card>

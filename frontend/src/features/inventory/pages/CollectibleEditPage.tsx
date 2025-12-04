@@ -11,7 +11,11 @@ const CollectibleEditPage = () => {
   const { data, isLoading, error } = useCollectible(collectibleId)
 
   if (!collectibleId) {
-    return <Page title="Collectibles"><div>Collectible not found.</div></Page>
+    return (
+      <Page title="Collectibles">
+        <div>Collectible not found.</div>
+      </Page>
+    )
   }
 
   if (isLoading) {

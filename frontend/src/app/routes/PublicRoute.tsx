@@ -9,13 +9,13 @@ type Props = {
 
 /**
  * PublicRoute - Wrapper for public pages (landing, login, register)
- * 
+ *
  * If the user is already authenticated, redirect them to the dashboard
  * instead of showing the public page.
  */
 const PublicRoute = ({ children }: Props) => {
   // 📚 Redux: select isAuthenticated from store
-  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated)
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />

@@ -1,9 +1,8 @@
 import pytest
 
+from backend.core.permissions import VendorScopedPermission
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
 from backend.users.models import UserProfile
-
-from backend.core.permissions import VendorScopedPermission
 
 
 @pytest.mark.django_db

@@ -8,7 +8,9 @@ import * as api from '../api/vendorsApi'
 
 describe('useCurrentVendor', () => {
   it('fetches current vendor via API', async () => {
-    const spy = vi.spyOn(api, 'fetchCurrentVendor').mockResolvedValue({ id: 1, name: 'Vendor A' } as any)
+    const spy = vi
+      .spyOn(api, 'fetchCurrentVendor')
+      .mockResolvedValue({ id: 1, name: 'Vendor A' } as any)
     const queryClient = new QueryClient()
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
