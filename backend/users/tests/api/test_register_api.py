@@ -88,3 +88,20 @@ def test_token_invalid_credentials():
     client = APIClient()
     resp = client.post("/api/v1/auth/token/", {"username": "nope", "password": "bad"}, format="json")
     assert resp.status_code == 401
+
+
+@pytest.mark.django_db
+def test_register_with_company_details():
+    client = APIClient()
+    payload = {
+        "username": "vendoruser",
+        "email": "vendor@example.com",
+        "password": "ComplexPass123!",
+        "company_name": "Vendor Co",
+        "company_code": "INVITE123",
+    }
+    resp = client.post("/api/v1/auth/register/", payload, format="json")
+    assert resp.status_code == 201
+    user = User.objects.get(username="vendoruser")
+    assert user.company_name == "Vendor Co"
+    assert user.company_code == "INVITE123"

@@ -1,4 +1,7 @@
-"""Validators for user-uploaded files."""
+"""Validators for user-uploaded files and profile fields."""
+
+import re
+from datetime import date
 
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
@@ -135,11 +138,41 @@ validate_profile_picture_size = FileSizeValidator(max_mb=5)  # 5MB limit for pro
 validate_product_image_size = FileSizeValidator(max_mb=10)  # 10MB limit for product images
 
 
+# Profile field validators ----------------------------------------------------
+PHONE_REGEX = re.compile(r"^\+?[1-9]\d{7,14}$")  # Basic E.164 pattern (8–15 digits)
+MINIMUM_AGE = 18
+
+
+def validate_phone_number(value: str) -> None:
+    """Ensure phone numbers roughly follow E.164 (e.g., +15551234567)."""
+    if not value:
+        return
+    if not PHONE_REGEX.match(value):
+        raise ValidationError(
+            "Phone number must be in international format (e.g., +15551234567)."
+        )
+
+
+def validate_birthdate(value: date) -> None:
+    """Ensure birthdate is in the past and user is old enough."""
+    if not value:
+        return
+    today = date.today()
+    if value > today:
+        raise ValidationError("Birthdate cannot be in the future.")
+    age_years = today.year - value.year - (
+        (today.month, today.day) < (value.month, value.day)
+    )
+    if age_years < MINIMUM_AGE:
+        raise ValidationError(f"Users must be at least {MINIMUM_AGE} years old.")
+
+
 __all__ = [
     'FileSizeValidator',
     'ImageFileValidator',
     'validate_image_file',
     'validate_profile_picture_size',
     'validate_product_image_size',
+    'validate_phone_number',
+    'validate_birthdate',
 ]
-

@@ -1,5 +1,6 @@
 """Service for updating user profile data."""
 
+from datetime import date
 from typing import Optional
 
 from django.contrib.auth import get_user_model
@@ -18,6 +19,13 @@ def update_user_profile(
     user_id: int,
     username: Optional[str] = None,
     email: Optional[str] = None,
+    password: Optional[str] = None,
+    company_name: Optional[str] = None,
+    company_site: Optional[str] = None,
+    company_code: Optional[str] = None,
+    phone_number: Optional[str] = None,
+    birthdate: Optional[date] = None,
+    mark_profile_completed: bool = False,
     phone: Optional[str] = None,
     bio: Optional[str] = None,
     vendor_id: Optional[int] = None,
@@ -57,6 +65,27 @@ def update_user_profile(
         user_changed = True
     if email is not None and email != user.email:
         user.email = email
+        user_changed = True
+    if password:
+        user.set_password(password)
+        user_changed = True
+    if company_name is not None and company_name != user.company_name:
+        user.company_name = company_name
+        user_changed = True
+    if company_site is not None and company_site != user.company_site:
+        user.company_site = company_site
+        user_changed = True
+    if company_code is not None and company_code != user.company_code:
+        user.company_code = company_code
+        user_changed = True
+    if phone_number is not None and phone_number != user.phone_number:
+        user.phone_number = phone_number
+        user_changed = True
+    if birthdate is not None and birthdate != user.birthdate:
+        user.birthdate = birthdate
+        user_changed = True
+    if mark_profile_completed and not user.profile_completed:
+        user.profile_completed = True
         user_changed = True
     
     if user_changed:

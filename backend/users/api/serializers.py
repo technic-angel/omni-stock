@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from backend.users.models import UserProfile
+from backend.users.models import UserProfile, UserRole
 from backend.users.services.create_user import create_user
 
 User = get_user_model()
@@ -25,13 +25,31 @@ class RegisterSerializer(serializers.Serializer):
         validators=[UniqueValidator(queryset=User.objects.all(), message="A user with that email already exists.")],
     )
     password = serializers.CharField(write_only=True, min_length=8)
+    company_name = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        help_text="Optional vendor/company name shown in the app.",
+    )
+    company_code = serializers.CharField(
+        max_length=40,
+        required=False,
+        allow_blank=True,
+        help_text="Optional invite code to join an existing company.",
+    )
 
     def create(self, validated_data):
-        return create_user(
+        extra_fields = {
+            "company_name": validated_data.get("company_name"),
+            "company_code": validated_data.get("company_code"),
+        }
+        user = create_user(
             username=validated_data.get("username"),
             email=validated_data["email"],
             password=validated_data.get("password"),
+            extra_fields={k: v for k, v in extra_fields.items() if v},
         )
+        return user
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -67,8 +85,21 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "profile"]
-        read_only_fields = ["id"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "role",
+            "profile_completed",
+            "company_name",
+            "company_code",
+            "company_site",
+            "phone_number",
+            "birthdate",
+            "tos_accepted_at",
+            "profile",
+        ]
+        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at"]
 
 
 class UpdateProfilePictureSerializer(serializers.Serializer):
@@ -91,6 +122,38 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=False,
         help_text="Email address (must be unique)"
+    )
+    company_name = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Company/vendor name displayed in the app.",
+    )
+    company_site = serializers.URLField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Public website for the company (optional).",
+    )
+    company_code = serializers.CharField(
+        max_length=40,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Invite code tying this user to a company.",
+    )
+    phone_number = serializers.CharField(
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Phone number in E.164 format.",
+    )
+    birthdate = serializers.DateField(
+        required=False,
+        allow_null=True,
+        help_text="Birthdate (used for age verification).",
     )
     
     # Profile fields
@@ -158,6 +221,11 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
             user_id=instance.id,
             username=validated_data.get('username'),
             email=validated_data.get('email'),
+            company_name=validated_data.get('company_name'),
+            company_code=validated_data.get('company_code'),
+            company_site=validated_data.get('company_site'),
+            phone_number=validated_data.get('phone_number'),
+            birthdate=validated_data.get('birthdate'),
             phone=validated_data.get('phone'),
             bio=validated_data.get('bio'),
             vendor_id=vendor_id if vendor_id else None,
@@ -169,11 +237,55 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         return updated_user
 
 
+class CompleteProfileSerializer(serializers.Serializer):
+    """
+    Serializer used during onboarding to capture the rest of the user's profile details.
+    """
+
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True, min_length=8)
+    company_name = serializers.CharField(max_length=255, required=False, allow_blank=True, allow_null=True)
+    company_site = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+    company_code = serializers.CharField(max_length=40, required=False, allow_blank=True, allow_null=True)
+    phone_number = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
+    birthdate = serializers.DateField(required=False, allow_null=True)
+    role = serializers.ChoiceField(choices=UserRole.choices, required=False)
+
+    def validate_username(self, value):
+        user = self.context["request"].user
+        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
+
+    def save(self, **kwargs):
+        user = self.context["request"].user
+        from backend.users.services.update_user_profile import update_user_profile
+
+        updated_user = update_user_profile(
+            user_id=user.id,
+            username=self.validated_data.get("username"),
+            password=self.validated_data.get("password"),
+            company_name=self.validated_data.get("company_name"),
+            company_site=self.validated_data.get("company_site"),
+            company_code=self.validated_data.get("company_code"),
+            phone_number=self.validated_data.get("phone_number"),
+            birthdate=self.validated_data.get("birthdate"),
+            mark_profile_completed=True,
+        )
+
+        if self.validated_data.get("role"):
+            updated_user.role = self.validated_data["role"]
+            updated_user.save(update_fields=["role"])
+
+        return updated_user
+
+
 __all__ = [
     "RegisterSerializer",
     "UserProfileSerializer",
     "CurrentUserSerializer",
     "UpdateProfilePictureSerializer",
+    "CompleteProfileSerializer",
     "ChangePasswordSerializer",
     "PasswordResetRequestSerializer",
     "PasswordResetConfirmSerializer",

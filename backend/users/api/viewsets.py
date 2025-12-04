@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from backend.users.api.serializers import (
     ChangePasswordSerializer,
+    CompleteProfileSerializer,
     CurrentUserSerializer,
     LogoutSerializer,
     PasswordResetConfirmSerializer,
@@ -30,6 +31,19 @@ class RegisterView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response({"username": user.username, "id": user.id}, status=status.HTTP_201_CREATED)
+
+
+class CompleteProfileView(GenericAPIView):
+    """Authenticated endpoint for completing the onboarding profile form."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CompleteProfileSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(CurrentUserSerializer(user).data, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -127,6 +141,7 @@ class CurrentUserView(RetrieveUpdateAPIView):
 
 __all__ = [
     "RegisterView",
+    "CompleteProfileView",
     "CurrentUserView",
     "ChangePasswordView",
     "PasswordResetRequestView",

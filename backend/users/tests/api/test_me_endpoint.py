@@ -67,6 +67,7 @@ def test_me_endpoint_returns_user_data():
     assert response.json()["username"] == "testuser"
     assert response.json()["email"] == "test@example.com"
     assert "profile" in response.json()
+    assert "profile_completed" in response.json()
 
 
 @pytest.mark.django_db
@@ -140,6 +141,28 @@ def test_me_endpoint_with_no_profile_picture():
     # ASSERT
     assert data["profile"]["profile_picture"] is None
 
+
+@pytest.mark.django_db
+def test_me_endpoint_includes_company_fields():
+    user = create_user(
+        username="companyuser",
+        email="company@example.com",
+        password="testpass123",
+    )
+    user.company_name = "Company Inc"
+    user.company_site = "https://company.example.com"
+    user.company_code = "ABC123"
+    user.profile_completed = True
+    user.save()
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+    resp = client.get("/api/v1/auth/me/")
+    data = resp.json()
+    assert data["company_name"] == "Company Inc"
+    assert data["company_site"] == "https://company.example.com"
+    assert data["company_code"] == "ABC123"
+    assert data["profile_completed"] is True
 
 
 @pytest.mark.django_db
