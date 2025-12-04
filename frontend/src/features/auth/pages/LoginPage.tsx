@@ -2,11 +2,18 @@ import React, { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { AxiosError } from 'axios'
 
 import { useLogin } from '../hooks/useLogin'
 import { LoginInput, loginSchema } from '../schema/authSchema'
 import { useAppDispatch } from '../../../store/hooks'
 import { setCredentials } from '../../../store/slices/authSlice'
+
+type LocationState = {
+  from?: {
+    pathname: string
+  }
+}
 
 /**
  * LoginPage - User login form
@@ -37,10 +44,12 @@ const LoginPage = () => {
       // 📚 Redux: dispatch action to save token in store
       dispatch(setCredentials(data.access))
       // Redirect to where they were trying to go, or dashboard
-      const redirectTo = (location.state as any)?.from?.pathname || '/dashboard'
+      const state = location.state as LocationState | null
+      const redirectTo = state?.from?.pathname || '/dashboard'
       navigate(redirectTo, { replace: true })
-    } catch (err: any) {
-      setServerError(err?.response?.data?.detail || err.message || 'Login failed')
+    } catch (err) {
+      const error = err as AxiosError<{ detail?: string }>
+      setServerError(error.response?.data?.detail || error.message || 'Login failed')
     }
   }
 

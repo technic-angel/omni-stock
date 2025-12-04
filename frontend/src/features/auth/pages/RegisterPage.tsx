@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { AxiosError } from 'axios'
 
 import { useRegister } from '../hooks/useRegister'
 import { RegisterInput, registerSchema } from '../schema/authSchema'
@@ -37,15 +38,21 @@ const RegisterPage = () => {
       await mutateAsync(values)
       // After registration, redirect to login
       navigate('/login', { replace: true })
-    } catch (err: any) {
+    } catch (err) {
       // Handle specific field errors from the API
-      const errorData = err?.response?.data
+      const error = err as AxiosError<{
+        detail?: string
+        username?: string[]
+        password?: string[]
+        email?: string[]
+      }>
+      const errorData = error.response?.data
       if (errorData?.username) {
         setServerError(`Username: ${errorData.username[0]}`)
       } else if (errorData?.email) {
         setServerError(`Email: ${errorData.email[0]}`)
       } else {
-        setServerError(errorData?.detail || err.message || 'Registration failed')
+        setServerError(errorData?.detail || error.message || 'Registration failed')
       }
     }
   }

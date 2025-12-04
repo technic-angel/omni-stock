@@ -45,9 +45,9 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
     try {
       await deleteMutation.mutateAsync(deleteTarget.id)
       setDeleteTarget(null)
-    } catch (mutationError: any) {
-      const detail =
-        mutationError?.response?.data?.detail ?? mutationError?.message ?? 'Unable to delete item.'
+    } catch (mutationError) {
+      const error = mutationError as { response?: { data?: { detail?: string } }; message?: string }
+      const detail = error?.response?.data?.detail ?? error?.message ?? 'Unable to delete item.'
       setDeleteError(detail)
     } finally {
       setPendingDeleteId(null)

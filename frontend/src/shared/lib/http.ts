@@ -65,11 +65,6 @@ function getApiBaseUrl(): string {
 
 const apiBaseUrl = getApiBaseUrl()
 
-// Log the API base URL for debugging on Vercel
-if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-  console.log('[HTTP] API Base URL:', apiBaseUrl)
-}
-
 // Create a configured axios instance
 export const http = axios.create({
   // Base URL - all requests will be prefixed with this
