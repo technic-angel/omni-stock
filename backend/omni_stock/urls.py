@@ -17,29 +17,22 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path  # Import 'include'
+from django.urls import include, path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-# SimpleJWT views for token obtain/refresh/verify
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
-)
-
-# Register view (user sign-up)
 from backend.users.api.viewsets import (
     ChangePasswordView,
+    CompleteProfileView,
     CurrentUserView,
     LogoutView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
-    CompleteProfileView
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-     # --- API Endpoints ---
+    # --- API Endpoints ---
     # Link the app-level URLs to the /api/v1/collectibles/ path
     # Ensure the prefix ends with a trailing slash so included routes
     # are mounted at `/api/v1/...`, e.g. `/api/v1/collectibles/`.
