@@ -1,7 +1,7 @@
 from decimal import Decimal
 
-from django.test import override_settings
 import pytest
+from django.test import override_settings
 
 from backend.inventory.api.serializers import CollectibleSerializer
 from backend.inventory.models import Collectible
