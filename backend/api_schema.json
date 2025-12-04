@@ -77,6 +77,20 @@
         ],
         "type": "object"
       },
+      "CheckEmailExists": {
+        "description": "Serializer to check if an email is already registered.\n\nUsed for client-side validation during registration.",
+        "properties": {
+          "email": {
+            "description": "Email address to check",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
       "Collectible": {
         "description": "Serializer for the Collectible model with nested card details support.",
         "properties": {
@@ -1309,6 +1323,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/check-email/": {
+      "post": {
+        "description": "POST /api/v1/auth/register/check-email/\n\nCheck if an email is already registered.\n\n- Public endpoint (no authentication required)\n\nRequest body:\n    {\n        \"email\": \"user@example.com\"\n    }",
+        "operationId": "auth_register_check_email_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEmailExists"
                 }
               }
             },
