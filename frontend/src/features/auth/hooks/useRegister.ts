@@ -46,7 +46,14 @@ export const useRegister = () => {
     mutationFn: (payload: RegisterInput) => {
       // Call our API function with the form data
       // Note: We don't send confirmPassword - backend doesn't need it!
-      return register(payload.username, payload.email, payload.password)
+      const normalizedCompany = payload.company_name?.trim()
+      return register(
+        payload.username,
+        payload.email,
+        payload.password,
+        payload.birthdate,
+        normalizedCompany && normalizedCompany.length > 0 ? normalizedCompany : undefined,
+      )
     },
 
     // Optional: callbacks for success/error

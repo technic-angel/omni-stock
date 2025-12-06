@@ -1,130 +1,135 @@
-/**
- * Auth API - Backend Communication
- *
- * 📚 THE API LAYER
- *
- * This file contains functions that talk to the backend.
- * Each function:
- * 1. Makes an HTTP request using our configured axios instance
- * 2. Returns the data from the response
- *
- * These are PLAIN FUNCTIONS - they don't know about React.
- * React Query hooks will call these functions.
- *
- * 📚 WHY SEPARATE API FUNCTIONS?
- *
- * - Easy to test (just call the function, check the result)
- * - Reusable (can be called from hooks, tests, etc.)
- * - Single source of truth for endpoints
- */
-
 import { http } from '../../../shared/lib/http'
 import { tokenStore } from '../../../shared/lib/tokenStore'
 
-// ─────────────────────────────────────────────────────────────
-// REGISTER - Create a new user account
-// ─────────────────────────────────────────────────────────────
-//
-// 📚 THE FLOW:
-//
-// 1. Frontend sends: { username, email, password }
-// 2. Backend creates user in database
-// 3. Backend returns: { id, username, email } (the new user)
-//
-// Note: Register does NOT return tokens! User must login after.
-// Some apps auto-login after register, but we keep it simple.
+export type RegisterResponse = {
+  id: number
+  username: string
+}
 
-export async function register(username: string, email: string, password: string) {
-  // POST /api/v1/auth/register/
-  const { data } = await http.post('/auth/register/', {
+export type CheckEmailResponse = {
+  available: boolean
+}
+
+export type LoginResponse = {
+  access: string
+  refresh: string
+}
+
+type RefreshResponse = {
+  access: string
+}
+
+export type CurrentUserResponse = {
+  id: number
+  username: string
+  email: string
+  role: string
+  profile_completed: boolean
+  company_name?: string | null
+  company_code?: string | null
+  company_site?: string | null
+  phone_number?: string | null
+  birthdate?: string | null
+  profile?: {
+    id: number
+    phone?: string | null
+    bio?: string | null
+    profile_picture?: string | null
+  } | null
+}
+
+export type CompleteProfilePayload = {
+  username: string
+  password: string
+  company_name?: string | null
+  company_site?: string | null
+  company_code?: string | null
+  phone_number?: string | null
+  birthdate?: string | null
+}
+
+export async function register(
+  username: string,
+  email: string,
+  password: string,
+  birthdate: string,
+  companyName?: string,
+): Promise<RegisterResponse> {
+  const payload: {
+    username: string
+    email: string
+    password: string
+    birthdate: string
+    company_name?: string
+  } = {
     username,
     email,
     password,
-    // Note: We don't send confirmPassword to backend!
-    // That's only for frontend validation
+    birthdate,
+  }
+
+  if (companyName && companyName.trim().length > 0) {
+    payload.company_name = companyName.trim()
+  }
+
+  const { data } = await http.post<RegisterResponse>('/auth/register/', payload)
+  return data
+}
+
+export async function checkEmailAvailability(email: string): Promise<CheckEmailResponse> {
+  const { data } = await http.post<CheckEmailResponse>('/auth/register/check-email/', {
+    email,
   })
   return data
 }
 
-// ─────────────────────────────────────────────────────────────
-// LOGIN - Authenticate and get tokens
-// ─────────────────────────────────────────────────────────────
-//
-// 📚 THE FLOW:
-//
-// 1. Frontend sends: { username, password }
-// 2. Backend checks credentials
-// 3. Backend returns: { access: "jwt...", refresh: "jwt..." }
-// 4. We store both tokens for later use
-//
-// The access token is then attached to every request (by interceptor)
-
-export async function login(username: string, password: string) {
-  // POST /api/v1/auth/token/
-  const { data } = await http.post('/auth/token/', {
+export async function login(username: string, password: string): Promise<LoginResponse> {
+  const { data } = await http.post<LoginResponse>('/auth/token/', {
     username,
     password,
   })
 
-  // Store the tokens we received
   tokenStore.setTokens(data.access, data.refresh)
 
-  return data // { access, refresh }
+  return data
 }
 
-// ─────────────────────────────────────────────────────────────
-// REFRESH - Get a new access token
-// ─────────────────────────────────────────────────────────────
-//
-// 📚 WHY REFRESH?
-//
-// Access tokens expire quickly (15 min) for security.
-// Instead of making user login again, we use the refresh token
-// to get a new access token silently in the background.
-//
-// This is usually called automatically when a request fails with 401.
-
-export async function refreshToken() {
+export async function refreshToken(): Promise<string> {
   const refresh = tokenStore.getRefresh()
 
   if (!refresh) {
     throw new Error('No refresh token available')
   }
 
-  // POST /api/v1/auth/token/refresh/
-  const { data } = await http.post('/auth/token/refresh/', {
+  const { data } = await http.post<RefreshResponse>('/auth/token/refresh/', {
     refresh,
   })
 
-  // Store the new access token
   tokenStore.setAccess(data.access)
 
   return data.access
 }
 
-// ─────────────────────────────────────────────────────────────
-// LOGOUT - Clear tokens and invalidate on server
-// ─────────────────────────────────────────────────────────────
-//
-// 📚 LOGOUT STRATEGIES:
-//
-// Simple: Just delete tokens from localStorage
-// Better: Also tell the backend to blacklist the refresh token
-//         (so it can't be used even if someone stole it)
+export async function getCurrentUser(): Promise<CurrentUserResponse> {
+  const { data } = await http.get<CurrentUserResponse>('/auth/me/')
+  return data
+}
 
-export async function logout() {
+export async function completeProfile(payload: CompleteProfilePayload): Promise<CurrentUserResponse> {
+  const { data } = await http.post<CurrentUserResponse>('/auth/profile/complete/', payload)
+  return data
+}
+
+export async function logout(): Promise<void> {
   const refresh = tokenStore.getRefresh()
 
-  // Try to blacklist the refresh token on the server
   if (refresh) {
     try {
       await http.post('/auth/logout/', { refresh })
     } catch {
-      // If this fails, still clear local tokens
-      // (maybe user is already logged out, or server is down)
+      // Swallow errors; still clear local tokens
     }
   }
 
-  // Always clear local tokens
   tokenStore.clear()
 }
