@@ -6,9 +6,9 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from backend.users.services.create_user import create_user
 from backend.users.models import UserProfile, UserRole
 from backend.users.validators import validate_birthdate
-from backend.users.services.create_user import create_user
 
 User = get_user_model()
 

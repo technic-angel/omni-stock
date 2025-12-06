@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from backend.users.api.serializers import (
     ChangePasswordSerializer,
+    CheckEmailExistsSerializer,
     CompleteProfileSerializer,
     CurrentUserSerializer,
     LogoutSerializer,
@@ -16,7 +17,6 @@ from backend.users.api.serializers import (
     PasswordResetRequestSerializer,
     RegisterSerializer,
     UpdateProfilePictureSerializer,
-    CheckEmailExistsSerializer
 )
 from backend.users.selectors.get_current_user import get_current_user_with_profile
 

@@ -22,13 +22,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from backend.users.api.viewsets import (
     ChangePasswordView,
+    CheckEmailView,
     CompleteProfileView,
     CurrentUserView,
     LogoutView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
-    CheckEmailView,
 )
 
 urlpatterns = [
