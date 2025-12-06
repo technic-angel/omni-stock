@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
@@ -47,13 +47,19 @@ const CompleteProfilePage = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-lg border p-8">
-        <img
-          src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
-          alt="Omni-Stock"
-          className="mx-auto mb-6 h-10"
-        />
+    <div className="w-full max-w-xl mx-auto">
+      <div className="flex items-center justify-between px-2 py-4 sm:px-0">
+        <Link to="/" className="flex items-center space-x-3">
+          <img
+            src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+            alt="Omni-Stock"
+            className="h-9"
+          />
+          <span className="text-xl font-semibold text-gray-900">Omni-Stock</span>
+        </Link>
+      </div>
+
+      <div className="mt-2 bg-white rounded-lg shadow-lg border p-8">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-4">Complete Your Profile</h1>
         <p className="text-sm text-gray-600 text-center mb-6">
           Finish setting up your account to unlock the rest of the app.
@@ -102,6 +108,23 @@ const CompleteProfilePage = () => {
           </div>
 
           <div>
+            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
+              Birthdate
+            </label>
+            <input
+              id="birthdate"
+              type="date"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.birthdate ? 'border-red-500' : 'border-gray-300'
+              }`}
+              {...register('birthdate')}
+            />
+            {errors.birthdate && (
+              <p className="mt-1 text-xs text-red-600">{errors.birthdate.message}</p>
+            )}
+          </div>
+
+          <div>
             <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
               Company / Vendor Name (optional)
             </label>
@@ -127,19 +150,3 @@ const CompleteProfilePage = () => {
 }
 
 export default CompleteProfilePage
-          <div>
-            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
-              Birthdate
-            </label>
-            <input
-              id="birthdate"
-              type="date"
-              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
-                errors.birthdate ? 'border-red-500' : 'border-gray-300'
-              }`}
-              {...register('birthdate')}
-            />
-            {errors.birthdate && (
-              <p className="mt-1 text-xs text-red-600">{errors.birthdate.message}</p>
-            )}
-          </div>
