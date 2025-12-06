@@ -8,12 +8,14 @@ import { tokenStore } from '../../shared/lib/tokenStore'
 interface AuthState {
   accessToken: string | null
   isAuthenticated: boolean
+  profileCompleted: boolean
 }
 
 // Initialize from localStorage (persist login across refreshes)
 const initialState: AuthState = {
   accessToken: tokenStore.getAccess(),
   isAuthenticated: Boolean(tokenStore.getAccess()),
+  profileCompleted: false,
 }
 
 // Create the slice
@@ -27,16 +29,23 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       tokenStore.setAccess(action.payload)
     },
+    // Called after profile completion/status refresh
+    setProfileComplete: (state, action: PayloadAction<boolean>) => {
+      state.profileCompleted = action.payload
+    },
 
     // Called on logout
     clearCredentials: (state) => {
       state.accessToken = null
       state.isAuthenticated = false
+      state.profileCompleted = false
       tokenStore.clear()
     },
   },
 })
 
+
+
 // Export actions and reducer
-export const { setCredentials, clearCredentials } = authSlice.actions
+export const { setCredentials, setProfileComplete, clearCredentials } = authSlice.actions
 export default authSlice.reducer
