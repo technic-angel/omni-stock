@@ -80,19 +80,7 @@ const CompleteProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-brand-primary w-full">
-        <div className="mx-auto flex max-w-5xl items-center px-4 py-4 sm:px-8">
-          <Link to="/" className="inline-flex items-center space-x-3">
-            <img
-              src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
-              alt="Omni-Stock"
-              className="h-8"
-            />
-          </Link>
-        </div>
-      </header>
-
-      <main className="flex-1 px-4">
+      <main className="flex-1 px-4 py-8">
         <div className="mx-auto mt-8 max-w-xl bg-white rounded-lg shadow-lg border p-8">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-4">Complete Your Profile</h1>
         <p className="text-sm text-gray-600 text-center mb-6">
