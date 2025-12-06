@@ -48,18 +48,17 @@ const CompleteProfilePage = () => {
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      <div className="flex items-center justify-between px-2 py-4 sm:px-0">
-        <Link to="/" className="flex items-center space-x-3">
+      <header className="bg-brand-primary px-4 py-4 sm:px-8">
+        <Link to="/" className="inline-flex items-center space-x-3">
           <img
             src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
             alt="Omni-Stock"
-            className="h-9"
+            className="h-8"
           />
-          <span className="text-xl font-semibold text-gray-900">Omni-Stock</span>
         </Link>
-      </div>
+      </header>
 
-      <div className="mt-2 bg-white rounded-lg shadow-lg border p-8">
+      <div className="mt-6 bg-white rounded-lg shadow-lg border p-8">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-4">Complete Your Profile</h1>
         <p className="text-sm text-gray-600 text-center mb-6">
           Finish setting up your account to unlock the rest of the app.
