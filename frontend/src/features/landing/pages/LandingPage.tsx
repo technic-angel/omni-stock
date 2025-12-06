@@ -21,20 +21,23 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Navigation Header */}
-      <header className="bg-brand-primary">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-8">
-          <Link to="/" className="inline-flex items-center space-x-3">
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
             <img
               src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
               alt="Omni-Stock"
-              className="h-8"
+              className="h-10 w-auto"
             />
           </Link>
+
+          {/* Auth Buttons */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" className="text-white hover:text-white" asChild>
+            <Button variant="ghost" asChild>
               <Link to="/login">Log in</Link>
             </Button>
-            <Button asChild className="bg-white text-brand-primary hover:bg-gray-100">
+            <Button asChild className="bg-brand-primary hover:bg-brand-primary-dark">
               <Link to="/register">Get Started</Link>
             </Button>
           </div>
