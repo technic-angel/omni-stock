@@ -52,7 +52,7 @@ const LoginPage = () => {
           queryFn: getCurrentUser,
         })
         dispatch(setProfileComplete(currentUser.profile_completed))
-      } catch (error) {
+      } catch {
         // Best effort – if this fails we let ProtectedRoute fetch later
       }
       // Redirect to where they were trying to go, or dashboard
