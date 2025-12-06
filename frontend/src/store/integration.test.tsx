@@ -6,6 +6,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import authReducer from './slices/authSlice'
 import ProtectedRoute from '../app/routes/ProtectedRoute'
 import { routerFuture } from '../app/routes/routerFuture'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 
 // Mock tokenStore
 vi.mock('../../shared/lib/tokenStore', () => ({
@@ -16,10 +17,18 @@ vi.mock('../../shared/lib/tokenStore', () => ({
   },
 }))
 
-const createTestStore = (preloadedState = {}) => {
+vi.mock('@/features/auth/hooks/useCurrentUser')
+
+const defaultAuthState = {
+  accessToken: null,
+  isAuthenticated: false,
+  profileCompleted: false,
+}
+
+const createTestStore = (authState = defaultAuthState) => {
   return configureStore({
     reducer: { auth: authReducer },
-    preloadedState,
+    preloadedState: { auth: { ...defaultAuthState, ...authState } },
   })
 }
 
@@ -43,9 +52,17 @@ const TestApp = ({ store, initialRoute = '/dashboard' }: { store: any; initialRo
 )
 
 describe('ProtectedRoute with Redux', () => {
+  beforeEach(() => {
+    vi.mocked(useCurrentUser).mockReturnValue({
+      isLoading: false,
+      data: null,
+    } as any)
+  })
   it('redirects to landing page when not authenticated', () => {
     const store = createTestStore({
-      auth: { accessToken: null, isAuthenticated: false },
+      accessToken: null,
+      isAuthenticated: false,
+      profileCompleted: false,
     })
 
     render(<TestApp store={store} />)
@@ -57,7 +74,9 @@ describe('ProtectedRoute with Redux', () => {
 
   it('shows protected content when authenticated', () => {
     const store = createTestStore({
-      auth: { accessToken: 'valid-token', isAuthenticated: true },
+      accessToken: 'valid-token',
+      isAuthenticated: true,
+      profileCompleted: true,
     })
 
     render(<TestApp store={store} />)
@@ -69,7 +88,9 @@ describe('ProtectedRoute with Redux', () => {
 
   it('redirects after token is cleared (logout)', () => {
     const store = createTestStore({
-      auth: { accessToken: 'valid-token', isAuthenticated: true },
+      accessToken: 'valid-token',
+      isAuthenticated: true,
+      profileCompleted: true,
     })
 
     const { rerender } = render(<TestApp store={store} />)
@@ -77,7 +98,9 @@ describe('ProtectedRoute with Redux', () => {
 
     // Simulate logout by creating new store with cleared auth
     const loggedOutStore = createTestStore({
-      auth: { accessToken: null, isAuthenticated: false },
+      accessToken: null,
+      isAuthenticated: false,
+      profileCompleted: false,
     })
 
     rerender(<TestApp store={loggedOutStore} />)

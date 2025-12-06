@@ -47,12 +47,27 @@ export async function register(
   username: string,
   email: string,
   password: string,
+  birthdate: string,
+  companyName?: string,
 ): Promise<RegisterResponse> {
-  const { data } = await http.post<RegisterResponse>('/auth/register/', {
+  const payload: {
+    username: string
+    email: string
+    password: string
+    birthdate: string
+    company_name?: string
+  } = {
     username,
     email,
     password,
-  })
+    birthdate,
+  }
+
+  if (companyName && companyName.trim().length > 0) {
+    payload.company_name = companyName.trim()
+  }
+
+  const { data } = await http.post<RegisterResponse>('/auth/register/', payload)
   return data
 }
 

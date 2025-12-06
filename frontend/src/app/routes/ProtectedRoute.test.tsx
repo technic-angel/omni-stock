@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
@@ -7,6 +7,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import ProtectedRoute from './ProtectedRoute'
 import { routerFuture } from './routerFuture'
 import authReducer from '../../store/slices/authSlice'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 
 // Mock tokenStore
 vi.mock('../../shared/lib/tokenStore', () => ({
@@ -17,6 +18,8 @@ vi.mock('../../shared/lib/tokenStore', () => ({
   },
 }))
 
+vi.mock('@/features/auth/hooks/useCurrentUser')
+
 const createTestStore = (isAuthenticated: boolean) => {
   return configureStore({
     reducer: { auth: authReducer },
@@ -24,10 +27,18 @@ const createTestStore = (isAuthenticated: boolean) => {
       auth: {
         accessToken: isAuthenticated ? 'test-token' : null,
         isAuthenticated,
+        profileCompleted: isAuthenticated,
       },
     },
   })
 }
+
+beforeEach(() => {
+  vi.mocked(useCurrentUser).mockReturnValue({
+    isLoading: false,
+    data: null,
+  } as any)
+})
 
 const renderWithAuth = (isAuthenticated: boolean) => {
   const store = createTestStore(isAuthenticated)

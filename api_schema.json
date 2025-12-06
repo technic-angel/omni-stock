@@ -580,6 +580,11 @@
       "Register": {
         "description": "Serializer for user registration.",
         "properties": {
+          "birthdate": {
+            "description": "Birthdate collected during registration.",
+            "format": "date",
+            "type": "string"
+          },
           "company_code": {
             "description": "Optional invite code to join an existing company.",
             "maxLength": 40,
@@ -605,6 +610,7 @@
           }
         },
         "required": [
+          "birthdate",
           "email",
           "password",
           "username"

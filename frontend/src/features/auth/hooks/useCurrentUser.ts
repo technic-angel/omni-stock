@@ -2,13 +2,14 @@
 
 //we are import useQuery to get data from the backend
 import { useQuery } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 
 //importing getcurrentuser function from authapi file
 import { getCurrentUser } from '../api/authApi'
 
 //importing useappdispatch to dispatch actions to the redux store
 import { useAppDispatch } from '@/store/hooks'
-import { setProfileComplete } from '@/store/slices/authSlice'
+import { clearCredentials, setProfileComplete } from '@/store/slices/authSlice'
 
 //exporting usecurrentuser function that uses useQuery to call getcurrentuser function
 export const useCurrentUser = (options?: { enabled?: boolean }) => {
@@ -22,6 +23,12 @@ export const useCurrentUser = (options?: { enabled?: boolean }) => {
     onSuccess: (data) => {
       //dispatch action to set profile completion status in redux store
       dispatch(setProfileComplete(data.profile_completed))
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError
+      if (axiosError.response?.status === 401) {
+        dispatch(clearCredentials())
+      }
     },
   })
 }

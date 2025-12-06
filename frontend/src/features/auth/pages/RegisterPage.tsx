@@ -37,7 +37,14 @@ const RegisterPage = () => {
     setValue,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      company_name: '',
+      birthdate: '',
+    },
   })
 
  
@@ -213,6 +220,45 @@ const RegisterPage = () => {
             />
             {errors.confirmPassword && (
               <p className="mt-1 text-xs text-red-600">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          {/* Company Name Field */}
+          <div>
+            <label
+              htmlFor="company_name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Company / Vendor Name (optional)
+            </label>
+            <input
+              id="company_name"
+              data-cy="register-company-name"
+              className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+              placeholder="Acme Collectibles"
+              {...register('company_name')}
+            />
+            {errors.company_name && (
+              <p className="mt-1 text-xs text-red-600">{errors.company_name.message}</p>
+            )}
+          </div>
+
+          {/* Birthdate Field */}
+          <div>
+            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
+              Birthdate
+            </label>
+            <input
+              id="birthdate"
+              data-cy="register-birthdate"
+              type="date"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.birthdate ? 'border-red-500' : 'border-gray-300'
+              }`}
+              {...register('birthdate')}
+            />
+            {errors.birthdate && (
+              <p className="mt-1 text-xs text-red-600">{errors.birthdate.message}</p>
             )}
           </div>
 
