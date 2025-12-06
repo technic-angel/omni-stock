@@ -21,7 +21,7 @@ const CompleteProfilePage = () => {
     formState: { errors },
   } = useForm<CompleteProfileInput>({
     resolver: zodResolver(completeProfileSchema),
-    defaultValues: { username: '', password: '', company_name: '' },
+    defaultValues: { username: '', password: '', birthdate: '', company_name: '' },
   })
 
   const onSubmit = async (values: CompleteProfileInput) => {
@@ -30,6 +30,7 @@ const CompleteProfilePage = () => {
       await mutateAsync({
         username: values.username,
         password: values.password,
+        birthdate: values.birthdate,
         company_name: values.company_name || null,
       })
       dispatch(setProfileComplete(true))
@@ -48,7 +49,12 @@ const CompleteProfilePage = () => {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="bg-white rounded-lg shadow-lg border p-8">
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Complete Your Profile</h1>
+        <img
+          src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+          alt="Omni-Stock"
+          className="mx-auto mb-6 h-10"
+        />
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-4">Complete Your Profile</h1>
         <p className="text-sm text-gray-600 text-center mb-6">
           Finish setting up your account to unlock the rest of the app.
         </p>
@@ -121,3 +127,19 @@ const CompleteProfilePage = () => {
 }
 
 export default CompleteProfilePage
+          <div>
+            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
+              Birthdate
+            </label>
+            <input
+              id="birthdate"
+              type="date"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.birthdate ? 'border-red-500' : 'border-gray-300'
+              }`}
+              {...register('birthdate')}
+            />
+            {errors.birthdate && (
+              <p className="mt-1 text-xs text-red-600">{errors.birthdate.message}</p>
+            )}
+          </div>

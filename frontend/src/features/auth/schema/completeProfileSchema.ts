@@ -10,6 +10,7 @@ export const completeProfileSchema = z.object({
     .string()
     .min(1, 'Password is required')
     .min(8, 'Password must be at least 8 characters'),
+  birthdate: z.string().min(1, 'Birthdate is required'),
   company_name: z.string().optional(),
 })
 
