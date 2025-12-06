@@ -116,6 +116,32 @@ export const registerSchema = z
       ),
 
     confirmPassword: z.string().min(1, 'Please confirm your password'),
+    company_name: z
+      .string()
+      .max(255, 'Company name must be less than 255 characters')
+      .optional()
+      .or(z.literal('')),
+    birthdate: z
+      .string()
+      .min(1, 'Birthdate is required')
+      .refine((value) => {
+        const parsed = new Date(value)
+        if (Number.isNaN(parsed.getTime())) {
+          return false
+        }
+        const today = new Date()
+        if (parsed > today) {
+          return false
+        }
+        const currentYearBirthday = new Date(
+          today.getFullYear(),
+          parsed.getMonth(),
+          parsed.getDate(),
+        )
+        const ageYears =
+          today.getFullYear() - parsed.getFullYear() - (today < currentYearBirthday ? 1 : 0)
+        return ageYears >= 18
+      }, 'You must be at least 18 years old.')
   })
   // 📚 .refine() on the object compares two fields
   .refine((data) => data.password === data.confirmPassword, {

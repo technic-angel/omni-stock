@@ -5,7 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
 
 import { useRegister } from '../hooks/useRegister'
+import { useCheckEmail } from '../hooks/useCheckEmail'
 import { RegisterInput, registerSchema } from '../schema/authSchema'
+import { z } from 'zod'
 
 /**
  * RegisterPage - New user registration form
@@ -23,19 +25,61 @@ const RegisterPage = () => {
   const { mutateAsync, isPending } = useRegister()
   const [serverError, setServerError] = useState<string | null>(null)
 
+  const { mutateAsync: checkEmail, isPending: isCheckingEmail } = useCheckEmail()
+  const [step, setStep] = useState<'email' | 'details'>('email')
+  const [checkedEmail, setCheckedEmail] = useState("")
+  const [duplicateEmailError, setDuplicateEmailError] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { username: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      company_name: '',
+      birthdate: '',
+    },
   })
+
+ 
+  const {
+    register: registerEmail,
+    handleSubmit: handleSubmitEmail,
+    formState: { errors: emailErrors },
+  } = useForm<{ email: string }>({
+    resolver: zodResolver(z.object({
+      email: z.string().email("Please enter a valid email address"),
+    })),
+    defaultValues: { email: '' },
+  })
+
+  const onCheckEmail = async ({ email }: { email: string }) => {
+    setDuplicateEmailError(null)
+    try {
+      const data = await checkEmail(email)
+      if (data.available) {
+        setCheckedEmail(email)
+        setValue('email', email)
+        setStep('details')
+      } else {
+        setDuplicateEmailError('This email is already registered. Please use a different email.')
+      }
+    } catch (err) {
+      const error = err as AxiosError<{ detail?: string }>
+      setDuplicateEmailError(error.response?.data?.detail || error.message || 'Failed to check email')
+    }
+  }
 
   const onSubmit = async (values: RegisterInput) => {
     setServerError(null)
     try {
-      await mutateAsync(values)
+      await mutateAsync({ ...values, email: checkedEmail || values.email })
       // After registration, redirect to login
       navigate('/login', { replace: true })
     } catch (err) {
@@ -58,6 +102,7 @@ const RegisterPage = () => {
   }
 
   return (
+    
     <div className="w-full max-w-md">
       {/* Card */}
       <div className="bg-white rounded-lg shadow-lg border p-8">
@@ -70,6 +115,42 @@ const RegisterPage = () => {
           </div>
         )}
 
+        { step === 'email' ? ( 
+          <form onSubmit={handleSubmitEmail(onCheckEmail)} className="space-y-4">
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                data-cy="register-email"
+                type="email"
+                className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                  emailErrors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="you@example.com"
+                {...registerEmail('email')}
+              />
+              {emailErrors.email && (
+                <p className="mt-1 text-xs text-red-600">{emailErrors.email.message}</p>
+              )}
+              {duplicateEmailError && (
+                <p className="mt-1 text-xs text-red-600">{duplicateEmailError}</p>
+              )}
+            </div>
+            {/* Submit Continue */}
+            <button
+              type="submit"
+              data-cy="check-email-submit"
+              className="w-full rounded-lg bg-brand-primary hover:bg-brand-primary-dark px-4 py-3 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isCheckingEmail}
+            >
+              {isCheckingEmail ? 'Checking…' : 'Continue'}
+            </button>
+          </form>
+
+        ):(
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Username Field */}
           <div>
@@ -90,22 +171,13 @@ const RegisterPage = () => {
             )}
           </div>
 
-          {/* Email Field */}
+          {/* Email Display (locked after step 1) */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              data-cy="register-email"
-              type="email"
-              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="you@example.com"
-              {...register('email')}
-            />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <div className="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-700">
+              {checkedEmail}
+            </div>
+            <input type="hidden" {...register('email')} />
           </div>
 
           {/* Password Field */}
@@ -151,6 +223,45 @@ const RegisterPage = () => {
             )}
           </div>
 
+          {/* Company Name Field */}
+          <div>
+            <label
+              htmlFor="company_name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Company / Vendor Name (optional)
+            </label>
+            <input
+              id="company_name"
+              data-cy="register-company-name"
+              className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+              placeholder="Acme Collectibles"
+              {...register('company_name')}
+            />
+            {errors.company_name && (
+              <p className="mt-1 text-xs text-red-600">{errors.company_name.message}</p>
+            )}
+          </div>
+
+          {/* Birthdate Field */}
+          <div>
+            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700 mb-1">
+              Birthdate
+            </label>
+            <input
+              id="birthdate"
+              data-cy="register-birthdate"
+              type="date"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.birthdate ? 'border-red-500' : 'border-gray-300'
+              }`}
+              {...register('birthdate')}
+            />
+            {errors.birthdate && (
+              <p className="mt-1 text-xs text-red-600">{errors.birthdate.message}</p>
+            )}
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
@@ -161,6 +272,7 @@ const RegisterPage = () => {
             {isPending ? 'Creating account…' : 'Create Account'}
           </button>
         </form>
+        )}
 
         {/* Login Link */}
         <p className="mt-6 text-center text-sm text-gray-600">

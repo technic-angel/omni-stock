@@ -7,7 +7,9 @@ import { AxiosError } from 'axios'
 import { useLogin } from '../hooks/useLogin'
 import { LoginInput, loginSchema } from '../schema/authSchema'
 import { useAppDispatch } from '../../../store/hooks'
-import { setCredentials } from '../../../store/slices/authSlice'
+import { setCredentials, setProfileComplete } from '../../../store/slices/authSlice'
+import { useQueryClient } from '@tanstack/react-query'
+import { getCurrentUser } from '../api/authApi'
 
 type LocationState = {
   from?: {
@@ -27,6 +29,7 @@ const LoginPage = () => {
   const dispatch = useAppDispatch() // Redux dispatch
   const { mutateAsync, isPending } = useLogin()
   const [serverError, setServerError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const {
     register,
@@ -43,6 +46,15 @@ const LoginPage = () => {
       const data = await mutateAsync(values)
       // 📚 Redux: dispatch action to save token in store
       dispatch(setCredentials(data.access))
+      try {
+        const currentUser = await queryClient.fetchQuery({
+          queryKey: ['currentUser'],
+          queryFn: getCurrentUser,
+        })
+        dispatch(setProfileComplete(currentUser.profile_completed))
+      } catch {
+        // Best effort – if this fails we let ProtectedRoute fetch later
+      }
       // Redirect to where they were trying to go, or dashboard
       const state = location.state as LocationState | null
       const redirectTo = state?.from?.pathname || '/dashboard'

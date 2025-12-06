@@ -8,6 +8,7 @@ from rest_framework.validators import UniqueValidator
 
 from backend.users.models import UserProfile, UserRole
 from backend.users.services.create_user import create_user
+from backend.users.validators import validate_birthdate
 
 User = get_user_model()
 
@@ -25,6 +26,12 @@ class RegisterSerializer(serializers.Serializer):
         validators=[UniqueValidator(queryset=User.objects.all(), message="A user with that email already exists.")],
     )
     password = serializers.CharField(write_only=True, min_length=8)
+    birthdate = serializers.DateField(
+        required=True,
+        allow_null=False,
+        validators=[validate_birthdate],
+        help_text="Birthdate collected during registration.",
+    )
     company_name = serializers.CharField(
         max_length=255,
         required=False,
@@ -42,6 +49,7 @@ class RegisterSerializer(serializers.Serializer):
         extra_fields = {
             "company_name": validated_data.get("company_name"),
             "company_code": validated_data.get("company_code"),
+            "birthdate": validated_data.get("birthdate"),
         }
         user = create_user(
             username=validated_data.get("username"),
@@ -49,6 +57,9 @@ class RegisterSerializer(serializers.Serializer):
             password=validated_data.get("password"),
             extra_fields={k: v for k, v in extra_fields.items() if v},
         )
+        if not user.profile_completed:
+            user.profile_completed = True
+            user.save(update_fields=["profile_completed"])
         return user
 
 
@@ -280,18 +291,6 @@ class CompleteProfileSerializer(serializers.Serializer):
         return updated_user
 
 
-__all__ = [
-    "RegisterSerializer",
-    "UserProfileSerializer",
-    "CurrentUserSerializer",
-    "UpdateProfilePictureSerializer",
-    "CompleteProfileSerializer",
-    "ChangePasswordSerializer",
-    "PasswordResetRequestSerializer",
-    "PasswordResetConfirmSerializer",
-    "LogoutSerializer",
-]
-
 
 class ChangePasswordSerializer(serializers.Serializer):
     """
@@ -418,3 +417,33 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError(str(e))
         
         return value
+    
+class CheckEmailExistsSerializer(serializers.Serializer):
+    """
+    Serializer to check if an email is already registered.
+    
+    Used for client-side validation during registration.
+    """
+    
+    email = serializers.EmailField(
+        required=True,
+        help_text="Email address to check"
+    )
+    
+    def save(self):
+        """Check if email exists in the system."""
+        exists = User.objects.filter(email__iexact=self.validated_data['email']).exists()
+        return {'available': not exists}
+
+__all__ = [
+    "RegisterSerializer",
+    "UserProfileSerializer",
+    "CurrentUserSerializer",
+    "UpdateProfilePictureSerializer",
+    "CompleteProfileSerializer",
+    "ChangePasswordSerializer",
+    "PasswordResetRequestSerializer",
+    "PasswordResetConfirmSerializer",
+    "LogoutSerializer",
+    "CheckEmailExistsSerializer",
+]
