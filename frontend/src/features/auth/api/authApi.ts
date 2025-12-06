@@ -25,6 +25,11 @@ export type CurrentUserResponse = {
   email: string
   role: string
   profile_completed: boolean
+  company_name?: string | null
+  company_code?: string | null
+  company_site?: string | null
+  phone_number?: string | null
+  birthdate?: string | null
   profile?: {
     id: number
     phone?: string | null
