@@ -310,7 +310,8 @@ class TestUserRegistration:
         payload = {
             "username": "newuser",
             "password": "securepass123",
-            "email": "new@example.com"
+            "email": "new@example.com",
+            "birthdate": "1990-01-01",
         }
         resp = client.post("/api/v1/auth/register/", payload, format="json")
         
