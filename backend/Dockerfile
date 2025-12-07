@@ -36,5 +36,5 @@ ENV PYTHONPATH=/usr/src/app
 # Expose port
 EXPOSE 8000
 
-# Temporary: run migrations before starting gunicorn (remove after DB updated)
-CMD ["sh", "-c", "python manage.py migrate && exec gunicorn backend.omni_stock.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120"]
+# Run gunicorn
+CMD ["gunicorn", "backend.omni_stock.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]

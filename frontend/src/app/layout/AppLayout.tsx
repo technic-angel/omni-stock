@@ -1,9 +1,23 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar, MobileSidebarTrigger } from './Sidebar'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { useAppSelector } from '@/store/hooks'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+
 
 export function AppLayout() {
   const isMobile = useMediaQuery('(max-width: 768px)')
+
+  // Fetch as soon as user is authenticated. AppLayout mounts for protected routes only.
+  // Guard the selector so tests that render this component without a Redux Provider don't throw.
+  let isAuthenticated = false
+  try {
+    isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  } catch (e) {
+    isAuthenticated = false
+  }
+
+  const { data: User, isLoading } = useCurrentUser({ enabled: isAuthenticated })
 
   return (
     <div className="flex h-screen bg-gray-50">

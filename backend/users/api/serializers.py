@@ -93,6 +93,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     """
 
     profile = UserProfileSerializer(read_only=True)
+    # Convenience read-only field combining first/last name
+    full_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -100,6 +102,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "full_name",
             "role",
             "profile_completed",
             "company_name",
@@ -110,7 +115,19 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "tos_accepted_at",
             "profile",
         ]
-        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at"]
+        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name"]
+
+    def get_full_name(self, obj):
+        # Use Django's helper to assemble first + last name, fallback to username/email
+        try:
+            name = obj.get_full_name()
+        except Exception:
+            name = None
+        if name:
+            return name
+        if obj.username:
+            return obj.username
+        return obj.email
 
 
 class UpdateProfilePictureSerializer(serializers.Serializer):
