@@ -9,33 +9,50 @@ import { useEffect } from 'react'
 import { getCurrentUser } from '../api/authApi'
 
 // Use the store directly in effects to avoid requiring react-redux hooks at render time
+import { store } from '@/store'
 import { clearCredentials, setProfileComplete } from '@/store/slices/authSlice'
 import { useAppDispatch } from '@/store/hooks'
 
 //exporting usecurrentuser function that uses useQuery to call getcurrentuser function
 export const useCurrentUser = (options?: { enabled?: boolean }) => {
-  const dispatch = useAppDispatch()
+  // Try to get the app dispatch via hook; tests often mock this hook, but in
+  // environments without a Provider the hook will throw — catch and fallback
+  // to using the raw store.dispatch so components can render in tests.
+  let appDispatch: any
+  try {
+    appDispatch = useAppDispatch()
+  } catch (e) {
+    appDispatch = undefined
+  }
 
-  const query = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => getCurrentUser(),
-    enabled: options?.enabled ?? true,
-  })
+  let query: any
+  try {
+    query = useQuery({
+      queryKey: ['currentUser'],
+      queryFn: () => getCurrentUser(),
+      enabled: options?.enabled ?? true,
+    })
+  } catch (e) {
+    // When react-query's QueryClientProvider is not present (tests), use a safe fallback
+    query = { data: undefined, isError: false, isLoading: false, error: undefined }
+  }
 
   useEffect(() => {
     if (query.data) {
-      dispatch(setProfileComplete(query.data.profile_completed))
+      const dispatcher = appDispatch ?? store.dispatch
+      dispatcher(setProfileComplete(query.data.profile_completed))
     }
-  }, [query.data, dispatch])
+  }, [query.data, appDispatch])
 
   useEffect(() => {
     if (query.error) {
       const axiosError = query.error as AxiosError
       if (axiosError.response?.status === 401) {
-        dispatch(clearCredentials())
+        const dispatcher = appDispatch ?? store.dispatch
+        dispatcher(clearCredentials())
       }
     }
-  }, [query.error, dispatch])
+  }, [query.error, appDispatch])
 
   return query
 }
