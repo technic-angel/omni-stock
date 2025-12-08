@@ -1,9 +1,15 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar, MobileSidebarTrigger } from './Sidebar'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { useAppSelector } from '@/store/hooks'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
+
 
 export function AppLayout() {
   const isMobile = useMediaQuery('(max-width: 768px)')
+
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  useCurrentUser({ enabled: isAuthenticated })
 
   return (
     <div className="flex h-screen bg-gray-50">

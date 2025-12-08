@@ -4,12 +4,27 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import AppLayout from './AppLayout'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 
 const mockUseMediaQuery = vi.fn()
 
 vi.mock('@/shared/hooks/useMediaQuery', () => ({
   useMediaQuery: (query: string) => mockUseMediaQuery(query),
 }))
+
+vi.mock('@/store/hooks', () => ({
+  useAppSelector: vi.fn(),
+  useAppDispatch: vi.fn(),
+}))
+
+vi.mock('@/features/auth/hooks/useCurrentUser', () => ({
+  useCurrentUser: vi.fn(),
+}))
+
+const mockUseAppSelector = vi.mocked(useAppSelector)
+const mockUseAppDispatch = vi.mocked(useAppDispatch)
+const mockUseCurrentUser = vi.mocked(useCurrentUser)
 
 vi.mock('./Sidebar', () => ({
   Sidebar: ({ className }: { className?: string }) => (
@@ -34,6 +49,9 @@ const renderWithRouter = () =>
 describe('AppLayout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseAppSelector.mockReturnValue(true)
+    mockUseAppDispatch.mockReturnValue(vi.fn())
+    mockUseCurrentUser.mockReturnValue({ data: null, isLoading: false })
   })
 
   it('renders desktop sidebar when viewport is not mobile', () => {

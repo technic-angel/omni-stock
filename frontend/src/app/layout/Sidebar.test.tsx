@@ -5,6 +5,8 @@ import { BrowserRouter, useLocation } from 'react-router-dom'
 import { Sidebar, MobileSidebarTrigger } from './Sidebar'
 import { useLocalStorage } from '@/shared/hooks/useLocalStorage'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { routerFuture } from '../routes/routerFuture'
 
 vi.mock('../../shared/hooks/useLocalStorage', () => ({
@@ -22,6 +24,19 @@ vi.mock('react-router-dom', async () => {
     useLocation: vi.fn(() => ({ pathname: '/' })),
   }
 })
+
+vi.mock('@/store/hooks', () => ({
+  useAppSelector: vi.fn(),
+  useAppDispatch: vi.fn(),
+}))
+
+vi.mock('@/features/auth/hooks/useCurrentUser', () => ({
+  useCurrentUser: vi.fn(),
+}))
+
+const mockUseAppSelector = vi.mocked(useAppSelector)
+const mockUseAppDispatch = vi.mocked(useAppDispatch)
+const mockUseCurrentUser = vi.mocked(useCurrentUser)
 
 // TODO: Test wrapper component for React Router
 const renderWithRouter = (component: ReactElement) => {
@@ -45,6 +60,23 @@ describe('Sidebar Component', () => {
       key: 'default',
       search: '',
       hash: '',
+    })
+    mockUseAppSelector.mockReturnValue(true)
+    mockUseAppDispatch.mockReturnValue(vi.fn())
+    mockUseCurrentUser.mockReturnValue({
+      data: {
+        id: 1,
+        username: 'john',
+        email: 'john@example.com',
+        full_name: 'John Doe',
+        first_name: 'John',
+        last_name: 'Doe',
+        role: 'Owner',
+        profile_completed: true,
+        company_name: 'TechCorp',
+        profile: { bio: 'Hi' },
+      },
+      isLoading: false,
     })
   })
 

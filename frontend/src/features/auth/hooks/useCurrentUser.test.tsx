@@ -47,7 +47,6 @@ describe('useCurrentUser', () => {
     vi.mocked(getCurrentUser).mockResolvedValue(user as any)
 
     mockUseQuery.mockImplementation((options: any) => {
-      options?.onSuccess?.(user)
       return { data: user, isError: false }
     })
 
@@ -66,9 +65,13 @@ describe('useCurrentUser', () => {
     const dispatchMock = vi.fn()
     vi.mocked(useAppDispatch).mockReturnValue(dispatchMock)
 
+    const error = {
+      response: { status: 401 },
+      message: 'unauthorized'
+    }
+
     mockUseQuery.mockImplementation((options: any) => {
-      options?.onError?.({ response: { status: 401 } })
-      return { data: undefined, isError: true, error: new Error('unauthorized') }
+      return { data: undefined, isError: true, error }
     })
 
     const { result } = renderHook(() => useCurrentUser())

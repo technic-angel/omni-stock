@@ -91,6 +91,24 @@ def test_update_email(authenticated_client, user_with_profile):
 
 
 @pytest.mark.django_db
+def test_update_first_and_last_name(authenticated_client, user_with_profile):
+    """Test updating first/last name fields."""
+    response = authenticated_client.patch(
+        "/api/v1/auth/me/",
+        data={"first_name": "Melissa", "last_name": "Berumen"},
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data["first_name"] == "Melissa"
+    assert response.data["last_name"] == "Berumen"
+
+    user_with_profile.refresh_from_db()
+    assert user_with_profile.first_name == "Melissa"
+    assert user_with_profile.last_name == "Berumen"
+
+
+@pytest.mark.django_db
 def test_update_username_duplicate_rejected(authenticated_client, user_with_profile, db):
     """Test that duplicate username is rejected."""
     # Create another user

@@ -11,16 +11,23 @@ type Props = {
 const ProtectedRoute = ({ children }: Props) => {
   // 📚 Redux: select isAuthenticated from store
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
-  const profileCompleted = useAppSelector((state) => state.auth.profileCompleted)
+  const profileCompletedFromStore = useAppSelector((state) => state.auth.profileCompleted)
   const location = useLocation()
-  const { isLoading } = useCurrentUser({ enabled: isAuthenticated })
+
+  // Use the current user query so we can inspect server value immediately
+  const currentUserQuery = useCurrentUser({ enabled: isAuthenticated })
+  const { isLoading, data: currentUser } = currentUserQuery
+  // Prefer server value when available (avoids transient redirects before effect runs)
+  const profileCompleted = currentUser?.profile_completed ?? profileCompletedFromStore
 
   if (!isAuthenticated) {
     // Redirect to landing page, but remember where they were trying to go
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
-  if (isLoading) {
+  // Wait while the current user query is performing its initial load.
+  // This avoids redirecting to onboarding before we know the server state.
+  if (isLoading && !currentUser) {
     return null
   }
 

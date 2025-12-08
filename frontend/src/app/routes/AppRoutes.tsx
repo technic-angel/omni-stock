@@ -15,6 +15,7 @@ import RegisterPage from '../../features/auth/pages/RegisterPage'
 import LogoutPage from '../../features/auth/pages/LogoutPage'
 import LandingPage from '../../features/landing/pages/LandingPage'
 import CompleteProfilePage from '../../features/auth/pages/CompleteProfilePage'
+import { UserProfilePage } from '@/features/profile/UserProfilePage'
 
 /**
  * AppRoutes - Main routing configuration
@@ -69,6 +70,7 @@ const AppRoutes = () => {
         <Route path="/inventory" element={<CollectiblesListPage />} />
         <Route path="/inventory/:collectibleId/edit" element={<CollectibleEditPage />} />
         <Route path="/vendors" element={<VendorOverviewPage />} />
+        <Route path="/profile" element={<UserProfilePage />} />
       </Route>
       <Route
         path="/onboarding"
