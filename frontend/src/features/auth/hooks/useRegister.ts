@@ -1,7 +1,6 @@
 /**
  * useRegister Hook - React Query Mutation
  *
- * 📚 WHAT IS REACT QUERY?
  *
  * React Query manages "server state" - data that lives on the backend.
  * It handles:
@@ -12,7 +11,7 @@
  * - Retries (try again if request fails)
  * - Background refetching (keep data fresh)
  *
- * 📚 QUERIES vs MUTATIONS
+ *    QUERIES vs MUTATIONS
  *
  * - useQuery = READ data (GET requests)
  *   Example: Fetch user profile, list of items
@@ -22,7 +21,7 @@
  *
  * Register creates a new user, so it's a MUTATION.
  *
- * 📚 HOW useMutation WORKS
+ * HOW useMutation WORKS
  *
  * 1. You call mutateAsync(data) or mutate(data)
  * 2. React Query calls your mutationFn with that data
@@ -50,6 +49,8 @@ export const useRegister = () => {
       return register(
         payload.username,
         payload.email,
+        payload.first_name,
+        payload.last_name,
         payload.password,
         payload.birthdate,
         normalizedCompany && normalizedCompany.length > 0 ? normalizedCompany : undefined,
@@ -62,25 +63,3 @@ export const useRegister = () => {
   })
 }
 
-/**
- * 📚 USAGE IN A COMPONENT:
- *
- * const { mutateAsync, isPending, isError, error } = useRegister()
- *
- * const onSubmit = async (formData) => {
- *   try {
- *     const newUser = await mutateAsync(formData)
- *     // Success! Redirect to login
- *     navigate('/login')
- *   } catch (err) {
- *     // Error is also in `error` from the hook
- *     // But we can handle it here too
- *   }
- * }
- *
- * return (
- *   <button disabled={isPending}>
- *     {isPending ? 'Creating...' : 'Register'}
- *   </button>
- * )
- */

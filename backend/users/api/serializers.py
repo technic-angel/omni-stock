@@ -151,6 +151,20 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         required=False,
         help_text="Email address (must be unique)"
     )
+    first_name = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="First name",
+    )
+    last_name = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Last name",
+    )
     company_name = serializers.CharField(
         max_length=255,
         required=False,
@@ -220,7 +234,7 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         if User.objects.exclude(id=user.id).filter(username=value).exists():
             raise serializers.ValidationError("A user with that username already exists.")
         return value
-    
+
     def validate_email(self, value):
         """Check email uniqueness excluding current user."""
         user = self.instance
@@ -249,6 +263,8 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
             user_id=instance.id,
             username=validated_data.get('username'),
             email=validated_data.get('email'),
+            first_name=validated_data.get('first_name'),
+            last_name=validated_data.get('last_name'),
             company_name=validated_data.get('company_name'),
             company_code=validated_data.get('company_code'),
             company_site=validated_data.get('company_site'),

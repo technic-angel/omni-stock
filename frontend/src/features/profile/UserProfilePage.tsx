@@ -2,10 +2,17 @@
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+
 import { useCurrentUser } from '../auth/hooks/useCurrentUser'
+import { useUpdateProfile } from '@/features/auth/hooks/useUpdateProfile'
 
 export function UserProfilePage() {
     const { data: user, isLoading } = useCurrentUser({ enabled: true })
+    const {
+        mutateAsync: updateProfile,
+        isPending: isUpdating,
+        error: updateError,
+    } = useUpdateProfile()
 
     const [editMode, setEditMode] = useState(false)
 
@@ -17,12 +24,6 @@ export function UserProfilePage() {
     const [role, setRole] = useState('')
     const [bio, setBio] = useState('')
     const [profilePreview, setProfilePreview] = useState<string | null>(null)
-
-    // Password card state
-    const [currentPassword, setCurrentPassword] = useState('')
-    const [newPassword, setNewPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
-    const [passwordError, setPasswordError] = useState<string | null>(null)
 
     useEffect(() => {
         if (user) {
@@ -38,42 +39,25 @@ export function UserProfilePage() {
 
     if (isLoading && !user) return <div>Loading user data…</div>
 
-    function handleProfileSubmit(e: React.FormEvent) {
+    async function handleProfileSubmit(e: React.FormEvent) {
         e.preventDefault()
+        if (!user) return
         const payload = {
+            username: user.username,
             first_name: firstName,
             last_name: lastName,
             phone_number: phone,
             company_name: company,
-            role,
+            birthdate: user.birthdate,
             bio,
-            // profile picture file is intentionally not uploaded
-            profile_picture_preview: profilePreview,
+            phone,
         }
-        // UI-only: don't call any API. Log the data for later wiring.
-        // eslint-disable-next-line no-console
-        console.log('Profile Edit Submit (UI-only):', payload)
-        setEditMode(false)
-    }
-
-    function handlePasswordSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setPasswordError(null)
-        if (newPassword.length < 8) {
-            setPasswordError('New password must be at least 8 characters')
-            return
+        try {
+            await updateProfile(payload)
+            setEditMode(false)
+        } catch {
+            // errors surface via the hook's error state
         }
-        if (newPassword !== confirmPassword) {
-            setPasswordError('New password and confirmation do not match')
-            return
-        }
-        // UI-only: log passwords (do not actually send anywhere)
-        // eslint-disable-next-line no-console
-        console.log('Change Password (UI-only):', { currentPassword, newPassword })
-        setCurrentPassword('')
-        setNewPassword('')
-        setConfirmPassword('')
-        setPasswordError(null)
     }
 
     function handlePictureChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -233,62 +217,31 @@ export function UserProfilePage() {
                                         <div className="flex h-full items-center justify-center text-sm text-gray-400">No image</div>
                                     )}
                                 </div>
-                                <input {...(editMode ? { type: 'file', accept: 'image/*', onChange: handlePictureChange } : { type: 'file', disabled: true })} aria-label="Profile picture upload" />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    disabled
+                                    aria-label="Profile picture upload (coming soon)"
+                                    className="cursor-not-allowed text-gray-400"
+                                />
                             </div>
                         </div>
 
+                        {updateError && (
+                            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                                Failed to update profile. Please try again.
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-3">
-                            <button type="submit" className="rounded bg-emerald-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled={!editMode} aria-disabled={!editMode}>
-                                Save Profile
+                            <button type="submit" className="rounded bg-emerald-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled={!editMode || isUpdating} aria-disabled={!editMode || isUpdating}>
+                                {isUpdating ? 'Saving…' : 'Save Profile'}
                             </button>
                             <button type="button" onClick={() => setEditMode(false)} className="rounded border px-4 py-2" aria-label="Cancel edit">
                                 Cancel
                             </button>
                         </div>
                     </form>
-
-                    {/* Change password card (UI-only). When not editing, block inputs */}
-                    <div className="rounded border p-4">
-                        <h2 className="mb-2 text-lg font-semibold">Change password</h2>
-                        <form onSubmit={handlePasswordSubmit} className="space-y-3">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Current password</label>
-                                <input
-                                    type="password"
-                                    {...(!editMode ? { disabled: true } : {})}
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="mt-1 block w-full rounded border px-3 py-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">New password</label>
-                                <input
-                                    type="password"
-                                    {...(!editMode ? { disabled: true } : {})}
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="mt-1 block w-full rounded border px-3 py-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Confirm new password</label>
-                                <input
-                                    type="password"
-                                    {...(!editMode ? { disabled: true } : {})}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="mt-1 block w-full rounded border px-3 py-2"
-                                />
-                            </div>
-                            {passwordError && <div className="text-sm text-red-600">{passwordError}</div>}
-                            <div>
-                                <button type="submit" className="rounded bg-amber-600 px-4 py-2 text-white" disabled={!editMode}>
-                                    Change password
-                                </button>
-                            </div>
-                        </form>
-                    </div>
 
                     <div className="mt-6">
                         <Link to="/dashboard" className="text-sm text-primary">

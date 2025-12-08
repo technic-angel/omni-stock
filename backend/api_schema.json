@@ -270,9 +270,21 @@
             "title": "Email address",
             "type": "string"
           },
+          "first_name": {
+            "maxLength": 150,
+            "type": "string"
+          },
+          "full_name": {
+            "readOnly": true,
+            "type": "string"
+          },
           "id": {
             "readOnly": true,
             "type": "integer"
+          },
+          "last_name": {
+            "maxLength": 150,
+            "type": "string"
           },
           "phone_number": {
             "description": "Contact phone number in E.164 format.",
@@ -318,6 +330,7 @@
         },
         "required": [
           "email",
+          "full_name",
           "id",
           "profile",
           "profile_completed",
@@ -503,6 +516,18 @@
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
             "type": "string"
           },
           "phone": {
@@ -718,6 +743,18 @@
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
             "type": "string"
           },
           "phone": {

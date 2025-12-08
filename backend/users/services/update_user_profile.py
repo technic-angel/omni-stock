@@ -19,6 +19,8 @@ def update_user_profile(
     user_id: int,
     username: Optional[str] = None,
     email: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
     password: Optional[str] = None,
     company_name: Optional[str] = None,
     company_site: Optional[str] = None,
@@ -40,6 +42,8 @@ def update_user_profile(
         user_id: The ID of the user to update
         username: New username (optional)
         email: New email (optional)
+        first_name: New first name (optional)
+        last_name: New last name (optional)
         phone: New phone number (optional)
         bio: New bio text (optional)
         vendor_id: ID of vendor to associate with (optional)
@@ -65,6 +69,12 @@ def update_user_profile(
         user_changed = True
     if email is not None and email != user.email:
         user.email = email
+        user_changed = True
+    if first_name is not None and first_name != user.first_name:
+        user.first_name = first_name
+        user_changed = True
+    if last_name is not None and last_name != user.last_name:
+        user.last_name = last_name
         user_changed = True
     if password:
         user.set_password(password)
