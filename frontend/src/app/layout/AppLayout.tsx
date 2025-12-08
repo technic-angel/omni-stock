@@ -8,26 +8,8 @@ import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 export function AppLayout() {
   const isMobile = useMediaQuery('(max-width: 768px)')
 
-<<<<<<< HEAD
-  let isAuthenticated = false
-  try {
-    isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
-  } catch {
-    isAuthenticated = false
-  }
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
   useCurrentUser({ enabled: isAuthenticated })
-=======
-  // Fetch as soon as user is authenticated. AppLayout mounts for protected routes only.
-  // Guard the selector so tests that render this component without a Redux Provider don't throw.
-  let isAuthenticated = false
-  try {
-    isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
-  } catch (e) {
-    isAuthenticated = false
-  }
-
-  const { data: User, isLoading } = useCurrentUser({ enabled: isAuthenticated })
->>>>>>> bbec7155 (feat(profile): UI-only profile edit view (grayed by default), placeholder avatar, accessibility polish; make AppLayout and Sidebar test-robust)
 
   return (
     <div className="flex h-screen bg-gray-50">
