@@ -6,7 +6,7 @@ export const useUpdateProfile = () => {
 
     return useMutation({
         mutationFn: (payload: UpdateProfilePayload) => updateProfile(payload),
-        onSuccess: (data) => {
+        onSuccess: () => {
             // Invalidate and refetch current user data after profile update
             queryClient.invalidateQueries({ queryKey: ['currentUser'] });
         },

@@ -56,6 +56,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
       'react-hooks/static-components': 'off',
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   {

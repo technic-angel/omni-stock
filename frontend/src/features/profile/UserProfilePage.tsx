@@ -60,13 +60,6 @@ export function UserProfilePage() {
         }
     }
 
-    function handlePictureChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files && e.target.files[0]
-        if (!file) return
-        const url = URL.createObjectURL(file)
-        setProfilePreview(url)
-    }
-
     // inputs are rendered as form fields for a consistent layout
     // when not editing they are disabled and visually muted
     const disabledAttrs = editMode ? {} : { disabled: true }
@@ -95,7 +88,6 @@ export function UserProfilePage() {
                         <div className="flex items-center gap-6">
                             <div className="h-20 w-20 flex-shrink-0 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-xl font-semibold text-white" style={{ background: profilePreview ? 'transparent' : 'linear-gradient(135deg,#06b6d4,#7c3aed)' }}>
                                 {profilePreview ? (
-                                    // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                     <img src={profilePreview} alt="Profile image" className="h-full w-full object-cover" />
                                 ) : (
                                     // placeholder initials
@@ -211,7 +203,6 @@ export function UserProfilePage() {
                             <div className="mt-2 flex items-center gap-4">
                                 <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100">
                                     {profilePreview ? (
-                                        // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                         <img src={profilePreview} alt="Profile preview" className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="flex h-full items-center justify-center text-sm text-gray-400">No image</div>
