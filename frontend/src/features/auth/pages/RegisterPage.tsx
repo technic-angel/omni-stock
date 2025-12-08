@@ -40,6 +40,8 @@ const RegisterPage = () => {
     defaultValues: {
       username: '',
       email: '',
+      first_name: '',
+      last_name: '',
       password: '',
       confirmPassword: '',
       company_name: '',
@@ -179,6 +181,38 @@ const RegisterPage = () => {
             </div>
             <input type="hidden" {...register('email')} />
           </div>
+          {/* First Name Field */}
+          <div>
+            <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <input
+              id="first_name"
+              data-cy="register-first-name"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.first_name ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Your first name"
+              {...register('first_name')}
+            />
+            {errors.first_name && (
+              <p className="mt-1 text-xs text-red-600">{errors.first_name.message}</p>
+            )}
+          </div>
+          {/* Last Name Field */}
+          <div>
+            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <input
+              id="last_name"
+              data-cy="register-last-name"
+              className={`w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent ${
+                errors.last_name ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Your last name"
+              {...register('last_name')}
+            />
+            {errors.last_name && (
+              <p className="mt-1 text-xs text-red-600">{errors.last_name.message}</p>
+            )}
+          </div>
 
           {/* Password Field */}
           <div>
@@ -199,6 +233,7 @@ const RegisterPage = () => {
               <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
             )}
           </div>
+
 
           {/* Confirm Password Field */}
           <div>

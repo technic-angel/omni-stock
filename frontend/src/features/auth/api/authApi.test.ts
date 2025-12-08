@@ -43,6 +43,8 @@ describe('authApi', () => {
     const response = await register(
       'melissa',
       'melissa@example.com',
+      'Melissa',
+      'Berumen',
       'pass',
       '1990-01-01',
       '  Omni  ',
@@ -51,6 +53,8 @@ describe('authApi', () => {
     expect(mockPost).toHaveBeenCalledWith('/auth/register/', {
       username: 'melissa',
       email: 'melissa@example.com',
+      first_name: 'Melissa',
+      last_name: 'Berumen',
       password: 'pass',
       birthdate: '1990-01-01',
       company_name: 'Omni',

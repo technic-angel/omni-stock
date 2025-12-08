@@ -23,6 +23,9 @@ export type CurrentUserResponse = {
   id: number
   username: string
   email: string
+  first_name?: string | null
+  last_name?: string | null
+  full_name?: string | null
   role: string
   profile_completed: boolean
   company_name?: string | null
@@ -48,9 +51,24 @@ export type CompleteProfilePayload = {
   birthdate?: string | null
 }
 
+export type UpdateProfilePayload = {
+  username?: string
+  first_name?: string | null
+  last_name?: string | null
+  company_name?: string | null
+  company_site?: string | null
+  company_code?: string | null
+  phone_number?: string | null
+  birthdate?: string | null
+  bio?: string | null
+  phone?: string | null
+}
+
 export async function register(
   username: string,
   email: string,
+  first_name: string,
+  last_name: string,
   password: string,
   birthdate: string,
   companyName?: string,
@@ -58,12 +76,16 @@ export async function register(
   const payload: {
     username: string
     email: string
+    first_name: string
+    last_name: string
     password: string
     birthdate: string
     company_name?: string
   } = {
     username,
     email,
+    first_name,
+    last_name,
     password,
     birthdate,
   }
@@ -73,6 +95,11 @@ export async function register(
   }
 
   const { data } = await http.post<RegisterResponse>('/auth/register/', payload)
+  return data
+}
+
+export async function updateProfile(payload: UpdateProfilePayload): Promise<CurrentUserResponse> {
+  const { data } = await http.patch<CurrentUserResponse>('/auth/me/', payload)
   return data
 }
 

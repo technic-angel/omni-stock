@@ -93,6 +93,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     """
 
     profile = UserProfileSerializer(read_only=True)
+    # Convenience read-only field combining first/last name
+    full_name = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -100,6 +102,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "full_name",
             "role",
             "profile_completed",
             "company_name",
@@ -110,7 +115,19 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "tos_accepted_at",
             "profile",
         ]
-        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at"]
+        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name"]
+
+    def get_full_name(self, obj):
+        # Use Django's helper to assemble first + last name, fallback to username/email
+        try:
+            name = obj.get_full_name()
+        except Exception:
+            name = None
+        if name:
+            return name
+        if obj.username:
+            return obj.username
+        return obj.email
 
 
 class UpdateProfilePictureSerializer(serializers.Serializer):
@@ -133,6 +150,20 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=False,
         help_text="Email address (must be unique)"
+    )
+    first_name = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="First name",
+    )
+    last_name = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        help_text="Last name",
     )
     company_name = serializers.CharField(
         max_length=255,
@@ -203,7 +234,7 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         if User.objects.exclude(id=user.id).filter(username=value).exists():
             raise serializers.ValidationError("A user with that username already exists.")
         return value
-    
+
     def validate_email(self, value):
         """Check email uniqueness excluding current user."""
         user = self.instance
@@ -232,6 +263,8 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
             user_id=instance.id,
             username=validated_data.get('username'),
             email=validated_data.get('email'),
+            first_name=validated_data.get('first_name'),
+            last_name=validated_data.get('last_name'),
             company_name=validated_data.get('company_name'),
             company_code=validated_data.get('company_code'),
             company_site=validated_data.get('company_site'),
