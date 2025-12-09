@@ -77,6 +77,20 @@
         ],
         "type": "object"
       },
+      "CheckEmailExists": {
+        "description": "Serializer to check if an email is already registered.\n\nUsed for client-side validation during registration.",
+        "properties": {
+          "email": {
+            "description": "Email address to check",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
       "Collectible": {
         "description": "Serializer for the Collectible model with nested card details support.",
         "properties": {
@@ -108,12 +122,26 @@
             "readOnly": true,
             "type": "integer"
           },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
           "image_url": {
             "description": "Public image URL stored in Supabase.",
             "format": "uri",
             "maxLength": 200,
             "nullable": true,
             "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "intake_price": {
             "description": "The price paid for the item (cost basis).",
@@ -167,6 +195,7 @@
         "required": [
           "created_at",
           "id",
+          "images",
           "name",
           "sku",
           "updated_at",
@@ -256,9 +285,21 @@
             "title": "Email address",
             "type": "string"
           },
+          "first_name": {
+            "maxLength": 150,
+            "type": "string"
+          },
+          "full_name": {
+            "readOnly": true,
+            "type": "string"
+          },
           "id": {
             "readOnly": true,
             "type": "integer"
+          },
+          "last_name": {
+            "maxLength": 150,
+            "type": "string"
           },
           "phone_number": {
             "description": "Contact phone number in E.164 format.",
@@ -304,6 +345,7 @@
         },
         "required": [
           "email",
+          "full_name",
           "id",
           "profile",
           "profile_completed",
@@ -312,6 +354,84 @@
           "username"
         ],
         "type": "object"
+      },
+      "InventoryMedia": {
+        "description": "Serializer for media associated with collectibles.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "height": {
+            "description": "Height of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_primary": {
+            "description": "Whether this media is the primary display image.",
+            "type": "boolean"
+          },
+          "media_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryMediaMediaTypeEnum"
+              }
+            ],
+            "description": "Classify this media (primary vs gallery).\n\n* `primary` - Primary Image\n* `gallery` - Gallery Image"
+          },
+          "metadata": {
+            "description": "Additional metadata about the media"
+          },
+          "size_kb": {
+            "description": "Size of the media file in kilobytes.",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "sort_order": {
+            "description": "Order of media files for display purposes.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url": {
+            "description": "Public URL of the media file.",
+            "format": "uri",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "width": {
+            "description": "Width of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at",
+          "url"
+        ],
+        "type": "object"
+      },
+      "InventoryMediaMediaTypeEnum": {
+        "description": "* `primary` - Primary Image\n* `gallery` - Gallery Image",
+        "enum": [
+          "primary",
+          "gallery"
+        ],
+        "type": "string"
       },
       "Logout": {
         "description": "Serializer for logout (token blacklisting).\n\nAccepts a refresh token and blacklists it to prevent further use.",
@@ -396,12 +516,26 @@
             "readOnly": true,
             "type": "integer"
           },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
           "image_url": {
             "description": "Public image URL stored in Supabase.",
             "format": "uri",
             "maxLength": 200,
             "nullable": true,
             "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "intake_price": {
             "description": "The price paid for the item (cost basis).",
@@ -454,9 +588,17 @@
         },
         "type": "object"
       },
-      "PatchedUpdateProfilePicture": {
+      "PatchedUpdateProfile": {
         "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
         "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
           "bio": {
             "description": "User bio/description",
             "nullable": true,
@@ -486,9 +628,26 @@
             "nullable": true,
             "type": "string"
           },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
             "type": "string"
           },
           "phone": {
@@ -503,11 +662,20 @@
             "nullable": true,
             "type": "string"
           },
-          "profile_picture": {
-            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
-            "format": "binary",
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
+            "format": "uri",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           },
           "username": {
             "description": "Username (must be unique)",
@@ -518,6 +686,14 @@
             "description": "ID of vendor to associate with (null to clear)",
             "nullable": true,
             "type": "integer"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           }
         },
         "type": "object"
@@ -566,6 +742,11 @@
       "Register": {
         "description": "Serializer for user registration.",
         "properties": {
+          "birthdate": {
+            "description": "Birthdate collected during registration.",
+            "format": "date",
+            "type": "string"
+          },
           "company_code": {
             "description": "Optional invite code to join an existing company.",
             "maxLength": 40,
@@ -591,6 +772,7 @@
           }
         },
         "required": [
+          "birthdate",
           "email",
           "password",
           "username"
@@ -663,9 +845,17 @@
         ],
         "type": "object"
       },
-      "UpdateProfilePicture": {
+      "UpdateProfile": {
         "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
         "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
           "bio": {
             "description": "User bio/description",
             "nullable": true,
@@ -695,9 +885,26 @@
             "nullable": true,
             "type": "string"
           },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
             "type": "string"
           },
           "phone": {
@@ -712,11 +919,20 @@
             "nullable": true,
             "type": "string"
           },
-          "profile_picture": {
-            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
-            "format": "binary",
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
+            "format": "uri",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           },
           "username": {
             "description": "Username (must be unique)",
@@ -727,9 +943,63 @@
             "description": "ID of vendor to associate with (null to clear)",
             "nullable": true,
             "type": "integer"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           }
         },
         "type": "object"
+      },
+      "UserMedia": {
+        "description": "Serializer for user media payloads (avatars, banners, logos).",
+        "properties": {
+          "height": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "media_type": {
+            "$ref": "#/components/schemas/UserMediaMediaTypeEnum"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "size_kb": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          },
+          "width": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "media_type",
+          "url"
+        ],
+        "type": "object"
+      },
+      "UserMediaMediaTypeEnum": {
+        "description": "* `profile_avatar` - Profile Avatar\n* `vendor_logo` - Vendor Logo\n* `storefront_banner` - Storefront Banner\n* `user_banner` - User Banner",
+        "enum": [
+          "profile_avatar",
+          "vendor_logo",
+          "storefront_banner",
+          "user_banner"
+        ],
+        "type": "string"
       },
       "UserProfile": {
         "description": "Serializer for UserProfile model.\n\nThis handles the profile-specific fields like bio, phone, and profile_picture.\nThe profile_picture field is automatically converted to a full URL by DRF.",
@@ -753,8 +1023,9 @@
             "type": "string"
           },
           "profile_picture": {
-            "description": "User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+            "description": "User's profile picture URL (stored in Supabase)",
             "format": "uri",
+            "maxLength": 200,
             "nullable": true,
             "type": "string"
           },
@@ -893,7 +1164,7 @@
     },
     "/api/v1/auth/me/": {
       "get": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_retrieve",
         "responses": {
           "200": {
@@ -935,7 +1206,7 @@
         ]
       },
       "patch": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_partial_update",
         "requestBody": {
           "content": {
@@ -959,17 +1230,12 @@
                 }
               },
               "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
-              }
-            },
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
             }
           }
@@ -1014,7 +1280,7 @@
         ]
       },
       "put": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_update",
         "requestBody": {
           "content": {
@@ -1038,17 +1304,12 @@
                 }
               },
               "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
+                "$ref": "#/components/schemas/UpdateProfile"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
-              }
-            },
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
+                "$ref": "#/components/schemas/UpdateProfile"
               }
             }
           }
@@ -1309,6 +1570,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/check-email/": {
+      "post": {
+        "description": "POST /api/v1/auth/register/check-email/\n\nCheck if an email is already registered.\n\n- Public endpoint (no authentication required)\n\nRequest body:\n    {\n        \"email\": \"user@example.com\"\n    }",
+        "operationId": "auth_register_check_email_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEmailExists"
                 }
               }
             },
