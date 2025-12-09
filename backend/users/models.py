@@ -6,9 +6,7 @@ from django.db import models
 
 from backend.users.validators import (
     validate_birthdate,
-    validate_image_file,
     validate_phone_number,
-    validate_profile_picture_size,
 )
 from backend.vendors.models import Vendor
 
@@ -95,12 +93,10 @@ class UserProfile(models.Model):
     )
     phone = models.CharField(max_length=40, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    profile_picture = models.ImageField(
-        upload_to="profile_pictures/",
+    profile_picture = models.URLField(
         blank=True,
         null=True,
-        validators=[validate_image_file, validate_profile_picture_size],
-        help_text="User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+        help_text="User's profile picture URL (stored in Supabase)",
     )
     metadata = models.TextField(
         blank=True,
@@ -119,5 +115,58 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Profile for {self.user.username}"
 
+class UserMediaType(models.TextChoices):
+    """Predefined media types for user-uploaded files."""
 
-__all__ = ["User", "UserProfile"]
+    PROFILE_AVATAR = "profile_avatar", "Profile Avatar"
+    VENDOR_LOGO = "vendor_logo", "Vendor Logo"
+    STOREFRONT_BANNER = "storefront_banner", "Storefront Banner"
+    USER_BANNER = "user_banner", "User Banner"
+
+class UserMedia(models.Model):
+    """Model to store user-uploaded media files."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="media_files",
+    )
+    
+    media_type = models.CharField(max_length=32, choices=UserMediaType.choices)
+
+    url = models.URLField(
+        help_text="URL of the uploaded media file.",
+    )   
+
+    width = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Width of the media in pixels (if applicable).",
+    )
+
+    height = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Height of the media in pixels (if applicable).",
+    )
+
+    size_kb = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Size of the media file in kilobytes.",
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional metadata about the media",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.get_media_type_display()} for {self.user.username}"
+
+
+__all__ = ["User", "UserProfile", "UserMedia"]

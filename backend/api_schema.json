@@ -122,12 +122,26 @@
             "readOnly": true,
             "type": "integer"
           },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
           "image_url": {
             "description": "Public image URL stored in Supabase.",
             "format": "uri",
             "maxLength": 200,
             "nullable": true,
             "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "intake_price": {
             "description": "The price paid for the item (cost basis).",
@@ -181,6 +195,7 @@
         "required": [
           "created_at",
           "id",
+          "images",
           "name",
           "sku",
           "updated_at",
@@ -340,6 +355,84 @@
         ],
         "type": "object"
       },
+      "InventoryMedia": {
+        "description": "Serializer for media associated with collectibles.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "height": {
+            "description": "Height of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_primary": {
+            "description": "Whether this media is the primary display image.",
+            "type": "boolean"
+          },
+          "media_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryMediaMediaTypeEnum"
+              }
+            ],
+            "description": "Classify this media (primary vs gallery).\n\n* `primary` - Primary Image\n* `gallery` - Gallery Image"
+          },
+          "metadata": {
+            "description": "Additional metadata about the media"
+          },
+          "size_kb": {
+            "description": "Size of the media file in kilobytes.",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "sort_order": {
+            "description": "Order of media files for display purposes.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url": {
+            "description": "Public URL of the media file.",
+            "format": "uri",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "width": {
+            "description": "Width of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at",
+          "url"
+        ],
+        "type": "object"
+      },
+      "InventoryMediaMediaTypeEnum": {
+        "description": "* `primary` - Primary Image\n* `gallery` - Gallery Image",
+        "enum": [
+          "primary",
+          "gallery"
+        ],
+        "type": "string"
+      },
       "Logout": {
         "description": "Serializer for logout (token blacklisting).\n\nAccepts a refresh token and blacklists it to prevent further use.",
         "properties": {
@@ -423,12 +516,26 @@
             "readOnly": true,
             "type": "integer"
           },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
           "image_url": {
             "description": "Public image URL stored in Supabase.",
             "format": "uri",
             "maxLength": 200,
             "nullable": true,
             "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMedia"
+            },
+            "readOnly": true,
+            "type": "array"
           },
           "intake_price": {
             "description": "The price paid for the item (cost basis).",
@@ -481,9 +588,17 @@
         },
         "type": "object"
       },
-      "PatchedUpdateProfilePicture": {
+      "PatchedUpdateProfile": {
         "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
         "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
           "bio": {
             "description": "User bio/description",
             "nullable": true,
@@ -512,6 +627,11 @@
             "format": "uri",
             "nullable": true,
             "type": "string"
+          },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
           },
           "email": {
             "description": "Email address (must be unique)",
@@ -543,10 +663,19 @@
             "type": "string"
           },
           "profile_picture": {
-            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
-            "format": "binary",
+            "description": "Upload a new profile picture (multipart/form-data).",
+            "format": "uri",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           },
           "username": {
             "description": "Username (must be unique)",
@@ -557,6 +686,14 @@
             "description": "ID of vendor to associate with (null to clear)",
             "nullable": true,
             "type": "integer"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           }
         },
         "type": "object"
@@ -708,9 +845,17 @@
         ],
         "type": "object"
       },
-      "UpdateProfilePicture": {
+      "UpdateProfile": {
         "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
         "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
           "bio": {
             "description": "User bio/description",
             "nullable": true,
@@ -739,6 +884,11 @@
             "format": "uri",
             "nullable": true,
             "type": "string"
+          },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
           },
           "email": {
             "description": "Email address (must be unique)",
@@ -770,10 +920,19 @@
             "type": "string"
           },
           "profile_picture": {
-            "description": "Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB.",
-            "format": "binary",
+            "description": "Upload a new profile picture (multipart/form-data).",
+            "format": "uri",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           },
           "username": {
             "description": "Username (must be unique)",
@@ -784,9 +943,63 @@
             "description": "ID of vendor to associate with (null to clear)",
             "nullable": true,
             "type": "integer"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
           }
         },
         "type": "object"
+      },
+      "UserMedia": {
+        "description": "Serializer for user media payloads (avatars, banners, logos).",
+        "properties": {
+          "height": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "media_type": {
+            "$ref": "#/components/schemas/UserMediaMediaTypeEnum"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "size_kb": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          },
+          "width": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "media_type",
+          "url"
+        ],
+        "type": "object"
+      },
+      "UserMediaMediaTypeEnum": {
+        "description": "* `profile_avatar` - Profile Avatar\n* `vendor_logo` - Vendor Logo\n* `storefront_banner` - Storefront Banner\n* `user_banner` - User Banner",
+        "enum": [
+          "profile_avatar",
+          "vendor_logo",
+          "storefront_banner",
+          "user_banner"
+        ],
+        "type": "string"
       },
       "UserProfile": {
         "description": "Serializer for UserProfile model.\n\nThis handles the profile-specific fields like bio, phone, and profile_picture.\nThe profile_picture field is automatically converted to a full URL by DRF.",
@@ -810,8 +1023,9 @@
             "type": "string"
           },
           "profile_picture": {
-            "description": "User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+            "description": "User's profile picture URL (stored in Supabase)",
             "format": "uri",
+            "maxLength": 200,
             "nullable": true,
             "type": "string"
           },
@@ -1016,17 +1230,17 @@
                 }
               },
               "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfilePicture"
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
             }
           }
@@ -1095,17 +1309,17 @@
                 }
               },
               "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
+                "$ref": "#/components/schemas/UpdateProfile"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
+                "$ref": "#/components/schemas/UpdateProfile"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProfilePicture"
+                "$ref": "#/components/schemas/UpdateProfile"
               }
             }
           }
