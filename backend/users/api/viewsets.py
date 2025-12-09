@@ -16,7 +16,7 @@ from backend.users.api.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
-    UpdateProfilePictureSerializer,
+    UpdateProfileSerializer,
 )
 from backend.users.selectors.get_current_user import get_current_user_with_profile
 
@@ -119,7 +119,7 @@ class CurrentUserView(RetrieveUpdateAPIView):
     def get_serializer_class(self):
         """Use different serializers for read vs write operations."""
         if self.request.method in ['PUT', 'PATCH']:
-            return UpdateProfilePictureSerializer
+            return UpdateProfileSerializer
         return CurrentUserSerializer
     
     def update(self, request, *args, **kwargs):
@@ -127,7 +127,7 @@ class CurrentUserView(RetrieveUpdateAPIView):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         
-        # Use UpdateProfilePictureSerializer for input
+        # Use UpdateProfileSerializer for input
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)

@@ -7,6 +7,8 @@ from django.test.utils import CaptureQueriesContext
 
 from backend.users.models import UserProfile
 from backend.users.selectors.get_current_user import get_current_user_with_profile
+from backend.users.selectors.get_user import get_user
+from backend.users.selectors.list_users import list_users
 
 User = get_user_model()
 
@@ -65,3 +67,22 @@ def test_get_current_user_with_profile_uses_select_related():
     # ASSERT - Should be only 1 query (user + profile via JOIN)
     assert len(queries) == 1, f"Expected 1 query, got {len(queries)}"
 
+
+@pytest.mark.django_db
+def test_get_user_returns_user_and_none_for_missing():
+    existing = User.objects.create_user(username="exists", email="exists@example.com", password="pass1234")
+
+    found = get_user(user_id=existing.id)
+    assert found.id == existing.id
+
+    assert get_user(user_id=999999) is None
+
+
+@pytest.mark.django_db
+def test_list_users_returns_queryset():
+    User.objects.create_user(username="one", email="one@example.com", password="pass1234")
+    User.objects.create_user(username="two", email="two@example.com", password="pass1234")
+
+    qs = list_users()
+    assert qs.count() == 2
+    assert set(qs.values_list("username", flat=True)) == {"one", "two"}
