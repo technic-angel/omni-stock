@@ -85,3 +85,51 @@ def test_collectible_serializer_quantity_validation():
     ser = CollectibleSerializer(data=payload)
     assert not ser.is_valid()
     assert "quantity" in ser.errors
+
+
+@pytest.mark.django_db
+def test_collectible_serializer_creates_media_gallery():
+    payload = {
+        "name": "Gallery Item",
+        "sku": "GAL-001",
+        "quantity": 1,
+        "image_payloads": [
+            {"url": "https://cdn.dev/img1.png", "media_type": "primary", "sort_order": 0},
+            {"url": "https://cdn.dev/img2.png", "media_type": "gallery", "sort_order": 1},
+        ],
+    }
+    ser = CollectibleSerializer(data=payload)
+    assert ser.is_valid(), ser.errors
+    obj = ser.save()
+
+    assert obj.media.count() == 2
+    urls = list(obj.media.order_by("sort_order").values_list("url", flat=True))
+    assert urls == ["https://cdn.dev/img1.png", "https://cdn.dev/img2.png"]
+
+
+@pytest.mark.django_db
+def test_collectible_serializer_updates_media_gallery():
+    collectible = CollectibleFactory.create(name="Gallery Update", sku="GAL-UPD")
+    initial_payload = {
+        "name": collectible.name,
+        "sku": collectible.sku,
+        "quantity": collectible.quantity,
+        "image_payloads": [{"url": "https://cdn.dev/original.png", "media_type": "primary"}],
+    }
+    ser = CollectibleSerializer(instance=collectible, data=initial_payload)
+    assert ser.is_valid(), ser.errors
+    ser.save()
+
+    update_payload = {
+        "name": collectible.name,
+        "sku": collectible.sku,
+        "quantity": collectible.quantity,
+        "image_payloads": [{"url": "https://cdn.dev/new.png", "media_type": "primary"}],
+    }
+    ser = CollectibleSerializer(instance=collectible, data=update_payload)
+    assert ser.is_valid(), ser.errors
+    ser.save()
+
+    collectible.refresh_from_db()
+    assert collectible.media.count() == 1
+    assert collectible.media.first().url == "https://cdn.dev/new.png"

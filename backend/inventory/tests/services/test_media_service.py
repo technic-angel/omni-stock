@@ -1,0 +1,41 @@
+import pytest
+
+from backend.inventory.models import InventoryMedia
+from backend.inventory.services.media import MAX_MEDIA_PER_ITEM, sync_item_media
+from backend.inventory.tests.factories import CollectibleFactory
+
+
+@pytest.mark.django_db
+def test_sync_item_media_replaces_gallery():
+    collectible = CollectibleFactory.create()
+
+    payloads = [
+        {"url": "https://cdn.dev/img1.png", "media_type": "primary", "sort_order": 0},
+        {"url": "https://cdn.dev/img2.png", "media_type": "gallery", "sort_order": 1},
+    ]
+    sync_item_media(item=collectible, media_payloads=payloads)
+
+    assert collectible.media.count() == 2
+    assert collectible.media.filter(is_primary=True).count() == 1
+
+    sync_item_media(item=collectible, media_payloads=[])
+    assert collectible.media.count() == 0
+
+
+@pytest.mark.django_db
+def test_sync_item_media_respects_max_limit():
+    collectible = CollectibleFactory.create()
+    payloads = [{"url": f"https://cdn.dev/{idx}.png"} for idx in range(MAX_MEDIA_PER_ITEM + 1)]
+
+    with pytest.raises(ValueError):
+        sync_item_media(item=collectible, media_payloads=payloads)
+
+
+@pytest.mark.django_db
+def test_sync_item_media_preserves_existing_when_none():
+    collectible = CollectibleFactory.create()
+    sync_item_media(item=collectible, media_payloads=[{"url": "https://cdn.dev/only.png"}])
+    assert collectible.media.count() == 1
+
+    sync_item_media(item=collectible, media_payloads=None)
+    assert collectible.media.count() == 1
