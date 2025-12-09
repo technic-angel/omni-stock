@@ -183,3 +183,30 @@ def test_update_requires_authentication(api_client):
     )
     
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+def test_update_profile_handles_media_payload(authenticated_client, user_with_profile):
+    """Ensure avatar payload creates a UserMedia row and can be cleared."""
+    payload = {
+        "avatar": {
+            "media_type": "profile_avatar",
+            "url": "https://cdn.dev/avatar.png",
+            "width": 200,
+            "height": 200,
+        }
+    }
+    response = authenticated_client.patch("/api/v1/auth/me/", data=payload, format="json")
+
+    assert response.status_code == status.HTTP_200_OK
+    user_with_profile.refresh_from_db()
+    assert user_with_profile.media_files.filter(media_type="profile_avatar").count() == 1
+
+    clear_response = authenticated_client.patch(
+        "/api/v1/auth/me/",
+        data={"avatar": None},
+        format="json",
+    )
+    assert clear_response.status_code == status.HTTP_200_OK
+    user_with_profile.refresh_from_db()
+    assert not user_with_profile.media_files.filter(media_type="profile_avatar").exists()

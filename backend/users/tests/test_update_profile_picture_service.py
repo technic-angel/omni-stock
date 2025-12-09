@@ -1,22 +1,18 @@
 """Tests for update_profile_picture service."""
 
+import copy
 import os
 from io import BytesIO
 
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from PIL import Image
 
 from backend.users.models import UserProfile
 from backend.users.services.update_profile_picture import update_profile_picture
-
-SUPABASE_TESTS_ENABLED = os.environ.get('RUN_SUPABASE_TESTS') == '1'
-
-pytestmark = pytest.mark.skipif(
-    not SUPABASE_TESTS_ENABLED,
-    reason="Supabase storage tests require real credentials. Set RUN_SUPABASE_TESTS=1 locally to enable.",
-)
 
 User = get_user_model()
 
@@ -49,8 +45,24 @@ def create_test_image(filename="test.jpg", size=(100, 100), color="red"):
     )
 
 
+@pytest.fixture
+def local_media_storage(tmp_path):
+    """Force tests to use local FileSystemStorage in a temp directory."""
+    storages = copy.deepcopy(settings.STORAGES)
+    storages["default"] = {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": str(tmp_path)},
+    }
+    with override_settings(
+        MEDIA_ROOT=str(tmp_path),
+        DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+        STORAGES=storages,
+    ):
+        yield tmp_path
+
+
 @pytest.mark.django_db
-def test_update_profile_picture_uploads_new_picture():
+def test_update_profile_picture_uploads_new_picture(local_media_storage):
     """
     Test that update_profile_picture successfully uploads a new picture.
     
@@ -76,15 +88,11 @@ def test_update_profile_picture_uploads_new_picture():
     assert result.profile_picture is not None
     assert "avatar" in result.profile_picture.name, "Filename should contain 'avatar'"
     
-    # Only check file existence for local storage (cloud storage doesn't have .path)
-    from django.conf import settings
-    storage_backend = settings.STORAGES["default"]["BACKEND"]
-    if storage_backend == 'django.core.files.storage.FileSystemStorage':
-        assert os.path.exists(result.profile_picture.path), "Profile picture file should exist on disk"
+    assert os.path.exists(result.profile_picture.path), "Profile picture file should exist on disk"
 
 
 @pytest.mark.django_db
-def test_update_profile_picture_deletes_old_picture():
+def test_update_profile_picture_deletes_old_picture(local_media_storage):
     """
     Test that update_profile_picture deletes the old picture when uploading new one.
     
@@ -116,19 +124,13 @@ def test_update_profile_picture_deletes_old_picture():
     assert "new" in result.profile_picture.name, "Profile should have new picture"
     assert result.profile_picture.name != old_picture_name, "Should be different from old picture"
     
-    # For local storage, verify files on disk
-    from django.conf import settings
-    storage_backend = settings.STORAGES["default"]["BACKEND"]
-    if storage_backend == 'django.core.files.storage.FileSystemStorage':
-        # Old file should be deleted
-        old_picture_path = os.path.join(settings.MEDIA_ROOT, old_picture_name)
-        assert not os.path.exists(old_picture_path), "Old picture should be deleted after update"
-        # New file should exist
-        assert os.path.exists(result.profile_picture.path), "New picture should exist on disk"
+    old_picture_path = os.path.join(settings.MEDIA_ROOT, old_picture_name)
+    assert not os.path.exists(old_picture_path), "Old picture should be deleted after update"
+    assert os.path.exists(result.profile_picture.path), "New picture should exist on disk"
 
 
 @pytest.mark.django_db
-def test_update_profile_picture_can_delete_picture():
+def test_update_profile_picture_can_delete_picture(local_media_storage):
     """
     Test that update_profile_picture can remove a picture without replacement.
     
@@ -157,17 +159,13 @@ def test_update_profile_picture_can_delete_picture():
     # ASSERT
     assert not result.profile_picture, "Profile picture field should be empty after deletion"
     
-    # For local storage, verify file deleted from disk
-    from django.conf import settings
-    storage_backend = settings.STORAGES["default"]["BACKEND"]
-    if storage_backend == 'django.core.files.storage.FileSystemStorage':
-        picture_path = os.path.join(settings.MEDIA_ROOT, picture_name)
-        assert not os.path.exists(picture_path), "Picture file should be deleted from storage"
+    picture_path = os.path.join(settings.MEDIA_ROOT, picture_name)
+    assert not os.path.exists(picture_path), "Picture file should be deleted from storage"
 
 
 
 @pytest.mark.django_db
-def test_update_profile_picture_is_atomic():
+def test_update_profile_picture_is_atomic(local_media_storage):
     """
     Test that update_profile_picture uses transactions (atomic behavior).
     
@@ -194,7 +192,7 @@ def test_update_profile_picture_is_atomic():
 
 
 @pytest.mark.django_db
-def test_update_profile_picture_with_no_changes():
+def test_update_profile_picture_with_no_changes(local_media_storage):
     """
     Test that calling update_profile_picture without changes is safe.
     
