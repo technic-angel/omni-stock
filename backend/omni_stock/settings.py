@@ -7,6 +7,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -217,6 +218,26 @@ WSGI_APPLICATION = 'backend.omni_stock.wsgi.application'
 _database_url = env('DATABASE_URL', default='').strip()
 db_settings = None
 
+# Detect test runs (pytest/CI) and prefer a lightweight SQLite DB for tests so
+# the test suite can run in CI or locally without requiring a Postgres service.
+RUNNING_TESTS = False
+try:
+    # Detect common signals that we're running tests:
+    # - pytest puts 'pytest' in sys.argv for typical invocations
+    # - pytest sets PYTEST_CURRENT_TEST in the environment during collection/runs
+    # - CI systems set CI=true; some CI workflows run the test suite without a DB
+    # - Allow an explicit opt-in via USE_TEST_SQLITE=1 for reproducible behavior
+    if os.environ.get('USE_TEST_SQLITE') in ('1', 'true', 'True'):
+        RUNNING_TESTS = True
+    else:
+        RUNNING_TESTS = (
+            any('pytest' in str(arg) for arg in sys.argv)
+            or bool(os.environ.get('PYTEST_CURRENT_TEST'))
+            or os.environ.get('CI') in ('1', 'true', 'True')
+        )
+except Exception:
+    RUNNING_TESTS = bool(os.environ.get('PYTEST_CURRENT_TEST') or os.environ.get('USE_TEST_SQLITE'))
+
 if _database_url:
     parsed = urlparse(_database_url)
     if parsed.scheme in ('postgres', 'postgresql'):
@@ -238,18 +259,26 @@ if _database_url:
             db_settings['OPTIONS']['sslmode'] = 'prefer'
 
 if not db_settings:
-    # Fallback for local docker-compose or tests when DATABASE_URL is absent.
-    db_settings = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB', default='postgres'),
-        'USER': env('POSTGRES_USER', default='postgres'),
-        'PASSWORD': env('POSTGRES_PASSWORD', default=''),
-        'HOST': env('POSTGRES_HOST', default='db'),
-        'PORT': env('POSTGRES_PORT', default='5432'),
-        'OPTIONS': {
-            'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
-        },
-    }
+    # Fallback for local docker-compose when DATABASE_URL is absent. If we're
+    # running tests, prefer an on-disk SQLite database so tests do not require
+    # a running Postgres service (useful for CI and local quick runs).
+    if RUNNING_TESTS:
+        db_settings = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': str(BASE_DIR / 'test_db.sqlite3'),
+        }
+    else:
+        db_settings = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('POSTGRES_DB', default='postgres'),
+            'USER': env('POSTGRES_USER', default='postgres'),
+            'PASSWORD': env('POSTGRES_PASSWORD', default=''),
+            'HOST': env('POSTGRES_HOST', default='db'),
+            'PORT': env('POSTGRES_PORT', default='5432'),
+            'OPTIONS': {
+                'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
+            },
+        }
 
 DATABASES = {
     'default': db_settings,
