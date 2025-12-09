@@ -28,6 +28,27 @@ class CardDetailsSerializer(serializers.ModelSerializer):
         ]
 
 
+class InventoryMediaSerializer(serializers.ModelSerializer):
+    """Serializer for media associated with collectibles."""
+
+    class Meta:
+        model = InventoryMedia
+        fields = [
+            "id",
+            "media_type",
+            "url",
+            "sort_order",
+            "is_primary",
+            "width",
+            "height",
+            "size_kb",
+            "metadata",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("id", "created_at", "updated_at")
+
+
 class CollectibleSerializer(serializers.ModelSerializer):
     """Serializer for the Collectible model with nested card details support."""
 
@@ -119,25 +140,4 @@ class CollectibleSerializer(serializers.ModelSerializer):
         )
 
 
-class InventoryMediaSerializer(serializers.ModelSerializer):
-    """Serializer for media associated with collectibles."""
-
-    class Meta:
-        model = InventoryMedia
-        fields = [
-            "id",
-            "media_type",
-            "url",
-            "sort_order",
-            "is_primary",
-            "width",
-            "height",
-            "size_kb",
-            "metadata",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ("id", "created_at", "updated_at")
-
-    
 __all__ = ['CardDetailsSerializer', 'CollectibleSerializer', 'InventoryMediaSerializer']
