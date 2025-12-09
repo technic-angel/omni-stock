@@ -40,5 +40,5 @@ ENV PYTHONPATH=/usr/src/app
 # Expose port
 EXPOSE 8000
 
-# Run start script
+# Run the start script
 CMD ["/usr/local/bin/start.sh"]
