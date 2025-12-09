@@ -159,5 +159,70 @@ class CardDetails(models.Model):
         except Exception:
             self.external_ids = None
 
+class InventoryMediaType(models.TextChoices):
+    PRIMARY = "primary", "Primary Image"
+    GALLERY = "gallery", "Gallery Image"
 
-__all__ = ["Collectible", "CardDetails"]
+class InventoryMedia(models.Model):
+    """Media files (images) associated with inventory items."""
+
+    item = models.ForeignKey(
+        Collectible,
+        on_delete=models.CASCADE,
+        related_name="media",
+    )
+    
+    url = models.URLField(
+        help_text="Public URL of the media file."
+        )
+    
+    media_type = models.CharField(
+        max_length=32,
+        choices=InventoryMediaType.choices,
+        default=InventoryMediaType.GALLERY,
+        help_text="Classify this media (primary vs gallery).",
+    )
+    
+    sort_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Order of media files for display purposes.",
+    )
+
+    is_primary = models.BooleanField(
+        default=False,
+        help_text="Whether this media is the primary display image.",
+    )
+
+    width = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Width of the media in pixels (if applicable).",
+    )
+    height = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Height of the media in pixels (if applicable).",
+    )   
+    size_kb = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Size of the media file in kilobytes.",
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Additional metadata about the media",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("item", "sort_order")
+
+    def __str__(self):
+        return f"{self.item.sku} media ({self.get_media_type_display()})"
+
+
+__all__ = ["Collectible", "CardDetails", "InventoryMedia"]

@@ -163,7 +163,7 @@ class UserMedia(models.Model):
     metadata = models.JSONField(
         default=dict,
         blank=True,
-        help_text="Additional metadata about the media (JSON string ok).",
+        help_text="Additional metadata about the media",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
