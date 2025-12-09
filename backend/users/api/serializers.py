@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from backend.users.models import UserProfile, UserRole
+from backend.users.models import UserMedia, UserMediaType, UserProfile, UserRole
 from backend.users.services.create_user import create_user
 from backend.users.validators import validate_birthdate
 
@@ -130,7 +130,18 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         return obj.email
 
 
-class UpdateProfilePictureSerializer(serializers.Serializer):
+class UserMediaSerializer(serializers.Serializer):
+    """Serializer for user media payloads (avatars, banners, logos)."""
+
+    media_type = serializers.ChoiceField(choices=UserMediaType.choices)
+    url = serializers.URLField()
+    width = serializers.IntegerField(min_value=0, required=False, allow_null=True)
+    height = serializers.IntegerField(min_value=0, required=False, allow_null=True)
+    size_kb = serializers.IntegerField(min_value=0, required=False, allow_null=True)
+    metadata = serializers.DictField(required=False, default=dict)
+
+
+class UpdateProfileSerializer(serializers.Serializer):
     """
     Serializer for updating user profile via PUT/PATCH.
     
@@ -218,15 +229,9 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         help_text="ID of vendor to associate with (null to clear)"
     )
 
-    @extend_schema_field(OpenApiTypes.BINARY)
-    class _ProfilePictureField(serializers.ImageField):
-        pass
-    
-    profile_picture = _ProfilePictureField(
-        required=False,
-        allow_null=True,
-        help_text="Upload a new profile picture (JPEG, PNG, GIF, or WebP). Max size: 5MB."
-    )
+    avatar = UserMediaSerializer(required=False, allow_null=True)
+    vendor_logo = UserMediaSerializer(required=False, allow_null=True)
+    storefront_banner = UserMediaSerializer(required=False, allow_null=True)
     
     def validate_username(self, value):
         """Check username uniqueness excluding current user."""
@@ -254,30 +259,30 @@ class UpdateProfilePictureSerializer(serializers.Serializer):
         """Update user profile via service layer."""
         from backend.users.services.update_user_profile import update_user_profile
 
-        # Extract fields
-        profile_picture = validated_data.get('profile_picture')
-        vendor_id = validated_data.get('vendor_id')
-        
-        # Call service with all fields
-        updated_user = update_user_profile(
+        vendor_id = validated_data.get("vendor_id")
+
+        service_kwargs = dict(
             user_id=instance.id,
-            username=validated_data.get('username'),
-            email=validated_data.get('email'),
-            first_name=validated_data.get('first_name'),
-            last_name=validated_data.get('last_name'),
-            company_name=validated_data.get('company_name'),
-            company_code=validated_data.get('company_code'),
-            company_site=validated_data.get('company_site'),
-            phone_number=validated_data.get('phone_number'),
-            birthdate=validated_data.get('birthdate'),
-            phone=validated_data.get('phone'),
-            bio=validated_data.get('bio'),
+            username=validated_data.get("username"),
+            email=validated_data.get("email"),
+            first_name=validated_data.get("first_name"),
+            last_name=validated_data.get("last_name"),
+            company_name=validated_data.get("company_name"),
+            company_code=validated_data.get("company_code"),
+            company_site=validated_data.get("company_site"),
+            phone_number=validated_data.get("phone_number"),
+            birthdate=validated_data.get("birthdate"),
+            phone=validated_data.get("phone"),
+            bio=validated_data.get("bio"),
             vendor_id=vendor_id if vendor_id else None,
-            clear_vendor=vendor_id is None and 'vendor_id' in validated_data,
-            profile_picture=profile_picture if profile_picture else None,
-            delete_profile_picture=profile_picture is None and 'profile_picture' in validated_data,
+            clear_vendor=vendor_id is None and "vendor_id" in validated_data,
         )
-        
+
+        for field in ("avatar", "vendor_logo", "storefront_banner"):
+            if field in validated_data:
+                service_kwargs[field] = validated_data[field]
+
+        updated_user = update_user_profile(**service_kwargs)
         return updated_user
 
 
@@ -472,7 +477,7 @@ __all__ = [
     "RegisterSerializer",
     "UserProfileSerializer",
     "CurrentUserSerializer",
-    "UpdateProfilePictureSerializer",
+    "UpdateProfileSerializer",
     "CompleteProfileSerializer",
     "ChangePasswordSerializer",
     "PasswordResetRequestSerializer",

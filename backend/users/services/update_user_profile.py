@@ -4,13 +4,16 @@ from datetime import date
 from typing import Optional
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
-from backend.users.models import UserProfile
+from django.core.files.uploadedfile import UploadedFile
+
+from backend.users.models import UserMediaType, UserProfile
+from backend.users.services.user_media import remove_user_media, upsert_user_media
 from backend.vendors.models import Vendor
 
 User = get_user_model()
+_UNSET = object()
 
 
 @transaction.atomic
@@ -34,6 +37,9 @@ def update_user_profile(
     clear_vendor: bool = False,
     profile_picture: Optional[UploadedFile] = None,
     delete_profile_picture: bool = False,
+    avatar: Optional[dict] = _UNSET,
+    vendor_logo: Optional[dict] = _UNSET,
+    storefront_banner: Optional[dict] = _UNSET,
 ):
     """
     Update user and profile data atomically.
@@ -148,6 +154,18 @@ def update_user_profile(
                 except Exception:
                     pass
     
+    def _sync_media(payload, media_type: str):
+        if payload is _UNSET:
+            return
+        if payload:
+            upsert_user_media(user_id=user.id, media_type=media_type, payload=payload)
+        else:
+            remove_user_media(user_id=user.id, media_type=media_type)
+
+    _sync_media(avatar, UserMediaType.PROFILE_AVATAR)
+    _sync_media(vendor_logo, UserMediaType.VENDOR_LOGO)
+    _sync_media(storefront_banner, UserMediaType.STOREFRONT_BANNER)
+
     # Refresh to get updated data
     user.refresh_from_db()
     return user

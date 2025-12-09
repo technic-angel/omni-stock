@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from rest_framework import serializers
 
-from backend.inventory.models import CardDetails, Collectible
+from backend.inventory.models import CardDetails, Collectible, InventoryMedia
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.update_item import update_item
 
@@ -32,6 +32,8 @@ class CollectibleSerializer(serializers.ModelSerializer):
     """Serializer for the Collectible model with nested card details support."""
 
     card_details = CardDetailsSerializer(required=False)
+    images = InventoryMediaSerializer(source="media", many=True, read_only=True)
+    image_payloads = InventoryMediaSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = Collectible
@@ -50,6 +52,8 @@ class CollectibleSerializer(serializers.ModelSerializer):
             'price',
             'projected_price',
             'card_details',
+            'image_payloads',
+            'images',
             'created_at',
             'updated_at',
         ]
@@ -96,16 +100,44 @@ class CollectibleSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         card_details_data = validated_data.pop('card_details', None)
+        media_payloads = validated_data.pop('image_payloads', None)
         payload = validated_data.copy()
-        return create_item(data=payload, card_details_data=card_details_data)
+        return create_item(
+            data=payload,
+            card_details_data=card_details_data,
+            media_payloads=media_payloads,
+        )
 
     def update(self, instance, validated_data):
         card_details_data = validated_data.pop('card_details', None)
+        media_payloads = validated_data.pop('image_payloads', None)
         return update_item(
             instance=instance,
             data=validated_data,
             card_details_data=card_details_data,
+            media_payloads=media_payloads,
         )
 
 
-__all__ = ['CardDetailsSerializer', 'CollectibleSerializer']
+class InventoryMediaSerializer(serializers.ModelSerializer):
+    """Serializer for media associated with collectibles."""
+
+    class Meta:
+        model = InventoryMedia
+        fields = [
+            "id",
+            "media_type",
+            "url",
+            "sort_order",
+            "is_primary",
+            "width",
+            "height",
+            "size_kb",
+            "metadata",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("id", "created_at", "updated_at")
+
+    
+__all__ = ['CardDetailsSerializer', 'CollectibleSerializer', 'InventoryMediaSerializer']
