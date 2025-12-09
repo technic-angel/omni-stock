@@ -4,7 +4,6 @@ from datetime import date
 from typing import Optional
 
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
 from backend.users.models import UserMediaType, UserProfile
@@ -34,7 +33,7 @@ def update_user_profile(
     bio: Optional[str] = None,
     vendor_id: Optional[int] = None,
     clear_vendor: bool = False,
-    profile_picture: Optional[UploadedFile] = None,
+    profile_picture: Optional[str] = None,
     delete_profile_picture: bool = False,
     avatar: Optional[dict] = _UNSET,
     vendor_logo: Optional[dict] = _UNSET,
@@ -127,31 +126,15 @@ def update_user_profile(
         profile_changed = True
     
     # Handle profile picture
-    if delete_profile_picture and profile.profile_picture:
-        old_picture_name = profile.profile_picture.name
+    if delete_profile_picture:
         profile.profile_picture = None
         profile_changed = True
-        # Delete old file after save
-        try:
-            profile.profile_picture.storage.delete(old_picture_name)
-        except Exception:
-            pass
-    elif profile_picture:
-        old_picture_name = profile.profile_picture.name if profile.profile_picture else None
+    elif profile_picture is not None:
         profile.profile_picture = profile_picture
         profile_changed = True
     
     if profile_changed:
         profile.save()
-        
-        # Clean up old picture if we replaced it
-        if profile_picture and old_picture_name:
-            current_name = profile.profile_picture.name if profile.profile_picture else None
-            if old_picture_name != current_name:
-                try:
-                    profile.profile_picture.storage.delete(old_picture_name)
-                except Exception:
-                    pass
     
     def _sync_media(payload, media_type: str):
         if payload is _UNSET:

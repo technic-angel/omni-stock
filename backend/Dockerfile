@@ -29,6 +29,10 @@ RUN pip install --upgrade pip && \
 # Copy the backend application code
 COPY . /usr/src/app/backend/
 
+# Copy and set execution permissions for the script
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 # Set Django settings and Python path
 ENV DJANGO_SETTINGS_MODULE=backend.omni_stock.settings
 ENV PYTHONPATH=/usr/src/app
@@ -36,5 +40,5 @@ ENV PYTHONPATH=/usr/src/app
 # Expose port
 EXPOSE 8000
 
-# Run gunicorn
-CMD ["gunicorn", "backend.omni_stock.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
+# Run start script
+CMD ["/usr/local/bin/start.sh"]

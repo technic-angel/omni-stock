@@ -95,12 +95,10 @@ class UserProfile(models.Model):
     )
     phone = models.CharField(max_length=40, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    profile_picture = models.ImageField(
-        upload_to="profile_pictures/",
+    profile_picture = models.URLField(
         blank=True,
         null=True,
-        validators=[validate_image_file, validate_profile_picture_size],
-        help_text="User's profile picture (max 5MB, JPEG/PNG/GIF/WebP only)",
+        help_text="Public URL of the user's profile picture (stored in Supabase).",
     )
     metadata = models.TextField(
         blank=True,
