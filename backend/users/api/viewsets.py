@@ -3,7 +3,7 @@
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework import status
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -79,13 +79,7 @@ class CurrentUserView(RetrieveUpdateAPIView):
     - Requires authentication (JWT token)
     - Uses selector pattern to optimize database queries
     - Returns nested profile data with full profile_picture URL
-    - Supports file uploads for profile_picture (multipart/form-data)
-    
-    To upload a profile picture:
-    - Send PUT or PATCH request with multipart/form-data
-    - Include 'profile_picture' field with image file
-    - Supported formats: JPEG, PNG, GIF, WebP
-    - Max size: 5MB
+    - Accepts Supabase-hosted profile picture URLs via JSON payloads
     
     Response:
         {
@@ -105,7 +99,7 @@ class CurrentUserView(RetrieveUpdateAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = CurrentUserSerializer
-    parser_classes = [MultiPartParser, FormParser, JSONParser]
+    parser_classes = [JSONParser, FormParser]
 
     def get_object(self):
         """

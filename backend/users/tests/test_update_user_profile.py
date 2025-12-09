@@ -60,13 +60,13 @@ def test_update_user_profile_replaces_profile_picture():
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
     first_url = "https://example.com/first.jpg"
-    update_user_profile(user_id=user.id, profile_picture=first_url)
+    update_user_profile(user_id=user.id, profile_picture_url=first_url)
     
     profile.refresh_from_db()
     assert profile.profile_picture == first_url
 
     new_url = "https://example.com/new.jpg"
-    update_user_profile(user_id=user.id, profile_picture=new_url)
+    update_user_profile(user_id=user.id, profile_picture_url=new_url)
 
     profile.refresh_from_db()
     assert profile.profile_picture == new_url
@@ -78,7 +78,7 @@ def test_update_user_profile_delete_profile_picture():
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
     url = "https://example.com/keep.jpg"
-    update_user_profile(user_id=user.id, profile_picture=url)
+    update_user_profile(user_id=user.id, profile_picture_url=url)
     profile.refresh_from_db()
     assert profile.profile_picture == url
 

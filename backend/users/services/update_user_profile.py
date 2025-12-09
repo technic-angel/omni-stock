@@ -33,7 +33,7 @@ def update_user_profile(
     bio: Optional[str] = None,
     vendor_id: Optional[int] = None,
     clear_vendor: bool = False,
-    profile_picture: Optional[str] = None,
+    profile_picture_url: Optional[str] = None,
     delete_profile_picture: bool = False,
     avatar: Optional[dict] = _UNSET,
     vendor_logo: Optional[dict] = _UNSET,
@@ -52,7 +52,7 @@ def update_user_profile(
         bio: New bio text (optional)
         vendor_id: ID of vendor to associate with (optional)
         clear_vendor: If True, remove vendor association
-        profile_picture: New profile picture file (optional)
+        profile_picture_url: URL of the uploaded profile picture (optional)
         delete_profile_picture: If True, remove profile picture
         
     Returns:
@@ -129,8 +129,8 @@ def update_user_profile(
     if delete_profile_picture:
         profile.profile_picture = None
         profile_changed = True
-    elif profile_picture is not None:
-        profile.profile_picture = profile_picture
+    elif profile_picture_url is not None:
+        profile.profile_picture = profile_picture_url
         profile_changed = True
     
     if profile_changed:

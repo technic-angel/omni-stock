@@ -1,13 +1,5 @@
 """User domain serializers."""
-
-import os
-import uuid
-from pathlib import Path
-from urllib.parse import urlparse
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.files.storage import default_storage
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -237,12 +229,14 @@ class UpdateProfileSerializer(serializers.Serializer):
     avatar = UserMediaSerializer(required=False, allow_null=True)
     vendor_logo = UserMediaSerializer(required=False, allow_null=True)
     storefront_banner = UserMediaSerializer(required=False, allow_null=True)
-    profile_picture = serializers.ImageField(
+
+    profile_picture_url = serializers.URLField(
+        write_only=True,
         required=False,
         allow_null=True,
-        write_only=True,
-        help_text="Upload a new profile picture (multipart/form-data).",
+        help_text="Supabase-hosted profile image URL.",
     )
+    
     delete_profile_picture = serializers.BooleanField(
         required=False,
         default=False,
@@ -273,9 +267,9 @@ class UpdateProfileSerializer(serializers.Serializer):
     
     def validate(self, attrs):
         """Prevent sending both upload and delete flags together."""
-        if attrs.get("delete_profile_picture") and attrs.get("profile_picture"):
+        if attrs.get("delete_profile_picture") and attrs.get("profile_picture_url"):
             raise serializers.ValidationError(
-                {"profile_picture": "Cannot upload and delete the profile picture in the same request."}
+                {"profile_picture_url": "Cannot upload and delete the profile picture in the same request."}
             )
         return super().validate(attrs)
 
@@ -284,8 +278,8 @@ class UpdateProfileSerializer(serializers.Serializer):
         from backend.users.services.update_user_profile import update_user_profile
 
         vendor_id = validated_data.get("vendor_id")
-        profile_picture_provided = "profile_picture" in validated_data
-        profile_picture_file = validated_data.pop("profile_picture", None)
+        profile_picture_url = validated_data.pop("profile_picture_url", None)
+        profile_picture_provided = "profile_picture_url" in validated_data or profile_picture_url is not None
         delete_picture = validated_data.pop("delete_profile_picture", False)
 
         service_kwargs = dict(
@@ -305,85 +299,20 @@ class UpdateProfileSerializer(serializers.Serializer):
             clear_vendor=vendor_id is None and "vendor_id" in validated_data,
         )
 
-        # Handle media uploads/deletes
+        # Handle media uploads/deletes meta data
         if delete_picture:
-            self._delete_existing_profile_picture(instance)
             service_kwargs["delete_profile_picture"] = True
-        elif profile_picture_file is not None:
-            new_url = self._store_profile_picture(profile_picture_file)
-            self._delete_existing_profile_picture(instance)
-            service_kwargs["profile_picture"] = new_url
-        elif profile_picture_provided and profile_picture_file is None:
-            # Explicit null upload should behave like deleting the current picture.
-            self._delete_existing_profile_picture(instance)
+        elif profile_picture_url:
+            service_kwargs["profile_picture_url"] = profile_picture_url
+        elif profile_picture_provided and profile_picture_url is None:
             service_kwargs["delete_profile_picture"] = True
 
         for field in ("avatar", "vendor_logo", "storefront_banner"):
             if field in validated_data:
                 service_kwargs[field] = validated_data[field]
-
         updated_user = update_user_profile(**service_kwargs)
         return updated_user
 
-    # --- Helpers ---------------------------------------------------------
-    def _store_profile_picture(self, uploaded_file):
-        """Persist uploaded file via configured storage backend and return a public URL."""
-        ext = Path(uploaded_file.name or "").suffix or ".png"
-        filename = f"profile_pictures/{uuid.uuid4().hex}{ext}"
-        stored_name = default_storage.save(filename, uploaded_file)
-        storage_url = default_storage.url(stored_name)
-
-        if not storage_url.lower().startswith(("http://", "https://")):
-            request = self.context.get("request")
-            if request is not None:
-                storage_url = request.build_absolute_uri(storage_url)
-            else:
-                base = getattr(settings, "EXTERNAL_URL", "").rstrip("/")
-                if base:
-                    storage_url = f"{base}{storage_url}"
-
-        return storage_url
-
-    def _delete_existing_profile_picture(self, instance):
-        """Remove the previous profile picture file from storage if it belongs to us."""
-        profile = self._ensure_profile(instance)
-        url = profile.profile_picture
-        if not url:
-            return
-        storage_name = self._extract_storage_name(url)
-        if not storage_name:
-            return
-        try:
-            default_storage.delete(storage_name)
-        except Exception:
-            # Ignore deletion errors so profile updates still succeed.
-            return
-
-    def _ensure_profile(self, instance):
-        """Return or create the user's profile."""
-        try:
-            return instance.profile
-        except UserProfile.DoesNotExist:
-            profile, _ = UserProfile.objects.get_or_create(user=instance)
-            return profile
-
-    def _extract_storage_name(self, url: str) -> str | None:
-        """Convert a public URL into the internal storage name for deletion."""
-        parsed = urlparse(url)
-        path = parsed.path.lstrip("/")
-        if not path:
-            return None
-
-        media_prefix = settings.MEDIA_URL.lstrip("/")
-        if media_prefix and path.startswith(media_prefix):
-            path = path[len(media_prefix):].lstrip("/")
-
-        bucket = os.environ.get("SUPABASE_STORAGE_BUCKET")
-        supabase_prefix = f"storage/v1/object/public/{bucket}/" if bucket else None
-        if supabase_prefix and path.startswith(supabase_prefix.lstrip("/")):
-            path = path[len(supabase_prefix.lstrip("/")):]
-
-        return path or None
 
 
 class CompleteProfileSerializer(serializers.Serializer):

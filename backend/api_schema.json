@@ -662,8 +662,8 @@
             "nullable": true,
             "type": "string"
           },
-          "profile_picture": {
-            "description": "Upload a new profile picture (multipart/form-data).",
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
             "format": "uri",
             "nullable": true,
             "type": "string",
@@ -919,8 +919,8 @@
             "nullable": true,
             "type": "string"
           },
-          "profile_picture": {
-            "description": "Upload a new profile picture (multipart/form-data).",
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
             "format": "uri",
             "nullable": true,
             "type": "string",
@@ -1164,7 +1164,7 @@
     },
     "/api/v1/auth/me/": {
       "get": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_retrieve",
         "responses": {
           "200": {
@@ -1206,7 +1206,7 @@
         ]
       },
       "patch": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_partial_update",
         "requestBody": {
           "content": {
@@ -1234,11 +1234,6 @@
               }
             },
             "application/x-www-form-urlencoded": {
-              "schema": {
-                "$ref": "#/components/schemas/PatchedUpdateProfile"
-              }
-            },
-            "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/PatchedUpdateProfile"
               }
@@ -1285,7 +1280,7 @@
         ]
       },
       "put": {
-        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Supports file uploads for profile_picture (multipart/form-data)\n\nTo upload a profile picture:\n- Send PUT or PATCH request with multipart/form-data\n- Include 'profile_picture' field with image file\n- Supported formats: JPEG, PNG, GIF, WebP\n- Max size: 5MB\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
         "operationId": "auth_me_update",
         "requestBody": {
           "content": {
@@ -1313,11 +1308,6 @@
               }
             },
             "application/x-www-form-urlencoded": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProfile"
-              }
-            },
-            "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateProfile"
               }
