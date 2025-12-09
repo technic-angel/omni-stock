@@ -28,8 +28,6 @@ def test_update_user_profile_persists_name_fields():
     user.refresh_from_db()
     assert user.first_name == "Melissa"
     assert user.last_name == "Berumen"
-
-
 @pytest.mark.django_db
 def test_update_user_profile_updates_media():
     user = User.objects.create_user(username="media", email="media@example.com", password="pass1234")
