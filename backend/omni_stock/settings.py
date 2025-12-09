@@ -8,6 +8,8 @@ from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -228,9 +230,10 @@ DATABASES = {
 }
 
 # Handle Render's DATABASE_URL if present (overrides individual settings)
-import dj_database_url
-if 'DATABASE_URL' in os.environ:
+_database_url = env('DATABASE_URL')
+if _database_url:
     DATABASES['default'] = dj_database_url.config(
+        default=_database_url,
         conn_max_age=600,
         conn_health_checks=True,
         ssl_require=True,

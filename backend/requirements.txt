@@ -8,6 +8,7 @@ django-admin-thumbnails==0.2.9
 django-cors-headers==4.0.0
 drf-spectacular==0.29.0
 gunicorn==23.0.0
+dj-database-url==2.2.0
 
 # File storage backends (optional - only needed for Supabase Storage)
 django-storages[s3]==1.14.4
