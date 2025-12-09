@@ -2,7 +2,7 @@
 
 from django.db import transaction
 
-from backend.users.models import UserMedia, UserMediaType
+from backend.users.models import UserMediaType, UserMedia
 
 @transaction.atomic
 def upsert_user_media(*, user_id: int, media_type: str, payload: dict) -> UserMedia:
