@@ -1,11 +1,7 @@
 """Tests for the update_user_profile service."""
 
-from unittest import mock
-
 import pytest
 from django.contrib.auth import get_user_model
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
 
 from backend.users.models import UserProfile
 from backend.users.services.update_user_profile import update_user_profile
