@@ -628,6 +628,11 @@
             "nullable": true,
             "type": "string"
           },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
@@ -656,6 +661,13 @@
             "maxLength": 20,
             "nullable": true,
             "type": "string"
+          },
+          "profile_picture": {
+            "description": "Upload a new profile picture (multipart/form-data).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string",
+            "writeOnly": true
           },
           "storefront_banner": {
             "allOf": [
@@ -873,6 +885,11 @@
             "nullable": true,
             "type": "string"
           },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
           "email": {
             "description": "Email address (must be unique)",
             "format": "email",
@@ -901,6 +918,13 @@
             "maxLength": 20,
             "nullable": true,
             "type": "string"
+          },
+          "profile_picture": {
+            "description": "Upload a new profile picture (multipart/form-data).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string",
+            "writeOnly": true
           },
           "storefront_banner": {
             "allOf": [
