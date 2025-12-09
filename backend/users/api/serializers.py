@@ -1,12 +1,10 @@
 """User domain serializers."""
 
 from django.contrib.auth import get_user_model
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from backend.users.models import UserMedia, UserMediaType, UserProfile, UserRole
+from backend.users.models import UserMediaType, UserProfile, UserRole
 from backend.users.services.create_user import create_user
 from backend.users.validators import validate_birthdate
 

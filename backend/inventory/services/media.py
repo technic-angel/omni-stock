@@ -1,6 +1,6 @@
 """Services for managing inventory media records."""
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 from django.db import transaction
 

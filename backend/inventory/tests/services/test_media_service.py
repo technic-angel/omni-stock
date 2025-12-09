@@ -1,6 +1,5 @@
 import pytest
 
-from backend.inventory.models import InventoryMedia
 from backend.inventory.services.media import MAX_MEDIA_PER_ITEM, sync_item_media
 from backend.inventory.tests.factories import CollectibleFactory
 
