@@ -59,43 +59,34 @@ def test_update_user_profile_sets_and_clears_vendor():
 
 
 @pytest.mark.django_db
-def test_update_user_profile_replaces_profile_picture(tmp_path):
+def test_update_user_profile_replaces_profile_picture():
     user = User.objects.create_user(username="pic", email="pic@example.com", password="pass1234")
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    with override_settings(
-        MEDIA_ROOT=tmp_path,
-        DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
-    ):
-        first_file = SimpleUploadedFile("first.jpg", b"first-bytes", content_type="image/jpeg")
-        update_user_profile(user_id=user.id, profile_picture=first_file)
+    first_url = "https://example.com/first.jpg"
+    update_user_profile(user_id=user.id, profile_picture=first_url)
+    
+    profile.refresh_from_db()
+    assert profile.profile_picture == first_url
 
-        new_file = SimpleUploadedFile("new.jpg", b"new-bytes", content_type="image/jpeg")
-        with mock.patch("django.core.files.storage.FileSystemStorage.delete") as delete_mock:
-            update_user_profile(user_id=user.id, profile_picture=new_file)
+    new_url = "https://example.com/new.jpg"
+    update_user_profile(user_id=user.id, profile_picture=new_url)
 
-        profile.refresh_from_db()
-        assert profile.profile_picture.name.endswith("new.jpg")
-        delete_mock.assert_called()
+    profile.refresh_from_db()
+    assert profile.profile_picture == new_url
 
 
 @pytest.mark.django_db
-def test_update_user_profile_delete_profile_picture(tmp_path):
+def test_update_user_profile_delete_profile_picture():
     user = User.objects.create_user(username="deletepic", email="deletepic@example.com", password="pass1234")
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
-    with override_settings(
-        MEDIA_ROOT=tmp_path,
-        DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
-    ):
-        file_obj = SimpleUploadedFile("keep.jpg", b"bytes", content_type="image/jpeg")
-        update_user_profile(user_id=user.id, profile_picture=file_obj)
-        profile.refresh_from_db()
-        assert profile.profile_picture
+    url = "https://example.com/keep.jpg"
+    update_user_profile(user_id=user.id, profile_picture=url)
+    profile.refresh_from_db()
+    assert profile.profile_picture == url
 
-        with mock.patch("django.core.files.storage.FileSystemStorage.delete") as delete_mock:
-            update_user_profile(user_id=user.id, delete_profile_picture=True)
+    update_user_profile(user_id=user.id, delete_profile_picture=True)
 
-        profile.refresh_from_db()
-        assert not profile.profile_picture
-        delete_mock.assert_called()
+    profile.refresh_from_db()
+    assert not profile.profile_picture

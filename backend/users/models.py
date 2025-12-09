@@ -6,9 +6,7 @@ from django.db import models
 
 from backend.users.validators import (
     validate_birthdate,
-    validate_image_file,
     validate_phone_number,
-    validate_profile_picture_size,
 )
 from backend.vendors.models import Vendor
 
@@ -98,7 +96,7 @@ class UserProfile(models.Model):
     profile_picture = models.URLField(
         blank=True,
         null=True,
-        help_text="Public URL of the user's profile picture (stored in Supabase).",
+        help_text="User's profile picture URL (stored in Supabase)",
     )
     metadata = models.TextField(
         blank=True,

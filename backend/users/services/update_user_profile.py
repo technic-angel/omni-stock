@@ -4,6 +4,7 @@ from datetime import date
 from typing import Optional
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 
 from backend.users.models import UserMediaType, UserProfile
