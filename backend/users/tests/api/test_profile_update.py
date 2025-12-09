@@ -8,9 +8,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
-from PIL import Image
 
 from backend.users.models import UserProfile
 from backend.vendors.models import Vendor
