@@ -2,12 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseBucket = import.meta.env.VITE_SUPABASE_BUCKET ?? 'product-images'
 
 const isConfigured = Boolean(supabaseUrl && supabaseKey)
 
 export const supabase = isConfigured ? createClient(supabaseUrl!, supabaseKey!) : null
 
-const BUCKET = 'product-images'
+export const SUPABASE_BUCKET = supabaseBucket
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
@@ -28,7 +29,7 @@ function buildFilename(fileName: string, pathPrefix: string) {
   return `${pathPrefix}/${uuid}.${extension}`
 }
 
-export async function uploadImageToSupabase(file: File, pathPrefix = BUCKET) {
+export async function uploadImageToSupabase(file: File, pathPrefix = supabaseBucket) {
   if (!supabase || !supabaseUrl || !supabaseKey) {
     throw new Error('Supabase credentials are not configured')
   }
@@ -36,7 +37,7 @@ export async function uploadImageToSupabase(file: File, pathPrefix = BUCKET) {
   validateImageFile(file)
 
   const filename = buildFilename(file.name, pathPrefix)
-  const { data, error } = await supabase.storage.from(BUCKET).upload(filename, file, {
+  const { data, error } = await supabase.storage.from(supabaseBucket).upload(filename, file, {
     upsert: false,
   })
 
@@ -44,6 +45,6 @@ export async function uploadImageToSupabase(file: File, pathPrefix = BUCKET) {
     throw error
   }
 
-  const { data: publicUrl } = supabase.storage.from(BUCKET).getPublicUrl(data.path)
+  const { data: publicUrl } = supabase.storage.from(supabaseBucket).getPublicUrl(data.path)
   return publicUrl.publicUrl
 }
