@@ -123,6 +123,15 @@ class UserMediaType(models.TextChoices):
     STOREFRONT_BANNER = "storefront_banner", "Storefront Banner"
     USER_BANNER = "user_banner", "User Banner"
 
+
+class MediaEntityType(models.TextChoices):
+    """Entities that media can be attached to."""
+
+    USER = "user", "User"
+    VENDOR = "vendor", "Vendor"
+    STORE = "store", "Store"
+    PRODUCT = "product", "Product"
+
 class UserMedia(models.Model):
     """Model to store user-uploaded media files."""
 
@@ -130,6 +139,17 @@ class UserMedia(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="media_files",
+    )
+    entity_type = models.CharField(
+        max_length=32,
+        choices=MediaEntityType.choices,
+        default=MediaEntityType.USER,
+        help_text="Which domain object this media belongs to.",
+    )
+    entity_id = models.PositiveBigIntegerField(
+        blank=True,
+        null=True,
+        help_text="Identifier for the related entity (user/vendor/store/product).",
     )
     
     media_type = models.CharField(max_length=32, choices=UserMediaType.choices)
@@ -165,8 +185,19 @@ class UserMedia(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=("entity_type", "entity_id")),
+        ]
+        unique_together = (
+            "user",
+            "entity_type",
+            "entity_id",
+            "media_type",
+        )
+
     def __str__(self):
         return f"{self.get_media_type_display()} for {self.user.username}"
 
 
-__all__ = ["User", "UserProfile", "UserMedia"]
+__all__ = ["User", "UserProfile", "UserMedia", "UserMediaType", "MediaEntityType"]

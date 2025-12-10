@@ -7,6 +7,7 @@ from django.db import transaction
 from backend.core.validators import validate_image_url
 from backend.inventory.models import CardDetails, Collectible
 from backend.inventory.services.media import sync_item_media
+from backend.inventory.services.product_images import sync_product_images
 
 
 def create_item(
@@ -26,6 +27,7 @@ def create_item(
             CardDetails.objects.create(collectible=collectible, **card_details_data)
         if media_payloads is not None:
             sync_item_media(item=collectible, media_payloads=media_payloads)
+            sync_product_images(product=collectible, image_payloads=media_payloads)
     return collectible
 
 

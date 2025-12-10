@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from backend.users.models import UserMediaType, UserProfile, UserRole
+from backend.users.models import MediaEntityType, UserMediaType, UserProfile, UserRole
 from backend.users.services.create_user import create_user
 from backend.users.validators import validate_birthdate
 
@@ -132,6 +132,12 @@ class UserMediaSerializer(serializers.Serializer):
 
     media_type = serializers.ChoiceField(choices=UserMediaType.choices)
     url = serializers.URLField()
+    entity_type = serializers.ChoiceField(
+        choices=MediaEntityType.choices,
+        required=False,
+        allow_null=True,
+    )
+    entity_id = serializers.IntegerField(required=False, allow_null=True)
     width = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     height = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     size_kb = serializers.IntegerField(min_value=0, required=False, allow_null=True)

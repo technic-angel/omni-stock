@@ -81,3 +81,51 @@ def test_delete_item_removes_record():
     collectible = CollectibleFactory.create()
     delete_item(instance=collectible)
     assert not Collectible.objects.filter(pk=collectible.pk).exists()
+
+
+@pytest.mark.django_db
+def test_create_item_syncs_product_images(monkeypatch, settings):
+    settings.ENABLE_VENDOR_REFACTOR = True
+    captured = {}
+
+    def fake_sync_product_images(*, product, image_payloads):
+        captured["product"] = product
+        captured["payloads"] = image_payloads
+
+    monkeypatch.setattr(
+        "backend.inventory.services.create_item.sync_product_images",
+        fake_sync_product_images,
+    )
+
+    collectible = create_item(
+        data={"name": "With Images", "sku": "IMG-123"},
+        media_payloads=[{"url": "https://cdn.dev/1.png"}],
+    )
+
+    assert captured["product"] == collectible
+    assert captured["payloads"][0]["url"].endswith("1.png")
+
+
+@pytest.mark.django_db
+def test_update_item_syncs_product_images(monkeypatch, settings):
+    settings.ENABLE_VENDOR_REFACTOR = True
+    collectible = CollectibleFactory.create()
+    captured = {}
+
+    def fake_sync_product_images(*, product, image_payloads):
+        captured["product"] = product
+        captured["payloads"] = image_payloads
+
+    monkeypatch.setattr(
+        "backend.inventory.services.update_item.sync_product_images",
+        fake_sync_product_images,
+    )
+
+    update_item(
+        instance=collectible,
+        data={"name": "Update"},
+        media_payloads=[{"url": "https://cdn.dev/after.png"}],
+    )
+
+    assert captured["product"] == collectible
+    assert captured["payloads"][0]["url"].endswith("after.png")

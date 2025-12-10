@@ -230,11 +230,96 @@ Keep media as URLs (Supabase) and create light metadata records if needed.
 
 ---
 
+## Collections / Inventory Integration Plan
+
+The existing Collectible model (current inventory implementation) needs to be gradually aligned with the proposed Store-centric architecture. The approach is:
+
+1. **Transitional Fields**
+   - Add `store` FK to the Collectible model (nullable initially).
+   - Populate it with a “Default Store” per vendor (created during migration).
+   - Eventually enforce non-null `store` reference; keep `vendor` FK as denormalized helper for queries.
+
+2. **Service Layer Updates**
+   - Update inventory services (`create_collectible`, `update_collectible`, `transfer_collectible`) to require store context and validate `StoreAccess` before allowing actions.
+   - Introduce a `StockMovement` service/log to track quantity adjustments between stores or from purchase/sale events.
+
+3. **Selector & API Changes**
+   - Filter queries by store scope when requested (e.g., `?store=<id>`).
+   - For admins, allow cross-store aggregate reports; for managers/sales, limit responses to stores where they hold access.
+   - Provide endpoints for transferring stock between stores (decrement source store, increment destination store within a transaction).
+
+4. **Frontend Alignment**
+   - Update React queries/forms to include store context (dropdown or inferred from route).
+   - Provide UX for quickly switching stores and seeing corresponding inventory.
+
+5. **Testing & Migration**
+   - Write migration tests to ensure every vendor receives at least one store and all existing collectibles are linked to it.
+   - Add regression tests validating that unauthorized users cannot create/update/destroy collectibles outside of assigned store scope.
+
+
+## Deletion, Archival, and Ownership Transfer Strategy
+
+To keep data integrity and audit history, soft-delete and reassignment flows are recommended across vendors, members, and stores:
+
+### Vendors
+1. **Soft Delete**: add `is_active` boolean and optional `deleted_at`. Instead of hard delete, mark vendor inactive to retain audit and inventory history.
+2. **Ownership Transfer**: allow `VendorMember` with role OWNER/ADMIN to transfer `vendor.owner` field to another admin, ensuring at least one owner remains.
+3. **Cascade Rules**: when `is_active` becomes false:
+   - All Stores are marked inactive.
+   - Access records are disabled, preventing login to vendor contexts.
+
+### Vendor Members
+1. **Deactivation**: use `is_active` flag on `VendorMember` rather than deleting rows. This preserves store access history and inventory actions performed by the user.
+2. **Audit Trail**: log member removal events (who removed, when, reason).
+3. **Reactivation**: allow admins to reactivate former members without re-inviting if necessary.
+
+### Stores
+1. **Soft Delete / Archive**: set `is_active` to false; remove from UIs but retain data for reports. Optionally capture `archived_at`, `archived_by`.
+2. **Inventory Handling**:
+   - If a store is archived, require admin to transfer or zero out inventory first.
+   - Provide a `StoreTransferService` that reassigns collectibles to another store (with optional ledger entries).
+3. **Store Access Cleanup**: disable `StoreAccess` entries when the store is archived to prevent stray permissions.
+
+### Media Cleanup
+1. When deactivating vendors or stores, optionally queue async jobs to remove Supabase media after a retention period.
+2. Update `UserMedia` service to accept `entity_type/entity_id` references so media can be cleaned up per vendor/store.
+
+### Hard Deletion (rare)
+1. Provide background command (`cleanup_inactive_vendors`) to permanently remove vendors/stores marked inactive for >N months, after verifying no accounting/audit holds.
+2. Ensure cascades remove:
+   - `VendorMember`, `Store`, `StoreAccess`, `Collectible`, `Media`, `AuditLog`.
+3. Backups: snapshot database before mass-deletion.
+
+
 ## Next Steps
 
-- Create the model files and migrations as suggested.
-- Implement service layer and tests.
-- Update the API and frontend flows (invite flow, store management).
+1. Create the new models (`VendorMember`, `Store`, `StoreAccess`, optional `StoreMedia`) and migrations.
+2. Migrate existing collectibles to store-aware records following the plan above.
+3. Implement service and permission layers (invites, access control, inventory mutation services).
+4. Update APIs & frontend flows (member-management UI, store picker, per-store inventory pages).
+5. Add deletion/archival commands and tests to enforce lifecycle rules.
+
+## Handling Single-User Vendors / Solo Shops
+
+Some vendors will be one-person businesses. The model should gracefully support that scenario without forcing unnecessary invites or extra UI steps:
+
+1. **Implicit Membership on Creation**
+   - When a user creates a new vendor, automatically create a `VendorMember` row for that user with role `OWNER` and mark it as active.
+   - Automatically create a “Default Store” (e.g., “Main Store”) and grant the same user `MANAGER` access via `StoreAccess`.
+
+2. **Simplified UX**
+   - If the vendor has only one member (the owner), collapse member-management UI into a “Solo shop” badge plus a CTA to “Invite another user” when/if needed.
+   - Make the default store selection implicit in inventory forms; only show store picker once multiple stores exist.
+
+3. **Promotion to Multi-User Vendor**
+   - When the owner invites a second user, show the vendor membership UI and allow role selection.
+   - Ensure existing data (inventory, store access) remains unchanged; new members simply receive their own `VendorMember` and `StoreAccess` entries.
+
+4. **Ownership Safeguards**
+   - Even in single-user vendors, keep the `VendorMember`/`StoreAccess` rows explicit so future permissions (e.g., vendor sale, new staff) are consistent with multi-user behavior.
+   - Prevent the owner from deactivating their own membership unless a new owner is assigned to avoid orphaned vendors.
+
+This approach lets one-person shops get value immediately (they still have a vendor + store record to scope inventory) while keeping the door open for future team growth without special migrations.
 
 
 *Prepared by the agent at request of project owner.*

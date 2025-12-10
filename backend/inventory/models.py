@@ -225,4 +225,31 @@ class InventoryMedia(models.Model):
         return f"{self.item.sku} media ({self.get_media_type_display()})"
 
 
-__all__ = ["Collectible", "CardDetails", "InventoryMedia"]
+class ProductImage(models.Model):
+    """New gallery model that will eventually back the multi-image uploader."""
+
+    product = models.ForeignKey(
+        Collectible,
+        on_delete=models.CASCADE,
+        related_name="product_images",
+    )
+    url = models.URLField(help_text="Supabase-hosted image URL.")
+    sort_order = models.PositiveIntegerField(default=0)
+    is_primary = models.BooleanField(default=False)
+    width = models.PositiveIntegerField(blank=True, null=True)
+    height = models.PositiveIntegerField(blank=True, null=True)
+    size_kb = models.PositiveIntegerField(blank=True, null=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "collectibles"
+        ordering = ["product_id", "sort_order", "id"]
+        unique_together = ("product", "sort_order")
+
+    def __str__(self):
+        return f"Image for {self.product_id} ({self.url})"
+
+
+__all__ = ["Collectible", "CardDetails", "InventoryMedia", "ProductImage"]
