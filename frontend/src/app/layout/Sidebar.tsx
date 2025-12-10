@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   Home,
@@ -48,6 +48,40 @@ export function Sidebar({ className = '' }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useLocalStorage('sidebar-expanded', true)
   const [mobileOpen, setMobileOpen] = useState(false)
   const { data: currentUser } = useCurrentUser({ enabled: true })
+
+  const avatarUrl = currentUser?.profile?.profile_picture ?? null
+  const userInitials = useMemo(() => {
+    const nameParts = [currentUser?.first_name, currentUser?.last_name].filter(Boolean).join(' ').trim()
+    const base = nameParts || currentUser?.username || currentUser?.email || 'JD'
+    const initials = base
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+    return initials ? initials.toUpperCase() : 'JD'
+  }, [currentUser?.email, currentUser?.first_name, currentUser?.last_name, currentUser?.username])
+
+  const renderAvatar = (size: 'large' | 'small') => {
+    const dimensionClasses = size === 'large' ? 'w-14 h-14' : 'w-10 h-10'
+    const textSizeClass = size === 'large' ? 'text-lg' : 'text-xs'
+    return (
+      <div data-testid={`sidebar-avatar-${size}`} className={`relative flex-shrink-0 overflow-hidden rounded-full shadow-sm transition-all duration-700 ${dimensionClasses}`}>
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" aria-hidden="true" />
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt="User avatar"
+            className="absolute inset-0 h-full w-full rounded-full object-cover border-2 border-white"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <span className={`relative z-10 flex h-full w-full items-center justify-center text-white font-semibold ${textSizeClass}`}>{userInitials}</span>
+        )}
+      </div>
+    )
+  }
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -170,9 +204,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
           <div className="p-4 transition-opacity duration-700">
             <Link to="/profile" onClick={onLinkClick} className="sidebar-link flex items-center space-x-4">
               <div className="flex items-center space-x-4">
-                <div className={`flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-sm transition-all duration-700 ${isExpanded || isMobile ? 'w-14 h-14 text-lg' : 'w-10 h-10 text-xs'}`}>
-                  {currentUser ? (currentUser.full_name || currentUser.username || currentUser.email || '').split(' ').map((s) => s[0]).slice(0, 2).join('').toUpperCase() : 'JD'}
-                </div>
+                {renderAvatar('large')}
                 <div className="flex-1 min-w-0">
                   <div className="text-base font-medium text-gray-900 truncate">{currentUser?.full_name ?? currentUser?.username ?? 'John Doe'}</div>
                   <div className="text-sm text-gray-500 truncate">{USER_ROLE} • {currentUser?.company_name ?? 'TechCorp'}</div>
@@ -184,10 +216,8 @@ export function Sidebar({ className = '' }: SidebarProps) {
         )}
 
         {!isExpanded && !isMobile && (
-          <div className="p-1">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs shadow-sm mx-auto cursor-pointer hover:shadow-md transition-all duration-700">
-              {currentUser ? (currentUser.full_name || currentUser.username || currentUser.email || '').split(' ').map((s) => s[0]).slice(0, 2).join('').toUpperCase() : 'JD'}
-            </div>
+          <div className="p-1 flex justify-center">
+            {renderAvatar('small')}
           </div>
         )}
 
@@ -251,4 +281,3 @@ export function MobileSidebarTrigger() {
 
   return <Sidebar />
 }
-

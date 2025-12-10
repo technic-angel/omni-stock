@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom'
 
 import { useCurrentUser } from '../auth/hooks/useCurrentUser'
 import { useUpdateProfile } from '@/features/auth/hooks/useUpdateProfile'
+import { uploadImageToSupabase, validateImageFile, isSupabaseConfigured, SUPABASE_BUCKET } from '@/shared/lib/supabase'
+import { UserMediaPayload } from '@/features/auth/api/authApi'
+
 
 export function UserProfilePage() {
     const { data: user, isLoading } = useCurrentUser({ enabled: true })
@@ -25,6 +28,12 @@ export function UserProfilePage() {
     const [bio, setBio] = useState('')
     const [profilePreview, setProfilePreview] = useState<string | null>(null)
 
+    // Avatar upload handling state
+    const [pendingAvatar, setPendingAvatar] = useState<UserMediaPayload | null>(null)
+    const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null)
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+    const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null)
+
     useEffect(() => {
         if (user) {
             setFirstName(user.first_name ?? '')
@@ -34,6 +43,11 @@ export function UserProfilePage() {
             setRole(user.role ?? '')
             setBio(user.profile?.bio ?? '')
             setProfilePreview(user.profile?.profile_picture ?? null)
+            setPendingAvatar(null)
+            setPendingAvatarUrl(user.profile?.profile_picture ?? null)
+        } else {
+            setPendingAvatar(null)
+            setPendingAvatarUrl(null)
         }
     }, [user])
 
@@ -41,7 +55,13 @@ export function UserProfilePage() {
 
     async function handleProfileSubmit(e: React.FormEvent) {
         e.preventDefault()
+        // Form never renders without a user object; guard keeps TypeScript happy.
+        /* c8 ignore next 2 */
         if (!user) return
+        const shouldDeleteAvatar =
+            pendingAvatarUrl === null &&
+            !!user.profile?.profile_picture
+
         const payload = {
             username: user.username,
             first_name: firstName,
@@ -51,6 +71,9 @@ export function UserProfilePage() {
             birthdate: user.birthdate,
             bio,
             phone,
+            profile_picture_url: pendingAvatarUrl,
+            avatar: pendingAvatar,
+            delete_profile_picture: shouldDeleteAvatar || undefined,
         }
         try {
             await updateProfile(payload)
@@ -67,6 +90,47 @@ export function UserProfilePage() {
     // compute initials for placeholder avatar
     const initials = ((user?.first_name ?? '').trim().charAt(0) || (user?.username ?? '').charAt(0) || '') +
         ((user?.last_name ?? '').trim().charAt(0) || '')
+
+    //file upload to supabase handler
+    async function handleAvatarFile(file?: File | null) {
+        if (!file) return
+
+        if (!isSupabaseConfigured()) {
+            setAvatarUploadError('Supabase environment variables are missing')
+            return
+        }
+        try {
+            setIsUploadingAvatar(true)
+            setAvatarUploadError(null)
+            validateImageFile(file)
+
+            const uploadUrl = await uploadImageToSupabase(file, `profile-avatars/${user?.id ?? 'anon'}`)
+            const bitmap = await createImageBitmap(file)
+            const objectPath = uploadUrl.split(`${SUPABASE_BUCKET}/`).pop() ?? ''
+            const metadata = {
+                bucket: SUPABASE_BUCKET,
+                path: objectPath,
+            }
+            setPendingAvatar({
+                media_type: 'profile_avatar',
+                url: uploadUrl,
+                width: bitmap.width,
+                height: bitmap.height,
+                size_kb: Math.round(file.size / 1024),
+                metadata,
+            })
+            setPendingAvatarUrl(uploadUrl)
+            setProfilePreview(uploadUrl)
+        } catch (error) {
+            setAvatarUploadError(error instanceof Error ? error.message : 'Failed to upload image')
+        } finally {
+            setIsUploadingAvatar(false)
+        }
+    }
+
+    const avatarMetadataSummary = pendingAvatar
+        ? `Metadata: ${pendingAvatar.width ?? '—'}×${pendingAvatar.height ?? '—'} px · ${pendingAvatar.size_kb ?? '—'} KB`
+        : null
 
     return (
         <div className="max-w-3xl mx-auto">
@@ -86,9 +150,13 @@ export function UserProfilePage() {
                 <div className="space-y-6">
                     <form onSubmit={handleProfileSubmit} className={`space-y-6 ${!editMode ? 'opacity-60 pointer-events-auto' : ''}`}>
                         <div className="flex items-center gap-6">
-                            <div className="h-20 w-20 flex-shrink-0 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-xl font-semibold text-white" style={{ background: profilePreview ? 'transparent' : 'linear-gradient(135deg,#06b6d4,#7c3aed)' }}>
+                            <div className="h-20 w-20 aspect-square flex-shrink-0 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-xl font-semibold text-white" style={{ background: profilePreview ? 'transparent' : 'linear-gradient(135deg,#06b6d4,#7c3aed)' }}>
                                 {profilePreview ? (
-                                    <img src={profilePreview} alt="Profile image" className="h-full w-full object-cover" />
+                                    <img
+                                        src={profilePreview}
+                                        alt="Profile image"
+                                        className="h-full w-full rounded-full object-cover object-center"
+                                    />
                                 ) : (
                                     // placeholder initials
                                     <span>{initials || 'U'}</span>
@@ -202,19 +270,60 @@ export function UserProfilePage() {
                             <label className="block text-sm font-medium text-gray-700">Profile picture (preview)</label>
                             <div className="mt-2 flex items-center gap-4">
                                 <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-100">
-                                    {profilePreview ? (
-                                        <img src={profilePreview} alt="Profile preview" className="h-full w-full object-cover" />
-                                    ) : (
-                                        <div className="flex h-full items-center justify-center text-sm text-gray-400">No image</div>
-                                    )}
+                                {profilePreview ? (
+                                    <img
+                                        src={profilePreview}
+                                        alt="Profile preview"
+                                        className="h-16 w-16 aspect-square rounded-full object-cover object-center"
+                                    />
+                                ) : (
+                                    <div className="flex h-full items-center justify-center text-sm text-gray-400">No image</div>
+                                )}
                                 </div>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    disabled
-                                    aria-label="Profile picture upload (coming soon)"
-                                    className="cursor-not-allowed text-gray-400"
+                                    aria-label="Profile picture upload"
+                                    disabled={!editMode || isUploadingAvatar}
+                                    onChange={(event) => {
+                                        const file = event.target.files?.[0]
+                                        void handleAvatarFile(file)
+                                        event.target.value = ''
+                                    }}
+                                    className={`${!editMode ? 'cursor-not-allowed text-gray-400' : 'cursor-pointer text-gray-700'}`}
                                 />
+                                {isUploadingAvatar && <p className="text-sm text-gray-500">Uploading…</p>}
+                                {!isUploadingAvatar && pendingAvatarUrl && (
+                                    <p className="text-sm text-emerald-600">Upload ready. Save to apply.</p>
+                                )}
+                                {avatarMetadataSummary && (
+                                    <p className="text-xs text-gray-500">{avatarMetadataSummary}</p>
+                                )}
+                                {avatarUploadError && <p className="text-sm text-red-600">{avatarUploadError}</p>}
+                                {editMode && !isUploadingAvatar && (
+                                    <p className="text-xs text-gray-500">
+                                        JPEG, PNG, WEBP, or GIF up to 2MB. Images are uploaded to Supabase for hosting.
+                                    </p>
+                                )}
+                                {editMode && profilePreview && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (
+                                                window.confirm(
+                                                    'Remove your profile photo? This cannot be undone.',
+                                                )
+                                            ) {
+                                                setPendingAvatar(null)
+                                                setPendingAvatarUrl(null)
+                                                setProfilePreview(null)
+                                            }
+                                        }}
+                                        className="text-xs text-red-600 underline"
+                                    >
+                                        Remove photo
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -225,10 +334,27 @@ export function UserProfilePage() {
                         )}
 
                         <div className="flex items-center gap-3">
-                            <button type="submit" className="rounded bg-emerald-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled={!editMode || isUpdating} aria-disabled={!editMode || isUpdating}>
+                            <button
+                                type="submit"
+                                className="rounded bg-emerald-600 px-4 py-2 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!editMode || isUploadingAvatar || isUpdating}
+                                aria-disabled={!editMode || isUploadingAvatar || isUpdating}
+                            >
                                 {isUpdating ? 'Saving…' : 'Save Profile'}
                             </button>
-                            <button type="button" onClick={() => setEditMode(false)} className="rounded border px-4 py-2" aria-label="Cancel edit">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditMode(false)
+                                    setAvatarUploadError(null)
+                                    setIsUploadingAvatar(false)
+                                    setPendingAvatar(null)
+                                    setPendingAvatarUrl(user?.profile?.profile_picture ?? null)
+                                    setProfilePreview(user?.profile?.profile_picture ?? null)
+                                }}
+                                className="rounded border px-4 py-2"
+                                aria-label="Cancel edit"
+                            >
                                 Cancel
                             </button>
                         </div>

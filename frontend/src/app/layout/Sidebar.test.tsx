@@ -362,6 +362,31 @@ describe('Sidebar Component', () => {
       expect(screen.queryByText(/TechCorp/)).not.toBeInTheDocument()
     })
 
+    it('renders uploaded avatar image when profile picture exists', () => {
+      // Arrange
+      vi.mocked(useLocalStorage).mockReturnValue([false, vi.fn()])
+      mockUseCurrentUser.mockReturnValueOnce({
+        data: {
+          id: 1,
+          username: 'john',
+          email: 'john@example.com',
+          full_name: 'John Doe',
+          role: 'Owner',
+          profile_completed: true,
+          company_name: 'TechCorp',
+          profile: { bio: 'Hi', profile_picture: 'https://cdn.example.com/avatar.png' },
+        },
+        isLoading: false,
+      } as any)
+
+      // Act
+      renderWithRouter(<Sidebar />)
+
+      // Assert
+      const img = screen.getByAltText('User avatar')
+      expect(img).toHaveAttribute('src', 'https://cdn.example.com/avatar.png')
+    })
+
     it('should show icon-only logo when collapsed', () => {
       // Arrange
       vi.mocked(useLocalStorage).mockReturnValue([false, vi.fn()])
@@ -1002,7 +1027,7 @@ describe('Sidebar Component', () => {
       const { container } = renderWithRouter(<Sidebar />)
 
       // Assert: Avatar has transition classes
-      const avatar = container.querySelector('.from-blue-500.to-purple-600')
+      const avatar = container.querySelector('[data-testid="sidebar-avatar-large"]')
       expect(avatar).toHaveClass('transition-all')
       expect(avatar).toHaveClass('duration-700')
     })
