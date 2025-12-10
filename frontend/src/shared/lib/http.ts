@@ -19,11 +19,25 @@
  * - Timeout (don't wait forever for slow servers)
  */
 
-import axios from 'axios'
+import axios, { type AxiosRequestConfig } from 'axios'
 import { tokenStore } from './tokenStore'
 
 // Callback for handling 401 errors - will be set by the app
 let onUnauthorized: (() => void) | null = null
+
+type RetryableConfig = AxiosRequestConfig & { _retry?: boolean }
+
+let isRefreshing = false
+let pendingRequests: Array<(token: string | null) => void> = []
+
+function subscribeTokenRefresh(cb: (token: string | null) => void) {
+  pendingRequests.push(cb)
+}
+
+function resolvePending(token: string | null) {
+  pendingRequests.forEach((cb) => cb(token))
+  pendingRequests = []
+}
 
 /**
  * Set the callback to be called when a 401 response is received.
@@ -118,12 +132,60 @@ http.interceptors.response.use(
   (response) => response,
 
   // Error - check for 401
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Token is invalid or expired
-      // Call the handler to clear Redux state and localStorage
-      if (onUnauthorized) {
-        onUnauthorized()
+      const originalRequest = (error.config || {}) as RetryableConfig
+
+      if (originalRequest._retry) {
+        if (onUnauthorized) {
+          onUnauthorized()
+        }
+        return Promise.reject(error)
+      }
+
+      const refresh = tokenStore.getRefresh()
+      if (!refresh || tokenStore.hasSessionExpired()) {
+        if (onUnauthorized) {
+          onUnauthorized()
+        }
+        return Promise.reject(error)
+      }
+
+      originalRequest._retry = true
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((token) => {
+            if (!token) {
+              reject(error)
+              return
+            }
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`
+            }
+            resolve(http(originalRequest))
+          })
+        })
+      }
+
+      isRefreshing = true
+
+      try {
+        const newAccessToken = await refreshAccessToken(refresh)
+        tokenStore.setAccess(newAccessToken)
+        resolvePending(newAccessToken)
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+        }
+        return http(originalRequest)
+      } catch (refreshError) {
+        resolvePending(null)
+        if (onUnauthorized) {
+          onUnauthorized()
+        }
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 
@@ -131,3 +193,12 @@ http.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+async function refreshAccessToken(refresh: string): Promise<string> {
+  const response = await axios.post(
+    `${apiBaseUrl}/auth/token/refresh/`,
+    { refresh },
+    { headers: { 'Content-Type': 'application/json' } },
+  )
+  return response.data.access
+}

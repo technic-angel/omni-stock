@@ -33,14 +33,28 @@ def test_upsert_creates_and_updates_media():
 
 
 @pytest.mark.django_db
-def test_remove_user_media_deletes_record():
+def test_remove_user_media_deletes_record(monkeypatch):
+    class StubClient:
+        def __init__(self):
+            self.deleted = []
+
+        def delete_object(self, Bucket, Key):
+            self.deleted.append((Bucket, Key))
+
+    stub = StubClient()
+    monkeypatch.setattr('backend.users.services.user_media._get_storage_client', lambda: stub)
+
     user = UserFactory.create()
     upsert_user_media(
         user_id=user.id,
         media_type=UserMediaType.VENDOR_LOGO,
-        payload={"url": "https://cdn.dev/logo.png"},
+        payload={
+            "url": "https://cdn.dev/logo.png",
+            "metadata": {"bucket": "profile-avatars", "path": "avatars/logo.png"},
+        },
     )
     assert UserMedia.objects.exists()
 
     remove_user_media(user_id=user.id, media_type=UserMediaType.VENDOR_LOGO)
     assert not UserMedia.objects.filter(media_type=UserMediaType.VENDOR_LOGO).exists()
+    assert stub.deleted == [('profile-avatars', 'avatars/logo.png')]

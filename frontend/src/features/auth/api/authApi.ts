@@ -51,6 +51,15 @@ export type CompleteProfilePayload = {
   birthdate?: string | null
 }
 
+export type UserMediaPayload= {
+  media_type: "profile_avatar" | "vendor_logo" | "storefront_banner" | "user_banner"
+  url: string
+  width?: number | null
+  height?: number | null
+  size_kb?: number | null
+  metadata?: Record<string, unknown> | null
+}
+
 export type UpdateProfilePayload = {
   username?: string
   first_name?: string | null
@@ -62,6 +71,9 @@ export type UpdateProfilePayload = {
   birthdate?: string | null
   bio?: string | null
   phone?: string | null
+  profile_picture_url?: string | null
+  delete_profile_picture?: boolean
+  avatar?: UserMediaPayload | null
 }
 
 export async function register(
