@@ -4,12 +4,18 @@ from backend.inventory.models import CardDetails, Collectible
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.delete_item import delete_item
 from backend.inventory.services.update_item import update_item
-from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
+from backend.inventory.tests.factories import (
+    CollectibleFactory,
+    StoreFactory,
+    UserFactory,
+    VendorFactory,
+)
 
 
 @pytest.mark.django_db
 def test_create_item_with_nested_card_details():
     vendor = VendorFactory.create()
+    store = StoreFactory.create(vendor=vendor)
     user = UserFactory.create()
 
     collectible = create_item(
@@ -18,6 +24,7 @@ def test_create_item_with_nested_card_details():
             "sku": "SRV-001",
             "quantity": 2,
             "vendor": vendor,
+            "store": store,
             "user": user,
         },
         card_details_data={"language": "English"},
@@ -30,11 +37,15 @@ def test_create_item_with_nested_card_details():
 
 @pytest.mark.django_db
 def test_create_item_with_image_url():
+    vendor = VendorFactory.create()
+    store = StoreFactory.create(vendor=vendor)
     collectible = create_item(
         data={
             "name": "Image Card",
             "sku": "IMG-001",
             "quantity": 1,
+            "vendor": vendor,
+            "store": store,
             "image_url": "https://example.com/img.jpg",
         },
     )
@@ -43,11 +54,15 @@ def test_create_item_with_image_url():
 
 @pytest.mark.django_db
 def test_create_item_records_pricing_fields():
+    vendor = VendorFactory.create()
+    store = StoreFactory.create(vendor=vendor)
     collectible = create_item(
         data={
             "name": "Price Card",
             "sku": "PRICE-001",
             "quantity": 1,
+            "vendor": vendor,
+            "store": store,
             "intake_price": "11.00",
             "price": "20.00",
             "projected_price": "25.00",

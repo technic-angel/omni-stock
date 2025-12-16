@@ -4,6 +4,7 @@ from typing import Any, Mapping
 
 from django.db.models import QuerySet
 
+from backend.core.permissions import resolve_user_vendor
 from backend.inventory.models import Collectible
 
 
@@ -14,9 +15,9 @@ def list_items(*, user, filters: Mapping[str, Any] | None = None) -> QuerySet:
     if user is None or not getattr(user, "is_authenticated", False):
         return base_qs.none()
 
-    profile = getattr(user, "profile", None)
-    if profile is not None and getattr(profile, "vendor", None) is not None:
-        scoped = base_qs.filter(vendor=profile.vendor)
+    vendor = resolve_user_vendor(user)
+    if vendor is not None:
+        scoped = base_qs.filter(vendor=vendor)
     else:
         scoped = base_qs.filter(user=user)
 

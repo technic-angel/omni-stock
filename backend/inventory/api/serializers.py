@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from rest_framework import serializers
 
-from backend.inventory.models import CardDetails, Collectible, InventoryMedia
+from backend.inventory.models import CardDetails, Collectible, InventoryMedia, Store
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.update_item import update_item
 
@@ -55,6 +55,12 @@ class CollectibleSerializer(serializers.ModelSerializer):
     card_details = CardDetailsSerializer(required=False)
     images = InventoryMediaSerializer(source="media", many=True, read_only=True)
     image_payloads = InventoryMediaSerializer(many=True, write_only=True, required=False)
+    store = serializers.PrimaryKeyRelatedField(
+        queryset=Store.objects.all(),
+        required=False,
+        allow_null=False,
+        help_text="Store that owns this inventory item.",
+    )
 
     class Meta:
         model = Collectible
@@ -62,6 +68,7 @@ class CollectibleSerializer(serializers.ModelSerializer):
             'id',
             'user',
             'vendor',
+            'store',
             'name',
             'sku',
             'description',
@@ -118,6 +125,21 @@ class CollectibleSerializer(serializers.ModelSerializer):
         if allowed_hosts and parsed.hostname not in allowed_hosts:
             raise serializers.ValidationError("Image host is not allowed.")
         return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        flag_enabled = getattr(settings, "ENABLE_VENDOR_REFACTOR", False)
+        store = attrs.get("store")
+        if self.instance and store is None:
+            store = getattr(self.instance, "store", None)
+
+        if flag_enabled and store is None:
+            raise serializers.ValidationError({"store": "Store is required when the vendor refactor is enabled."})
+
+        vendor = attrs.get("vendor") or getattr(self.instance, "vendor", None)
+        if store is not None and vendor is not None and store.vendor_id != vendor.id:
+            raise serializers.ValidationError({"store": "Store must belong to the selected vendor."})
+        return attrs
 
     def create(self, validated_data):
         card_details_data = validated_data.pop('card_details', None)

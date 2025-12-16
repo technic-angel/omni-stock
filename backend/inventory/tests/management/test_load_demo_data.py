@@ -7,6 +7,9 @@ from backend.vendors.models import Vendor
 
 @pytest.mark.django_db
 def test_load_demo_data_creates_items():
+    # seed initial data without overwrite to create demo vendor
+    call_command('load_demo_data', '--count', '1')
+
     # request 3 demo items and overwrite existing demo vendor data
     call_command('load_demo_data', '--count', '3', '--overwrite')
 

@@ -35,7 +35,8 @@ def test_vendor_scoped_permission_denies_other_vendor():
 @pytest.mark.django_db
 def test_user_without_vendor_must_own_collectible():
     user = UserFactory.create()
-    own_collectible = CollectibleFactory.create(user=user, vendor=None)
+    vendor = VendorFactory.create()
+    own_collectible = CollectibleFactory.create(user=user, vendor=vendor)
     other_collectible = CollectibleFactory.create()
 
     request = type("Request", (), {"user": user})

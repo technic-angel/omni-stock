@@ -62,6 +62,9 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-default-fallback-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=True)
 
+# Feature gate for the vendor/store refactor so we can merge safely.
+ENABLE_VENDOR_REFACTOR = env.bool('ENABLE_VENDOR_REFACTOR', default=False)
+
 # Fail fast if running in non-debug mode without a proper secret key.
 if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):
     raise RuntimeError('DJANGO_SECRET_KEY must be set when DEBUG is False. Set it in your .env file.')

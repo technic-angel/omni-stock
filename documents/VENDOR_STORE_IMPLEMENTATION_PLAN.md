@@ -27,53 +27,65 @@ Below the high-level phases are split into small, trackable slices. Each slice i
 Phase 0 — Setup & Branching
 - [x] 0.1 Create working branch `feature/vendor-store-models` (0.5d)
   - Acceptance: branch exists on remote and CI runs.
+- [x] 0.2 Add `ENABLE_VENDOR_REFACTOR` feature flag plumbing (0.5d)
+  - Files: `backend/omni_stock/settings.py`, `.env.*`, frontend env handling.
+  - Acceptance: flag can be toggled to short-circuit new services/UI on both backend and frontend.
+- [x] 0.3 Document current API surface and gating plan (0.25d)
+  - Capture how `/api/v1/vendors/` and `/api/v1/inventory/collectibles/` behave today so QA can diff once stores/members land.
+  - Acceptance: note lives in `documents/VENDOR_STORE_BUILD_PLAN.md` or this file and is referenced by rollout tasks.
 
 Phase 1 — Models & Migrations (slices)
-- [ ] 1.1 Add `VendorMember` model (0.5d)
+- [x] 1.1 Add `VendorMember` model (0.5d)
   - Files: `backend/vendors/models.py`
   - Acceptance: model created + `makemigrations` produces migration.
-- [ ] 1.2 Add `Store` model (0.75d)
+- [x] 1.2 Add `Store` model (0.75d)
   - Fields: vendor FK, name, slug, type, logo_url, banner_url, currency, is_active
   - Acceptance: model created + migration.
-- [ ] 1.3 Add `StoreAccess` model (0.5d)
+- [x] 1.3 Add `StoreAccess` model (0.5d)
   - Connects `Store` and `VendorMember`, includes role & permissions JSON.
   - Acceptance: migration created + unique constraint (store, member).
-- [ ] 1.4 Add optional `StockLedger` model (0.5d)
+- [x] 1.4 Add optional `StockLedger` model (0.5d)
   - Acceptance: migration created (optional for MVP but recommended).
-- [ ] 1.5 Add `store = FK(Store, null=True, blank=True)` to `Collectible` (0.5d)
+- [x] 1.5 Add `store = FK(Store, null=True, blank=True)` to `Collectible` (0.5d)
   - Files: `backend/inventory/models.py`
   - Acceptance: `makemigrations` shows new nullable FK.
+- [x] 1.6 Update `VendorSerializer`/ViewSet to surface flag-protected `stores` metadata (0.25d)
+  - Allows quick verification that stores exist without changing behavior for users when flag off.
 
 Phase 2 — Migrations & Backfill (slices)
 - [ ] 2.1 Commit & push migrations (0.25d)
   - Acceptance: migrations present in repo.
-- [ ] 2.2 Create management command `create_default_stores` (0.75d)
+- [x] 2.2 Create management command `create_default_stores` (0.75d)
   - Behavior: create "Default Store" per vendor if none exists.
   - Files: `backend/inventory/management/commands/create_default_stores.py`
   - Acceptance: command runs locally without error and creates stores for each vendor.
-- [ ] 2.3 Backfill `Collectible.store` using management command (1d)
+- [x] 2.3 Backfill `Collectible.store` using management command (1d)
   - Behavior: assign collectibles to vendor's default store in batches, with logging.
   - Acceptance: counts match (number of collectibles assigned) and script supports dry-run.
 - [ ] 2.4 (Optional) Make `Collectible.store` non-nullable migration after validation (0.5d)
   - Acceptance: migration applied in staging, sanity checks pass.
+- [x] 2.5 Update `Collectible` services/viewsets to require `store` when flag enabled (0.5d)
+  - Keeps legacy vendor-based flow untouched when flag off, but enforces store context for early adopters.
 
 Phase 3 — Services & Business Logic (slices)
-- [ ] 3.1 Implement `invite_member` service (0.5d)
-  - Files: `backend/vendors/services/invite_member.py`
+- [x] 3.1 Implement `invite_member` service (0.5d)
+  - Files: `backend/vendors/services/memberships.py`
   - Acceptance: unit tests for invite flow.
-- [ ] 3.2 Implement `accept_invite` / `revoke_invite` services (0.5d)
-- [ ] 3.3 Member promotion/demotion & ownership transfer service (0.75d)
-- [ ] 3.4 Implement `create_store`, `update_store`, `archive_store` services (1d)
-- [ ] 3.5 Implement `assign_member_to_store` and `remove_store_access` (0.5d)
-- [ ] 3.6 Implement `transfer_stock` service with DB transaction and ledger entries (1–2d)
+- [x] 3.2 Implement `accept_invite` / `revoke_invite` services (0.5d)
+- [x] 3.3 Member promotion/demotion & ownership transfer service (0.75d)
+- [x] 3.4 Implement `create_store`, `update_store`, `archive_store` services (1d)
+- [x] 3.5 Implement `assign_member_to_store` and `remove_store_access` (0.5d)
+- [x] 3.6 Implement `transfer_stock` service with DB transaction and ledger entries (1–2d)
   - Files: `backend/inventory/services/transfer_stock.py`, `backend/inventory/services/create_collectible.py`
+- [x] 3.7 Update `resolve_user_vendor` / permission helpers to consult `VendorMember` when flag on (0.5d)
+  - Ensures existing code paths fall back to profile vendor until membership data is ready.
 
 Phase 4 — API Layer (slices)
-- [ ] 4.1 Serializers for `VendorMember`, `Store`, `StoreAccess` (0.75d)
-- [ ] 4.2 Viewsets / endpoints for listing/creating members and stores (1d)
-- [ ] 4.3 Endpoint to assign store access (0.5d)
-- [ ] 4.4 Update `CollectibleViewSet` to accept `store` and call service layer (0.75d)
-- [ ] 4.5 Implement DRF permissions `IsVendorAdmin`, `HasStoreAccess` and wire them into viewsets (0.75d)
+- [x] 4.1 Serializers for `VendorMember`, `Store`, `StoreAccess` (0.75d)
+- [x] 4.2 Viewsets / endpoints for listing/creating members and stores (1d)
+- [x] 4.3 Endpoint to assign store access (0.5d)
+- [x] 4.4 Update `CollectibleViewSet` to accept `store` and call service layer (0.75d)
+- [x] 4.5 Implement DRF permissions `IsVendorAdmin`, `HasStoreAccess` and wire them into viewsets (0.75d)
 
 Phase 5 — Frontend (slices)
 - [ ] 5.1 Extend `vendorsApi.ts` with members/stores endpoints (0.5d)

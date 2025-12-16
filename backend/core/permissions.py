@@ -1,10 +1,20 @@
 """Core permission helpers."""
 
+from django.conf import settings
 from rest_framework.permissions import BasePermission
 
 
 def resolve_user_vendor(user):
-    """Return the vendor associated with the user's profile, if any."""
+    """Return the vendor associated with the user's profile or membership."""
+    if not user:
+        return None
+    if getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
+        membership = (
+            getattr(user, "vendor_memberships", None)
+            and user.vendor_memberships.filter(is_active=True).select_related("vendor").first()
+        )
+        if membership and membership.vendor:
+            return membership.vendor
     profile = getattr(user, "profile", None)
     return getattr(profile, "vendor", None) if profile else None
 
