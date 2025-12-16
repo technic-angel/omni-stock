@@ -10,10 +10,53 @@ def ensure_store_relationships(apps, schema_editor):
     Vendor = apps.get_model("collectibles", "Vendor")
     Store = apps.get_model("collectibles", "Store")
     Collectible = apps.get_model("collectibles", "Collectible")
+    UserProfile = apps.get_model("collectibles", "UserProfile")
 
-    vendor_store_map = {}
+    vendor_cache: dict[int, Vendor] = {}
+    vendor_store_map: dict[int, Store] = {}
+    profile_vendor_map = {
+        entry["user_id"]: entry["vendor_id"]
+        for entry in UserProfile.objects.all().values("user_id", "vendor_id")
+    }
+    global_legacy_vendor = None
 
-    for vendor in Vendor.objects.all().iterator():
+    def get_vendor(vendor_id: int | None) -> Vendor | None:
+        if vendor_id is None:
+            return None
+        vendor = vendor_cache.get(vendor_id)
+        if vendor is None:
+            vendor = Vendor.objects.filter(id=vendor_id).first()
+            vendor_cache[vendor_id] = vendor
+        return vendor
+
+    def ensure_vendor_for_user(user_id: int | None) -> Vendor:
+        nonlocal global_legacy_vendor
+        vendor = get_vendor(profile_vendor_map.get(user_id)) if user_id else None
+        if vendor:
+            return vendor
+
+        if user_id is None:
+            if global_legacy_vendor is None:
+                global_legacy_vendor = Vendor.objects.create(name="Legacy Vendor")
+                vendor_cache[global_legacy_vendor.id] = global_legacy_vendor
+            return global_legacy_vendor
+
+        vendor = Vendor.objects.create(name=f"Legacy Vendor {user_id}")
+        vendor_cache[vendor.id] = vendor
+        profile, created = UserProfile.objects.get_or_create(
+            user_id=user_id,
+            defaults={"vendor": vendor},
+        )
+        if not created:
+            profile.vendor_id = vendor.id
+            profile.save(update_fields=["vendor"])
+        profile_vendor_map[user_id] = vendor.id
+        return vendor
+
+    def ensure_vendor_store(vendor: Vendor) -> Store:
+        store = vendor_store_map.get(vendor.id)
+        if store:
+            return store
         store = Store.objects.filter(vendor=vendor).order_by("id").first()
         if store is None:
             store = Store.objects.create(
@@ -21,16 +64,17 @@ def ensure_store_relationships(apps, schema_editor):
                 name=DEFAULT_STORE_NAME,
                 metadata={"auto_created": True},
             )
-        vendor_store_map[vendor.id] = store.id
+        vendor_store_map[vendor.id] = store
+        return store
 
-    missing_store_qs = Collectible.objects.filter(store__isnull=True, vendor__isnull=False).values_list(
-        "id", "vendor_id"
-    )
-    for collectible_id, vendor_id in missing_store_qs.iterator():
-        store_id = vendor_store_map.get(vendor_id)
-        if store_id is None:
-            continue
-        Collectible.objects.filter(pk=collectible_id).update(store_id=store_id)
+    qs = Collectible.objects.filter(store__isnull=True).iterator()
+    for collectible in qs:
+        vendor = get_vendor(collectible.vendor_id)
+        if vendor is None:
+            vendor = ensure_vendor_for_user(collectible.user_id)
+            Collectible.objects.filter(pk=collectible.pk).update(vendor_id=vendor.id)
+        store = ensure_vendor_store(vendor)
+        Collectible.objects.filter(pk=collectible.pk).update(store_id=store.id)
 
 
 class Migration(migrations.Migration):
