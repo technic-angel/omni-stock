@@ -13,7 +13,7 @@ from backend.inventory.selectors.list_items import list_items
 from backend.inventory.services.create_item import create_item
 from backend.inventory.services.delete_item import delete_item
 from backend.inventory.services.update_item import update_item
-from backend.vendors.api.permissions import user_has_store_access
+from backend.vendors.api.permissions import HasStoreAccess, user_has_store_access
 from backend.vendors.services.store_defaults import ensure_default_store
 
 
@@ -21,7 +21,7 @@ class CollectibleViewSet(viewsets.ModelViewSet):
     """Inventory CRUD viewset with vendor scoping rules."""
 
     serializer_class = CollectibleSerializer
-    permission_classes = [IsAuthenticated, VendorScopedPermission]
+    permission_classes = [IsAuthenticated, VendorScopedPermission, HasStoreAccess]
 
     def get_queryset(self):
         return list_items(user=getattr(self.request, 'user', None), filters=self.request.query_params)
