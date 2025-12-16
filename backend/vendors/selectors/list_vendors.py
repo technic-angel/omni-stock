@@ -2,18 +2,19 @@
 
 from django.db.models import QuerySet
 
+from backend.core.permissions import resolve_user_vendor
 from backend.vendors.models import Vendor
 
 
 def list_vendors(*, user) -> QuerySet:
-    """Return vendors scoped to the requesting user's profile vendor, if any."""
+    """Return vendors scoped to the requesting user's vendor context, if any."""
     base_qs = Vendor.objects.all()
     if user is None or not getattr(user, "is_authenticated", False):
         return base_qs.none()
 
-    profile = getattr(user, "profile", None)
-    if profile is not None and getattr(profile, "vendor", None) is not None:
-        return base_qs.filter(pk=profile.vendor.pk)
+    vendor = resolve_user_vendor(user)
+    if vendor is not None:
+        return base_qs.filter(pk=vendor.pk)
 
     return base_qs
 

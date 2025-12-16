@@ -1,7 +1,6 @@
 import pytest
 from rest_framework.test import APIClient
 
-from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import UserFactory, VendorFactory
 from backend.users.models import UserProfile
 
@@ -44,13 +43,13 @@ def test_unauthenticated_user_cannot_create_collectible_with_card_details():
 
 
 @pytest.mark.django_db
-def test_user_without_vendor_can_create_collectible_without_vendor_field():
-    """Users without a vendor profile may create a collectible that has no vendor."""
+def test_user_without_vendor_cannot_create_collectible():
+    """Users must join a vendor before creating inventory so a store can be assigned."""
     client = APIClient()
     user = UserFactory.create()
     client.force_authenticate(user=user)
 
     payload = {"name": "User Owned", "sku": "USER-1", "quantity": 1}
     resp = client.post("/api/v1/collectibles/", payload, format='json')
-    assert resp.status_code in (200, 201)
-    assert Collectible.objects.filter(sku="USER-1").exists()
+    assert resp.status_code == 403
+    assert "vendor" in resp.json().get("detail", "").lower()

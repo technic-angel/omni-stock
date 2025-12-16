@@ -17,6 +17,7 @@ class Command(BaseCommand):
         from backend.inventory.models import CardDetails, Collectible
         from backend.users.models import UserProfile
         from backend.vendors.models import Vendor
+        from backend.vendors.services.store_defaults import ensure_default_store
 
         try:
             from faker import Faker
@@ -64,6 +65,7 @@ class Command(BaseCommand):
             name='Demo Vendor', 
             defaults={'contact_info': 'demo@omnistock.example.com'}
         )
+        default_store = ensure_default_store(vendor)
         
         # Ensure user has profile with vendor
         UserProfile.objects.get_or_create(user=user, defaults={'vendor': vendor})
@@ -104,6 +106,7 @@ class Command(BaseCommand):
                 'name': name,
                 'user': user,
                 'vendor': vendor,
+                'store': default_store,
                 'quantity': random.randint(1, 15),
                 'category': category,
                 'condition': condition,
@@ -116,6 +119,9 @@ class Command(BaseCommand):
             
             if item_created:
                 created_items.append(c)
+            elif c.store_id is None:
+                c.store = default_store
+                c.save(update_fields=["store"])
 
             # Create card details for Trading Cards category
             if category == "Trading Cards" and not hasattr(c, 'card_details'):

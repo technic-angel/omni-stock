@@ -5,7 +5,7 @@ from django.test import override_settings
 
 from backend.inventory.api.serializers import CollectibleSerializer
 from backend.inventory.models import Collectible
-from backend.inventory.tests.factories import CollectibleFactory
+from backend.inventory.tests.factories import CollectibleFactory, StoreFactory
 
 
 @pytest.mark.django_db
@@ -28,9 +28,10 @@ def test_collectible_serializer_roundtrip():
         "intake_price": "10.00",
         "projected_price": "30.00",
     }
+    store = StoreFactory.create()
     ser = CollectibleSerializer(data=payload)
     assert ser.is_valid(), ser.errors
-    obj = ser.save()
+    obj = ser.save(store=store, vendor=store.vendor)
     assert Collectible.objects.filter(pk=obj.pk, sku="SER-002").exists()
     assert obj.price == Decimal("25.00")
     assert obj.category == "TCG"
@@ -39,10 +40,11 @@ def test_collectible_serializer_roundtrip():
 
 @pytest.mark.django_db
 def test_collectible_serializer_image_url():
+    store = StoreFactory.create()
     payload = {"name": "Image Card", "sku": "SER-IMG", "quantity": 1, "image_url": "https://example.com/img.png"}
     ser = CollectibleSerializer(data=payload)
     assert ser.is_valid(), ser.errors
-    obj = ser.save()
+    obj = ser.save(store=store, vendor=store.vendor)
     assert obj.image_url == payload["image_url"]
     assert obj.created_at is not None
     assert obj.updated_at is not None
@@ -89,6 +91,7 @@ def test_collectible_serializer_quantity_validation():
 
 @pytest.mark.django_db
 def test_collectible_serializer_creates_media_gallery():
+    store = StoreFactory.create()
     payload = {
         "name": "Gallery Item",
         "sku": "GAL-001",
@@ -100,7 +103,7 @@ def test_collectible_serializer_creates_media_gallery():
     }
     ser = CollectibleSerializer(data=payload)
     assert ser.is_valid(), ser.errors
-    obj = ser.save()
+    obj = ser.save(store=store, vendor=store.vendor)
 
     assert obj.media.count() == 2
     urls = list(obj.media.order_by("sort_order").values_list("url", flat=True))

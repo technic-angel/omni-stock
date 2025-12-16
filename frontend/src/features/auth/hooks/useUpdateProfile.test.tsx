@@ -28,7 +28,7 @@ describe('useUpdateProfile', () => {
     const payload = {
       username: 'melissa',
       first_name: 'Melissa',
-      last_name: 'Berumen',
+      last_name: 'Patel',
       company_name: 'Omni',
       phone_number: '555-1234',
       bio: 'hi',

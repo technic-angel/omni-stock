@@ -98,7 +98,7 @@ describe('UserProfilePage', () => {
     await user.clear(screen.getByLabelText(/First name/i))
     await user.type(screen.getByLabelText(/First name/i), 'Melissa')
     await user.clear(screen.getByLabelText(/Last name/i))
-    await user.type(screen.getByLabelText(/Last name/i), 'Berumen')
+    await user.type(screen.getByLabelText(/Last name/i), 'Singh')
     await user.clear(screen.getByLabelText(/Phone number/i))
     await user.type(screen.getByLabelText(/Phone number/i), '555-5555')
     await user.clear(screen.getByLabelText(/Company/i))
@@ -111,7 +111,7 @@ describe('UserProfilePage', () => {
     expect(mutateAsync).toHaveBeenCalledWith({
       username: 'admin',
       first_name: 'Melissa',
-      last_name: 'Berumen',
+      last_name: 'Singh',
       phone_number: '555-5555',
       company_name: 'Omni Stock',
       birthdate: '1990-01-01',

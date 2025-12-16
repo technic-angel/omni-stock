@@ -20,6 +20,12 @@ from backend.users.models import UserProfile
 User = get_user_model()
 
 
+def attach_vendor_profile(user, vendor=None):
+    vendor = vendor or VendorFactory.create()
+    UserProfile.objects.create(user=user, vendor=vendor)
+    return vendor
+
+
 class TestAuthenticationRequirements:
     """Test that all inventory endpoints require authentication."""
     
@@ -128,7 +134,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_sku_is_required(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -144,7 +150,7 @@ class TestInputValidation:
         CollectibleFactory.create(sku="DUP-001")
         
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -158,7 +164,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_negative_quantity_rejected(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -171,7 +177,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_negative_prices_rejected(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -189,7 +195,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_decimal_prices_accepted(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -213,7 +219,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_invalid_image_url_rejected(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -235,7 +241,7 @@ class TestStatusCodes:
     @pytest.mark.django_db
     def test_create_returns_201(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -248,7 +254,7 @@ class TestStatusCodes:
     @pytest.mark.django_db
     def test_list_returns_200(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -291,7 +297,7 @@ class TestStatusCodes:
     @pytest.mark.django_db
     def test_nonexistent_item_returns_404(self):
         user = UserFactory.create()
-        UserProfile.objects.create(user=user)
+        attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
