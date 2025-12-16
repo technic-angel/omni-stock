@@ -28,7 +28,7 @@ describe('useRegister', () => {
     username: 'melissa',
     email: 'melissa@example.com',
     first_name: 'Melissa',
-    last_name: 'Berumen',
+    last_name: 'Okafor',
     password: 'ComplexPass123!',
     confirmPassword: 'ComplexPass123!',
     birthdate: '1990-01-01',
@@ -43,7 +43,7 @@ describe('useRegister', () => {
       await result.current.mutateAsync({ ...basePayload, company_name: '   Omni Stock  ' })
     })
 
-    expect(authApi.register).toHaveBeenCalledWith('melissa', 'melissa@example.com', 'Melissa', 'Berumen', 'ComplexPass123!', '1990-01-01', 'Omni Stock')
+    expect(authApi.register).toHaveBeenCalledWith('melissa', 'melissa@example.com', 'Melissa', 'Okafor', 'ComplexPass123!', '1990-01-01', 'Omni Stock')
   })
 
   it('omits company name when blank', async () => {
@@ -55,7 +55,7 @@ describe('useRegister', () => {
       await result.current.mutateAsync({ ...basePayload, company_name: '' })
     })
 
-    expect(authApi.register).toHaveBeenCalledWith('melissa', 'melissa@example.com', 'Melissa', 'Berumen', 'ComplexPass123!', '1990-01-01', undefined)
+    expect(authApi.register).toHaveBeenCalledWith('melissa', 'melissa@example.com', 'Melissa', 'Okafor', 'ComplexPass123!', '1990-01-01', undefined)
   })
 
   it('passes first and last name through to the API', async () => {

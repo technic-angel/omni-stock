@@ -4,7 +4,7 @@ import factory
 from django.contrib.auth import get_user_model
 
 from backend.inventory.models import CardDetails, Collectible
-from backend.vendors.models import Vendor
+from backend.vendors.models import Store, Vendor
 
 User = get_user_model()
 
@@ -24,6 +24,14 @@ class VendorFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Vendor {n}")
 
 
+class StoreFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Store
+
+    vendor = factory.SubFactory(VendorFactory)
+    name = factory.Sequence(lambda n: f"Store {n}")
+
+
 class CollectibleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Collectible
@@ -37,6 +45,7 @@ class CollectibleFactory(factory.django.DjangoModelFactory):
     price = Decimal("10.00")
     projected_price = Decimal("12.00")
     vendor = factory.SubFactory(VendorFactory)
+    store = factory.SubFactory(StoreFactory, vendor=factory.SelfAttribute("..vendor"))
 
 
 class CardDetailsFactory(factory.django.DjangoModelFactory):

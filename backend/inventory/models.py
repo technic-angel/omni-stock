@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import models
 
-from backend.vendors.models import Vendor
+from backend.vendors.models import Store, Vendor
 
 
 class Collectible(models.Model):
@@ -22,6 +22,14 @@ class Collectible(models.Model):
         null=True,
         blank=True,
         related_name="collectibles",
+    )
+    store = models.ForeignKey(
+        Store,
+        on_delete=models.PROTECT,
+        null=False,
+        blank=False,
+        related_name="collectibles",
+        help_text="Store that currently stocks this item.",
     )
     name = models.CharField(max_length=255, help_text="The common name of the collectible item.")
     sku = models.CharField(
@@ -225,4 +233,45 @@ class InventoryMedia(models.Model):
         return f"{self.item.sku} media ({self.get_media_type_display()})"
 
 
-__all__ = ["Collectible", "CardDetails", "InventoryMedia"]
+class StockLedger(models.Model):
+    """Track inventory movements between stores."""
+
+    collectible = models.ForeignKey(
+        Collectible,
+        on_delete=models.CASCADE,
+        related_name="ledger_entries",
+    )
+    from_store = models.ForeignKey(
+        Store,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ledger_out",
+    )
+    to_store = models.ForeignKey(
+        Store,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ledger_in",
+    )
+    delta = models.IntegerField(help_text="Quantity change (positive or negative).")
+    reason = models.CharField(max_length=64, blank=True, null=True)
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="inventory_actions",
+    )
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.collectible_id} delta {self.delta}"
+
+
+__all__ = ["Collectible", "CardDetails", "InventoryMedia", "StockLedger"]

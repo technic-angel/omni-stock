@@ -16,14 +16,14 @@ def test_update_user_profile_persists_name_fields():
     user = User.objects.create_user(username="tester", email="tester@example.com", password="pass1234")
     UserProfile.objects.get_or_create(user=user)
 
-    updated = update_user_profile(user_id=user.id, first_name="Melissa", last_name="Berumen")
+    updated = update_user_profile(user_id=user.id, first_name="Melissa", last_name="Nguyen")
 
     assert updated.first_name == "Melissa"
-    assert updated.last_name == "Berumen"
+    assert updated.last_name == "Nguyen"
 
     user.refresh_from_db()
     assert user.first_name == "Melissa"
-    assert user.last_name == "Berumen"
+    assert user.last_name == "Nguyen"
 @pytest.mark.django_db
 def test_update_user_profile_updates_media():
     user = User.objects.create_user(username="media", email="media@example.com", password="pass1234")

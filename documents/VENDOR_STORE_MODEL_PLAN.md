@@ -34,70 +34,132 @@ This document captures the suggested backend refactor for supporting vendor acco
 4. **Store Permissions**: A `StoreAccess` model controls which employees can access which store and what actions they can perform (Manager vs Sales).
 5. **Inventory**: The `Product` (Collectible) model is assigned to a `Store`, enabling distinct inventory per store.
 
-## Mermaid ER Diagram
+## Mermaid ER Diagram (Current Models)
 
 ```mermaid
 erDiagram
-    User ||--o{ VendorMember : "joins"
-    Vendor ||--o{ VendorMember : "has members"
-    Vendor ||--o{ Store : "owns"
-    Store ||--o{ Product : "stocks"
-    VendorMember ||--o{ StoreAccess : "assigned to"
-    Store ||--o{ StoreAccess : "has staff"
+    User ||--|| UserProfile : "has profile"
+    User ||--o{ VendorMember : "joins vendor via"
+
+    Vendor ||--o{ VendorMember : "members"
+    Vendor ||--o{ Store : "owns stores"
+    Vendor ||--o{ Collectible : "legacy vendor_id"
+
+    VendorMember ||--o{ StoreAccess : "grants store access"
+    Store ||--o{ StoreAccess : "has assigned members"
+
+    Store ||--o{ Collectible : "stocks"
+    Collectible ||--|| CardDetails : "card metadata"
+    Collectible ||--o{ InventoryMedia : "media gallery"
+    Collectible ||--o{ StockLedger : "movements"
 
     User {
         int id
-        string email
         string username
-        string avatar_url
+        string email
+    }
+
+    UserProfile {
+        int id
+        int user_id FK
+        int vendor_id FK?
+        string phone
+        text bio
+        url profile_picture
     }
 
     Vendor {
         int id
         string name
-        string slug
-        string logo_url
-        string banner_url
-        string tax_id
-        boolean is_active
+        string slug (unique)
+        text contact_info
+        bool is_active
+        datetime created_at
     }
 
     VendorMember {
         int id
-        int user_id
-        int vendor_id
-        string role "ADMIN, MEMBER"
-        boolean is_active
+        int vendor_id FK
+        int user_id FK
+        string role (owner/admin/manager/...)
+        bool is_active
         datetime joined_at
+        json metadata
     }
 
     Store {
         int id
-        int vendor_id
+        int vendor_id FK
         string name
-        string type "RETAIL, POPUP, ONLINE"
-        string address
-        string logo_url
-        string banner_url
+        string slug
+        string type (retail/online/etc)
+        text address
+        json metadata
         string currency
-        boolean is_active
+        decimal default_tax_rate
+        bool is_active
     }
 
     StoreAccess {
         int id
-        int store_id
-        int vendor_member_id
-        string role "MANAGER, SALES"
-        json permissions "custom overrides"
+        int store_id FK
+        int vendor_member_id FK
+        string role (manager/sales/view_only)
+        json permissions
+        bool is_active
     }
 
-    Product {
+    Collectible {
         int id
-        int store_id
+        int store_id FK (required)
+        int vendor_id FK (nullable legacy)
+        int user_id FK (owner)
         string name
-        string sku
+        string sku (unique)
         int quantity
+        decimal intake_price
         decimal price
+        decimal projected_price
+        text description
+        string category
+        string condition
+        url image_url
+        datetime created_at
+    }
+
+    CardDetails {
+        int id
+        int collectible_id (1:1)
+        decimal psa_grade
+        string condition
+        text external_ids
+        date release_date
+        string language
+    }
+
+    InventoryMedia {
+        int id
+        int collectible_id FK
+        string media_type (primary/gallery)
+        url url
+        int sort_order
+        bool is_primary
+        int width
+        int height
+        int size_kb
+        json metadata
+    }
+
+    StockLedger {
+        int id
+        int collectible_id FK
+        int from_store_id FK?
+        int to_store_id FK?
+        int performed_by_user_id FK?
+        int delta
+        string reason
+        json metadata
+        datetime created_at
     }
 ```
 

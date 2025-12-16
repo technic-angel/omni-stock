@@ -1,5 +1,6 @@
 """Tests for file upload validators."""
 
+from datetime import date, timedelta
 from io import BytesIO
 
 import pytest
@@ -8,9 +9,12 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
 from backend.users.validators import (
+    MINIMUM_AGE,
     FileSizeValidator,
     ImageFileValidator,
+    validate_birthdate,
     validate_image_file,
+    validate_phone_number,
     validate_profile_picture_size,
 )
 
@@ -163,5 +167,23 @@ def test_image_validator_allows_custom_types():
         validator(jpg_file)  # Should fail (only PNG allowed)
 
 
-__all__ = []
+def test_validate_phone_number_enforces_format():
+    validate_phone_number("+15551234567")  # should not raise
+    validate_phone_number("")  # allow empty
+    with pytest.raises(ValidationError):
+        validate_phone_number("123-456")  # invalid format
 
+
+def test_validate_birthdate_checks_age_and_future():
+    adult_date = date.today().replace(year=date.today().year - (MINIMUM_AGE + 1))
+    validate_birthdate(adult_date)
+
+    with pytest.raises(ValidationError):
+        validate_birthdate(date.today() + timedelta(days=1))
+
+    underage_date = date.today().replace(year=date.today().year - (MINIMUM_AGE - 1))
+    with pytest.raises(ValidationError):
+        validate_birthdate(underage_date)
+
+
+__all__ = []
