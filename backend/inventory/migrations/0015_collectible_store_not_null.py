@@ -79,6 +79,8 @@ def ensure_store_relationships(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
+    atomic = False
+
     dependencies = [
         ("collectibles", "0014_store_stockledger_collectible_store_vendormember_and_more"),
     ]
