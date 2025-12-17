@@ -97,6 +97,9 @@ export type StoreAccessPayload = {
 
 //Vendors
 
+export const fetchVendors = () =>
+  http.get<Vendor[]>('/api/v1/vendors/').then(res => res.data)
+
 export const listVendors = () =>
   http.get<Vendor[]>('/api/v1/vendors/').then(res => res.data)
 
