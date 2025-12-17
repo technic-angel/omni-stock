@@ -1,7 +1,8 @@
 import pytest
 from rest_framework.test import APIClient
 
-from backend.inventory.tests.factories import UserFactory, VendorFactory
+from backend.inventory.tests.factories import StoreFactory, UserFactory, VendorFactory
+from backend.users.models import UserProfile
 from backend.vendors.models import StoreAccess, VendorMember, VendorMemberRole
 
 
@@ -63,3 +64,47 @@ def test_store_viewset_create_and_store_access(vendor_admin):
     )
     assert access_resp.status_code == 201
     assert StoreAccess.objects.filter(store_id=store_id, member=member).exists()
+
+
+@pytest.mark.django_db
+def test_select_vendor_updates_profile_and_store(settings):
+    settings.ENABLE_VENDOR_REFACTOR = True
+    vendor = VendorFactory.create()
+    StoreFactory.create(vendor=vendor)
+    user = UserFactory.create()
+    profile = UserProfile.objects.create(user=user, vendor=None)
+    VendorMember.objects.create(vendor=vendor, user=user, role=VendorMemberRole.ADMIN, is_active=True)
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    resp = client.post("/api/v1/vendor-members/select/", {"vendor": vendor.id}, format="json")
+    assert resp.status_code == 200
+    profile.refresh_from_db()
+    assert profile.vendor_id == vendor.id
+    member = VendorMember.objects.get(user=user, vendor=vendor)
+    assert member.active_store is not None
+
+
+@pytest.mark.django_db
+def test_select_store_updates_membership(settings):
+    settings.ENABLE_VENDOR_REFACTOR = True
+    vendor = VendorFactory.create()
+    store_one = StoreFactory.create(vendor=vendor)
+    store_two = StoreFactory.create(vendor=vendor)
+    user = UserFactory.create()
+    profile = UserProfile.objects.create(user=user, vendor=vendor)
+    member = VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        active_store=store_one,
+    )
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+    resp = client.post("/api/v1/vendor-stores/select/", {"store": store_two.id}, format="json")
+    assert resp.status_code == 200
+    member.refresh_from_db()
+    assert member.active_store_id == store_two.id

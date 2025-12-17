@@ -15,6 +15,31 @@ class StoreSummarySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class StoreSerializer(serializers.ModelSerializer):
+    vendor_id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Store
+        fields = [
+            "id",
+            "vendor_id",
+            "name",
+            "slug",
+            "type",
+            "description",
+            "address",
+            "metadata",
+            "logo_url",
+            "banner_url",
+            "currency",
+            "default_tax_rate",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "slug", "created_at", "updated_at", "vendor_id"]
+
+
 class VendorSerializer(serializers.ModelSerializer):
     """Serializer for vendor CRUD."""
 
@@ -50,6 +75,7 @@ class VendorSerializer(serializers.ModelSerializer):
 
 class VendorMemberSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
+    active_store = StoreSerializer(read_only=True)
 
     class Meta:
         model = VendorMember
@@ -61,8 +87,9 @@ class VendorMemberSerializer(serializers.ModelSerializer):
             "title",
             "is_active",
             "joined_at",
+            "active_store",
         ]
-        read_only_fields = ["id", "user", "email", "joined_at"]
+        read_only_fields = ["id", "user", "email", "joined_at", "active_store"]
 
 
 class VendorMemberInviteSerializer(serializers.Serializer):
@@ -77,31 +104,6 @@ class VendorMemberUpdateSerializer(serializers.ModelSerializer):
         fields = ["role", "title", "is_active"]
 
 
-class StoreSerializer(serializers.ModelSerializer):
-    vendor_id = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Store
-        fields = [
-            "id",
-            "vendor_id",
-            "name",
-            "slug",
-            "type",
-            "description",
-            "address",
-            "metadata",
-            "logo_url",
-            "banner_url",
-            "currency",
-            "default_tax_rate",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "slug", "created_at", "updated_at", "vendor_id"]
-
-
 class StoreAccessSerializer(serializers.ModelSerializer):
     member_email = serializers.EmailField(source="member.user.email", read_only=True)
 
@@ -109,6 +111,14 @@ class StoreAccessSerializer(serializers.ModelSerializer):
         model = StoreAccess
         fields = ["id", "store", "member", "role", "is_active", "member_email"]
         read_only_fields = ["id", "member_email"]
+
+
+class VendorSelectionSerializer(serializers.Serializer):
+    vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.all())
+
+
+class StoreSelectionSerializer(serializers.Serializer):
+    store = serializers.PrimaryKeyRelatedField(queryset=Store.objects.all())
 
 
 __all__ = [
@@ -119,4 +129,6 @@ __all__ = [
     "StoreSerializer",
     "StoreSummarySerializer",
     "StoreAccessSerializer",
+    "VendorSelectionSerializer",
+    "StoreSelectionSerializer",
 ]

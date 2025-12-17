@@ -263,6 +263,14 @@
       "CurrentUser": {
         "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
         "properties": {
+          "active_store": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "active_vendor": {
+            "readOnly": true,
+            "type": "string"
+          },
           "birthdate": {
             "description": "Birthdate (used for age verification).",
             "format": "date",
@@ -353,6 +361,8 @@
           }
         },
         "required": [
+          "active_store",
+          "active_vendor",
           "email",
           "full_name",
           "id",
@@ -1408,6 +1418,14 @@
       },
       "VendorMember": {
         "properties": {
+          "active_store": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Store"
+              }
+            ],
+            "readOnly": true
+          },
           "email": {
             "format": "email",
             "readOnly": true,
@@ -1440,6 +1458,7 @@
           }
         },
         "required": [
+          "active_store",
           "email",
           "id",
           "joined_at",
@@ -2463,6 +2482,52 @@
         ]
       }
     },
+    "/api/v1/vendor-members/select/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_select_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMemberInvite"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      }
+    },
     "/api/v1/vendor-members/{id}/": {
       "delete": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
@@ -2936,6 +3001,52 @@
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      }
+    },
+    "/api/v1/vendor-stores/select/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_select_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
