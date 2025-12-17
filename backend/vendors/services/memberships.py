@@ -4,6 +4,7 @@ from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.utils import timezone
 
 from backend.vendors.models import (
     Store,
@@ -21,16 +22,25 @@ User = get_user_model()
 @transaction.atomic
 def invite_member(*, vendor: Vendor, email: str, role: str = VendorMemberRole.MEMBER, invited_by: Optional[User] = None) -> VendorMember:
     user, _ = User.objects.get_or_create(email=email, defaults={"username": email.split("@")[0]})
+    defaults = {
+        "role": role,
+        "invited_by": invited_by,
+        "invite_status": VendorMember.InviteStatus.PENDING,
+        "is_active": False,
+        "invited_at": timezone.now(),
+        "responded_at": None,
+        "revoked_at": None,
+        "active_store": None,
+    }
     member, created = VendorMember.objects.get_or_create(
         vendor=vendor,
         user=user,
-        defaults={"role": role, "invited_by": invited_by, "active_store": None},
+        defaults=defaults,
     )
     if not created:
-        member.role = role
-        member.invited_by = invited_by
-        member.active_store = None
-        member.save(update_fields=["role", "invited_by", "active_store"])
+        for field, value in defaults.items():
+            setattr(member, field, value)
+        member.save(update_fields=list(defaults.keys()))
     return member
 
 
@@ -45,7 +55,28 @@ def update_membership_role(*, member: VendorMember, role: str) -> VendorMember:
 def deactivate_membership(*, member: VendorMember) -> None:
     member.is_active = False
     member.active_store = None
-    member.save(update_fields=["is_active", "active_store"])
+    member.invite_status = VendorMember.InviteStatus.REVOKED
+    member.revoked_at = timezone.now()
+    member.save(update_fields=["is_active", "active_store", "invite_status", "revoked_at"])
+
+
+@transaction.atomic
+def accept_invite(*, member: VendorMember) -> VendorMember:
+    member.invite_status = VendorMember.InviteStatus.ACCEPTED
+    member.is_active = True
+    member.responded_at = timezone.now()
+    member.revoked_at = None
+    member.save(update_fields=["invite_status", "is_active", "responded_at", "revoked_at"])
+    return member
+
+
+@transaction.atomic
+def decline_invite(*, member: VendorMember) -> VendorMember:
+    member.invite_status = VendorMember.InviteStatus.DECLINED
+    member.is_active = False
+    member.responded_at = timezone.now()
+    member.save(update_fields=["invite_status", "is_active", "responded_at"])
+    return member
 
 
 @transaction.atomic
@@ -109,6 +140,8 @@ __all__ = [
     "invite_member",
     "update_membership_role",
     "deactivate_membership",
+    "accept_invite",
+    "decline_invite",
     "set_active_vendor",
     "set_active_store",
     "create_store",

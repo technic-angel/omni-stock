@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("collectibles", "0015_collectible_store_not_null"),
+        ("collectibles", "0016_vendormember_invite_status_vendormember_invited_at_and_more"),
     ]
 
     operations = [

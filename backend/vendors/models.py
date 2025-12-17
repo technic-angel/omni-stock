@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
@@ -58,6 +59,12 @@ class Vendor(models.Model):
 class VendorMember(models.Model):
     """Links a `User` to a `Vendor` with a role and membership metadata."""
 
+    class InviteStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+        REVOKED = "revoked", "Revoked"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -81,6 +88,15 @@ class VendorMember(models.Model):
     )
     is_active = models.BooleanField(default=True)
     joined_at = models.DateTimeField(auto_now_add=True)
+    invite_status = models.CharField(
+        max_length=20,
+        choices=InviteStatus.choices,
+        default=InviteStatus.PENDING,
+        help_text="Lifecycle state for invitations and membership activation.",
+    )
+    invited_at = models.DateTimeField(default=timezone.now)
+    responded_at = models.DateTimeField(blank=True, null=True)
+    revoked_at = models.DateTimeField(blank=True, null=True)
     invite_code = models.CharField(max_length=100, blank=True, null=True)
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

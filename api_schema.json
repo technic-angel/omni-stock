@@ -452,6 +452,16 @@
         ],
         "type": "string"
       },
+      "InviteStatusEnum": {
+        "description": "* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
+        "enum": [
+          "pending",
+          "accepted",
+          "declined",
+          "revoked"
+        ],
+        "type": "string"
+      },
       "Logout": {
         "description": "Serializer for logout (token blacklisting).\n\nAccepts a refresh token and blacklists it to prevent further use.",
         "properties": {
@@ -1435,11 +1445,37 @@
             "readOnly": true,
             "type": "integer"
           },
+          "invite_status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InviteStatusEnum"
+              }
+            ],
+            "description": "Lifecycle state for invitations and membership activation.\n\n* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
+            "readOnly": true
+          },
+          "invited_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
           "is_active": {
             "type": "boolean"
           },
           "joined_at": {
             "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "responded_at": {
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "revoked_at": {
+            "format": "date-time",
+            "nullable": true,
             "readOnly": true,
             "type": "string"
           },
@@ -1461,7 +1497,11 @@
           "active_store",
           "email",
           "id",
+          "invite_status",
+          "invited_at",
           "joined_at",
+          "responded_at",
+          "revoked_at",
           "user"
         ],
         "type": "object"
@@ -2406,6 +2446,147 @@
         ],
         "tags": [
           "collectibles"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VendorMember"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/{id}/accept/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_accept_create",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMember"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/{id}/decline/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_decline_create",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMember"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
         ]
       }
     },

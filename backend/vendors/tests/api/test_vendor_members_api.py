@@ -45,6 +45,28 @@ def test_member_viewset_invites_new_member(vendor_admin):
 
 
 @pytest.mark.django_db
+def test_reinviting_member_resets_status(vendor_admin):
+    admin, vendor = vendor_admin
+    user = UserFactory.create()
+    member = VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.MEMBER,
+        invite_status=VendorMember.InviteStatus.ACCEPTED,
+        is_active=True,
+    )
+
+    client = APIClient()
+    client.force_authenticate(admin)
+
+    resp = client.post("/api/v1/vendor-members/", {"email": user.email}, format="json")
+    assert resp.status_code == 201
+    member.refresh_from_db()
+    assert member.invite_status == VendorMember.InviteStatus.PENDING
+    assert member.is_active is False
+
+
+@pytest.mark.django_db
 def test_store_viewset_create_and_store_access(vendor_admin):
     admin, vendor = vendor_admin
     member_user = UserFactory.create()
@@ -108,3 +130,47 @@ def test_select_store_updates_membership(settings):
     assert resp.status_code == 200
     member.refresh_from_db()
     assert member.active_store_id == store_two.id
+
+
+@pytest.mark.django_db
+def test_pending_invites_list_and_accept_flow(vendor_admin):
+    admin, vendor = vendor_admin
+    invitee = UserFactory.create()
+
+    admin_client = APIClient()
+    admin_client.force_authenticate(admin)
+    invite_resp = admin_client.post("/api/v1/vendor-members/", {"email": invitee.email}, format="json")
+    assert invite_resp.status_code == 201
+    membership_id = invite_resp.json()["id"]
+
+    invitee_client = APIClient()
+    invitee_client.force_authenticate(invitee)
+
+    list_resp = invitee_client.get("/api/v1/vendor-invites/")
+    assert list_resp.status_code == 200
+    assert len(list_resp.json()) == 1
+
+    accept_resp = invitee_client.post(f"/api/v1/vendor-invites/{membership_id}/accept/")
+    assert accept_resp.status_code == 200
+    member = VendorMember.objects.get(pk=membership_id)
+    assert member.invite_status == VendorMember.InviteStatus.ACCEPTED
+    assert member.is_active is True
+
+
+@pytest.mark.django_db
+def test_declining_invite_marks_membership(vendor_admin):
+    admin, vendor = vendor_admin
+    invitee = UserFactory.create()
+
+    admin_client = APIClient()
+    admin_client.force_authenticate(admin)
+    invite_resp = admin_client.post("/api/v1/vendor-members/", {"email": invitee.email}, format="json")
+    membership_id = invite_resp.json()["id"]
+
+    invitee_client = APIClient()
+    invitee_client.force_authenticate(invitee)
+    decline_resp = invitee_client.post(f"/api/v1/vendor-invites/{membership_id}/decline/")
+    assert decline_resp.status_code == 200
+    member = VendorMember.objects.get(pk=membership_id)
+    assert member.invite_status == VendorMember.InviteStatus.DECLINED
+    assert member.is_active is False
