@@ -10,17 +10,131 @@ export type Vendor = {
   updated_at?: string
 }
 
-export async function fetchVendors() {
-  const { data } = await http.get<Vendor[]>('/vendors/')
-  return data
+export type VendorCreatePayload = {
+  name: string
+  description?: string | null
+  contact_info?: string | null
+  is_active?: boolean
 }
 
-export async function fetchCurrentVendor() {
-  const { data } = await http.get<Vendor>('/vendors/me/')
-  return data
+export type VendorUpdatePayload = Partial<VendorCreatePayload>
+
+export type VendorMemberRole =
+  | 'owner'
+  | 'admin'
+  | 'manager'
+  | 'member'
+  | 'staff'
+  | 'billing'
+  | 'viewer'
+
+export type VendorMember = {
+  id: number
+  user: number
+  email: string
+  role: VendorMemberRole
+  title?: string | null
+  is_active: boolean
+  joined_at: string
 }
 
-export async function createVendor(payload: Partial<Vendor>) {
-  const { data } = await http.post<Vendor>('/vendors/', payload)
-  return data
+export type VendorMemberPayload = {
+  email: string
+  role?: VendorMemberRole
+  title?: string | null
+  is_active?: boolean
 }
+
+export type StoreType = 'retail' | 'online' | 'popup' | 'warehouse'
+
+export type Store = {
+  id: number
+  vendor_id: number
+  name: string
+  slug: string
+  type?: StoreType | null
+  description?: string | null
+  address?: string | null
+  metadata?: Record<string, unknown> | null
+  logo_url?: string | null
+  banner_url?: string | null
+  currency?: string | null
+  default_tax_rate?: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type StorePayload = {
+  name: string
+  type?: StoreType | null
+  description?: string | null
+  address?: string | null
+  metadata?: Record<string, unknown> | null
+  logo_url?: string | null
+  banner_url?: string | null
+  currency?: string | null
+  default_tax_rate?: string | null
+  is_active?: boolean
+}
+
+export type StoreAccessRole = 'manager' | 'sales' | 'view_only'
+
+export type StoreAccess = {
+  id: number
+  store: number
+  member: number
+  role: StoreAccessRole
+  permissions?: Record<string, unknown> | null
+  is_active: boolean
+}
+
+export type StoreAccessPayload = {
+  store: number
+  member: number
+  role?: StoreAccessRole
+}
+
+//Vendors
+
+export const listVendors = () =>
+  http.get<Vendor[]>('/api/v1/vendors/').then(res => res.data)
+
+export const fetchCurrentVendor = () =>
+  http.get<Vendor>('/api/v1/vendor-members/me/').then(res => res.data)
+
+export const createVendor = (payload: VendorCreatePayload) =>
+  http.post<Vendor>('/api/v1/vendors/', payload).then(res => res.data)
+
+export const updateVendor = (id: number, payload: VendorUpdatePayload) =>
+  http.patch<Vendor>(`/api/v1/vendors/${id}/`, payload).then(res => res.data)
+
+// Members
+export const listVendorMembers = () =>
+  http.get<VendorMember[]>('/api/v1/vendor-members/').then(res => res.data)
+
+export const inviteVendorMember = (payload: VendorMemberPayload) =>
+  http.post<VendorMember>('/api/v1/vendor-members/', payload).then(res => res.data)
+
+export const updateVendorMember = (id: number, payload: Partial<VendorMemberPayload>) =>
+  http.patch<VendorMember>(`/api/v1/vendor-members/${id}/`, payload).then(res => res.data)
+
+// Stores
+export const listVendorStores = () =>
+  http.get<Store[]>('/api/v1/vendor-stores/').then(res => res.data)
+
+export const createVendorStore = (payload: StorePayload) =>
+  http.post<Store>('/api/v1/vendor-stores/', payload).then(res => res.data)
+
+export const updateVendorStore = (id: number, payload: Partial<StorePayload>) =>
+  http.patch<Store>(`/api/v1/vendor-stores/${id}/`, payload).then(res => res.data)
+
+// Store access
+export const listStoreAccess = () =>
+  http.get<StoreAccess[]>('/api/v1/vendor-store-access/').then(res => res.data)
+
+export const assignStoreAccess = (payload: StoreAccessPayload) =>
+  http.post<StoreAccess>('/api/v1/vendor-store-access/', payload).then(res => res.data)
+
+export const removeStoreAccess = (id: number) =>
+  http.delete(`/api/v1/vendor-store-access/${id}/`)
