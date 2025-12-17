@@ -9,13 +9,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from backend.core.permissions import resolve_user_vendor
-from backend.vendors.api.permissions import IsVendorAdmin
+from backend.vendors.api.permissions import IsVendorAdmin, user_has_store_access
 from backend.vendors.api.serializers import (
     StoreAccessSerializer,
+    StoreSelectionSerializer,
     StoreSerializer,
     VendorMemberInviteSerializer,
     VendorMemberSerializer,
     VendorMemberUpdateSerializer,
+    VendorSelectionSerializer,
     VendorSerializer,
 )
 from backend.vendors.models import Store, StoreAccess, Vendor, VendorMember, VendorMemberRole
@@ -29,6 +31,8 @@ from backend.vendors.services.memberships import (
     decline_invite,
     invite_member,
     remove_store_access,
+    set_active_store,
+    set_active_vendor,
     update_membership_role,
     update_store,
 )
@@ -132,6 +136,22 @@ class VendorMemberViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         deactivate_membership(member=instance)
 
+    @action(detail=False, methods=["post"], url_path="select", permission_classes=[IsAuthenticated])
+    def select_vendor(self, request, *args, **kwargs):
+        serializer = VendorSelectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        vendor = serializer.validated_data["vendor"]
+        membership = (
+            VendorMember.objects.filter(user=request.user, vendor=vendor, is_active=True)
+            .select_related("vendor", "active_store", "user")
+            .first()
+        )
+        if membership is None:
+            raise PermissionDenied("You do not belong to that vendor.")
+        set_active_vendor(user=request.user, vendor=vendor)
+        membership.refresh_from_db()
+        return Response(VendorMemberSerializer(membership).data, status=status.HTTP_200_OK)
+
 
 class VendorInviteViewSet(
     VendorFeatureFlagMixin,
@@ -191,6 +211,26 @@ class StoreViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         store = serializer.instance
         serializer.instance = update_store(store=store, **serializer.validated_data)
+
+    @action(detail=False, methods=["post"], url_path="select", permission_classes=[IsAuthenticated])
+    def select_store(self, request, *args, **kwargs):
+        serializer = StoreSelectionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        store = serializer.validated_data["store"]
+        vendor = resolve_user_vendor(request.user)
+        if vendor is None or store.vendor_id != vendor.id:
+            raise PermissionDenied("Store must belong to your active vendor.")
+        membership = (
+            VendorMember.objects.filter(user=request.user, vendor=vendor, is_active=True)
+            .select_related("active_store")
+            .first()
+        )
+        if membership is None:
+            raise PermissionDenied("You do not belong to the active vendor.")
+        if not user_has_store_access(request.user, store):
+            raise PermissionDenied("You do not have access to that store.")
+        set_active_store(member=membership, store=store)
+        return Response(StoreSerializer(store).data, status=status.HTTP_200_OK)
 
 
 class StoreAccessViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):

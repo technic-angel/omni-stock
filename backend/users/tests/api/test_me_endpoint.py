@@ -4,8 +4,10 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
+from backend.inventory.tests.factories import StoreFactory, UserFactory, VendorFactory
 from backend.users.models import UserProfile
 from backend.users.services.create_user import create_user
+from backend.vendors.models import VendorMember, VendorMemberRole
 
 User = get_user_model()
 
@@ -202,3 +204,28 @@ def test_me_endpoint_only_returns_own_data():
     assert data["username"] == "user1"
     assert data["email"] == "user1@example.com"
     assert data["username"] != "user2"
+
+
+@pytest.mark.django_db
+def test_me_endpoint_includes_active_vendor_and_store(settings):
+    settings.ENABLE_VENDOR_REFACTOR = True
+    vendor = VendorFactory.create()
+    store = StoreFactory.create(vendor=vendor)
+    user = UserFactory.create()
+    UserProfile.objects.create(user=user, vendor=vendor)
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        active_store=store,
+    )
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+    resp = client.get("/api/v1/auth/me/")
+    data = resp.json()
+    assert data["active_vendor"]["id"] == vendor.id
+    assert data["active_vendor"]["name"] == vendor.name
+    assert data["active_store"]["id"] == store.id
+    assert data["active_store"]["vendor_id"] == vendor.id
