@@ -106,6 +106,14 @@ class VendorMember(models.Model):
         null=True,
     )
     metadata = models.JSONField(default=dict, blank=True)
+    active_store = models.ForeignKey(
+        "Store",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="active_members",
+        help_text="Last store selected by this member for the vendor.",
+    )
 
     class Meta:
         app_label = "collectibles"

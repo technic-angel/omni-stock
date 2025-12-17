@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
-from backend.core.permissions import VendorScopedPermission, resolve_user_vendor
+from backend.core.permissions import VendorScopedPermission, resolve_user_store, resolve_user_vendor
 from backend.inventory.api.serializers import CollectibleSerializer
 from backend.inventory.models import Collectible
 from backend.inventory.selectors.get_item import get_item
@@ -109,8 +109,13 @@ class CollectibleViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You do not have access to that store.")
 
     def _resolve_store(self, *, store, vendor):
-        if store is not None or vendor is None:
+        if store is not None:
             return store
+        if vendor is None:
+            return None
+        preferred_store = resolve_user_store(self.request.user)
+        if preferred_store and preferred_store.vendor_id == vendor.id:
+            return preferred_store
         return ensure_default_store(vendor)
 
 

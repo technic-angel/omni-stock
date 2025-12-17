@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from backend.core.permissions import resolve_user_store, resolve_user_vendor
 from backend.users.models import UserMediaType, UserProfile, UserRole
 from backend.users.services.create_user import create_user
 from backend.users.validators import validate_birthdate
@@ -92,6 +93,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
     # Convenience read-only field combining first/last name
     full_name = serializers.SerializerMethodField(read_only=True)
+    active_vendor = serializers.SerializerMethodField(read_only=True)
+    active_store = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -111,8 +114,10 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "birthdate",
             "tos_accepted_at",
             "profile",
+            "active_vendor",
+            "active_store",
         ]
-        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name"]
+        read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name", "active_vendor", "active_store"]
 
     def get_full_name(self, obj):
         # Use Django's helper to assemble first + last name, fallback to username/email
@@ -125,6 +130,26 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         if obj.username:
             return obj.username
         return obj.email
+
+    def get_active_vendor(self, obj):
+        vendor = resolve_user_vendor(obj)
+        if vendor is None:
+            return None
+        return {
+            "id": vendor.id,
+            "name": vendor.name,
+            "slug": vendor.slug,
+        }
+
+    def get_active_store(self, obj):
+        store = resolve_user_store(obj)
+        if store is None:
+            return None
+        return {
+            "id": store.id,
+            "name": store.name,
+            "vendor_id": store.vendor_id,
+        }
 
 
 class UserMediaSerializer(serializers.Serializer):
