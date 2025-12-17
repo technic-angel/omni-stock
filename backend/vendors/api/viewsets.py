@@ -12,8 +12,8 @@ from backend.core.permissions import resolve_user_vendor
 from backend.vendors.api.permissions import IsVendorAdmin, user_has_store_access
 from backend.vendors.api.serializers import (
     StoreAccessSerializer,
-    StoreSerializer,
     StoreSelectionSerializer,
+    StoreSerializer,
     VendorMemberInviteSerializer,
     VendorMemberSerializer,
     VendorMemberUpdateSerializer,
