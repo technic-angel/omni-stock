@@ -115,7 +115,7 @@ def test_select_store_updates_membership(settings):
     store_one = StoreFactory.create(vendor=vendor)
     store_two = StoreFactory.create(vendor=vendor)
     user = UserFactory.create()
-    profile = UserProfile.objects.create(user=user, vendor=vendor)
+    UserProfile.objects.create(user=user, vendor=vendor)
     member = VendorMember.objects.create(
         vendor=vendor,
         user=user,

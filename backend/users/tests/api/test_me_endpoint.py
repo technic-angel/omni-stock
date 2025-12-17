@@ -212,7 +212,7 @@ def test_me_endpoint_includes_active_vendor_and_store(settings):
     vendor = VendorFactory.create()
     store = StoreFactory.create(vendor=vendor)
     user = UserFactory.create()
-    profile = UserProfile.objects.create(user=user, vendor=vendor)
+    UserProfile.objects.create(user=user, vendor=vendor)
     VendorMember.objects.create(
         vendor=vendor,
         user=user,
