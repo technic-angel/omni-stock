@@ -61,8 +61,12 @@ class VendorMemberSerializer(serializers.ModelSerializer):
             "title",
             "is_active",
             "joined_at",
+            "invite_status",
+            "invited_at",
+            "responded_at",
+            "revoked_at",
         ]
-        read_only_fields = ["id", "user", "email", "joined_at"]
+        read_only_fields = ["id", "user", "email", "joined_at", "invite_status", "invited_at", "responded_at", "revoked_at"]
 
 
 class VendorMemberInviteSerializer(serializers.Serializer):

@@ -1,7 +1,9 @@
 """Vendor domain viewsets."""
 
 from django.conf import settings
-from rest_framework import status, viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -20,9 +22,11 @@ from backend.vendors.models import Store, StoreAccess, Vendor, VendorMember, Ven
 from backend.vendors.selectors.get_vendor import get_vendor
 from backend.vendors.selectors.list_vendors import list_vendors
 from backend.vendors.services.memberships import (
+    accept_invite,
     assign_store_access,
     create_store,
     deactivate_membership,
+    decline_invite,
     invite_member,
     remove_store_access,
     update_membership_role,
@@ -129,6 +133,43 @@ class VendorMemberViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):
         deactivate_membership(member=instance)
 
 
+class VendorInviteViewSet(
+    VendorFeatureFlagMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [IsAuthenticated]
+    serializer_class = VendorMemberSerializer
+    queryset = VendorMember.objects.none()
+
+    def get_queryset(self):
+        base_qs = VendorMember.objects.select_related("vendor", "user")
+        if self.request.user.is_authenticated:
+            return (
+                base_qs.filter(
+                    user=self.request.user,
+                    invite_status=VendorMember.InviteStatus.PENDING,
+                )
+                .order_by("-invited_at")
+            )
+        return base_qs.none()
+
+    def _get_membership(self, pk):
+        return get_object_or_404(self.get_queryset(), pk=pk)
+
+    @action(detail=True, methods=["post"])
+    def accept(self, request, pk=None):
+        membership = self._get_membership(pk)
+        accept_invite(member=membership)
+        return Response(VendorMemberSerializer(membership).data)
+
+    @action(detail=True, methods=["post"])
+    def decline(self, request, pk=None):
+        membership = self._get_membership(pk)
+        decline_invite(member=membership)
+        return Response(VendorMemberSerializer(membership).data)
+
+
 class StoreViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsVendorAdmin]
     serializer_class = StoreSerializer
@@ -187,4 +228,4 @@ class StoreAccessViewSet(VendorFeatureFlagMixin, viewsets.ModelViewSet):
         remove_store_access(store=instance.store, member=instance.member)
 
 
-__all__ = ["VendorViewSet", "VendorMemberViewSet", "StoreViewSet", "StoreAccessViewSet"]
+__all__ = ["VendorViewSet", "VendorMemberViewSet", "VendorInviteViewSet", "StoreViewSet", "StoreAccessViewSet"]
