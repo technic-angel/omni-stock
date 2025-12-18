@@ -41,7 +41,8 @@ class IsVendorAdmin(BasePermission):
             return True
         membership = get_active_membership(request.user, vendor=vendor)
         if membership is None:
-            return False
+            profile = getattr(request.user, "profile", None)
+            return getattr(profile, "vendor_id", None) == getattr(vendor, "id", None)
         return membership.role in VendorMemberRole.admin_roles()
 
 

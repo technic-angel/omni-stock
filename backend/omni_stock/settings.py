@@ -63,7 +63,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-default-fallback-
 DEBUG = env.bool('DEBUG', default=True)
 
 # Feature gate for the vendor/store refactor so we can merge safely.
-ENABLE_VENDOR_REFACTOR = env.bool('ENABLE_VENDOR_REFACTOR', default=False)
+ENABLE_VENDOR_REFACTOR = env.bool('ENABLE_VENDOR_REFACTOR', default=True)
 
 # Fail fast if running in non-debug mode without a proper secret key.
 if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-default-fallback-key'):

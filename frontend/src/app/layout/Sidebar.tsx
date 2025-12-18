@@ -38,6 +38,7 @@ type NavItem = {
   icon: IconComponent
   requiresStore?: boolean
   comingSoon?: boolean
+  matchPaths?: string[]
 }
 
 type QuickAccessItem = {
@@ -54,7 +55,13 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: Home },
   { id: 'inventory', name: 'Inventory', href: '/inventory', icon: Package, requiresStore: true },
   { id: 'members', name: 'Members & Roles', href: '/vendors', icon: Users2 },
-  { id: 'vendor-settings', name: 'Vendor Settings', href: '/vendors', icon: Settings },
+  {
+    id: 'vendor-settings',
+    name: 'Vendor Settings',
+    href: '/vendors',
+    icon: Settings,
+    matchPaths: ['/vendors/settings'],
+  },
 ]
 
 const QUICK_ACCESS_ITEMS: QuickAccessItem[] = [
@@ -221,12 +228,12 @@ export function Sidebar({ className = '' }: { className?: string }) {
             <div className="mt-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 text-sm">
               <p className="font-medium text-gray-800">Store: None yet</p>
               <p className="text-xs text-gray-500">Create a store to start managing inventory.</p>
-              <button
-                type="button"
-                className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-brand-primary"
+              <Link
+                to="/stores/new"
+                className="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-brand-primary"
               >
                 Create First Store
-              </button>
+              </Link>
             </div>
           )}
         </div>
@@ -253,10 +260,15 @@ export function Sidebar({ className = '' }: { className?: string }) {
     )
   }
 
+  const resolvedIsActive = (item: NavItem) => {
+    const paths = item.matchPaths ?? (item.href ? [item.href] : [])
+    return paths.some((path) => isActivePath(path))
+  }
+
   const renderNavItem = (item: NavItem, onLinkClick?: () => void) => {
     const Icon = item.icon
     const disabled = !hasVendor || (item.requiresStore && !hasStore) || item.comingSoon || !item.href
-    const isActive = item.href ? isActivePath(item.href) : false
+    const isActive = resolvedIsActive(item)
     const baseClass = showFullContent
       ? 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
       : 'flex w-full items-center justify-center rounded-lg p-2 text-sm'
@@ -356,21 +368,21 @@ export function Sidebar({ className = '' }: { className?: string }) {
 
   const NavigationContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <div
-      className="flex h-full flex-col bg-white"
+      className="flex h-full min-h-0 flex-col bg-white"
       onClick={(e) => {
+        if (isMobile) return
         const target = e.target as Element
-        const clickedInsideToggleArea =
-          !isMobile && (e.target === e.currentTarget || target.closest?.('.sidebar-toggle-area'))
         const clickedInteractive =
           Boolean(target.closest?.('a, button, input, textarea, select')) ||
-          Boolean(target.closest?.('.sidebar-link'))
+          Boolean(target.closest?.('.sidebar-link')) ||
+          Boolean(target.closest?.('[role="button"]'))
 
-        if (clickedInsideToggleArea && !clickedInteractive) {
+        if (!clickedInteractive) {
           setIsExpanded((v) => !v)
         }
       }}
     >
-      <div className="px-2 py-6 border-b border-gray-100">
+      <div className="flex-shrink-0 border-b border-gray-100 px-2 py-6">
         <div
           className={`group flex items-center cursor-pointer transition-all duration-300 hover:bg-gray-50 rounded-lg p-1 -m-1 overflow-hidden ${
             isExpanded ? 'justify-start' : 'justify-center'
@@ -418,12 +430,14 @@ export function Sidebar({ className = '' }: { className?: string }) {
         </div>
       </div>
 
-      {renderVendorContext()}
-      {renderSearchBar()}
-      {renderMainNavigation(onLinkClick)}
-      {renderQuickAccess(onLinkClick)}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {renderVendorContext()}
+        {renderSearchBar()}
+        {renderMainNavigation(onLinkClick)}
+        {renderQuickAccess(onLinkClick)}
+      </div>
 
-      <div className="mt-auto border-t border-gray-100 px-4 py-5">
+      <div className="flex-shrink-0 border-t border-gray-100 px-4 py-5">
         {showFullContent && (
           <Link
             to="/profile"
@@ -481,7 +495,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
               <span className="sr-only">Open sidebar</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
+          <SheetContent side="left" className="h-full w-64 p-0">
             <NavigationContent onLinkClick={() => setMobileOpen(false)} />
           </SheetContent>
         </Sheet>
@@ -491,11 +505,13 @@ export function Sidebar({ className = '' }: { className?: string }) {
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 shadow-sm overflow-hidden ${
+      className={`bg-white border-r border-gray-200 shadow-sm ${
         isExpanded ? 'w-64' : 'w-16'
       } transition-all duration-700 ease-in-out ${className}`}
     >
-      <NavigationContent />
+      <div className="h-full">
+        <NavigationContent />
+      </div>
     </div>
   )
 }
