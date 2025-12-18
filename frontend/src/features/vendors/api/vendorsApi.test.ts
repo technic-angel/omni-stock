@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { fetchVendors, fetchCurrentVendor, createVendor } from './vendorsApi'
+import { fetchVendors, fetchVendor, createVendor } from './vendorsApi'
 import { http } from '../../../shared/lib/http'
 
 vi.mock('../../../shared/lib/http', () => ({
@@ -25,10 +25,10 @@ describe('vendorsApi', () => {
     expect(data).toEqual([{ id: 1 }])
   })
 
-  it('fetches current vendor', async () => {
+  it('fetches vendor by id', async () => {
     mockGet.mockResolvedValue({ data: { id: 5 } })
-    const data = await fetchCurrentVendor()
-    expect(mockGet).toHaveBeenCalledWith('/vendors/me/')
+    const data = await fetchVendor(5)
+    expect(mockGet).toHaveBeenCalledWith('/vendors/5/')
     expect(data).toEqual({ id: 5 })
   })
 

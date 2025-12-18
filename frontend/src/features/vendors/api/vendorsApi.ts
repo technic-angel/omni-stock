@@ -95,49 +95,49 @@ export type StoreAccessPayload = {
   role?: StoreAccessRole
 }
 
-//Vendors
+// Vendors
 
 export const fetchVendors = () =>
-  http.get<Vendor[]>('/api/v1/vendors/').then(res => res.data)
+  http.get<Vendor[]>('/vendors/').then(res => res.data)
 
 export const listVendors = () =>
-  http.get<Vendor[]>('/api/v1/vendors/').then(res => res.data)
+  http.get<Vendor[]>('/vendors/').then(res => res.data)
 
-export const fetchCurrentVendor = () =>
-  http.get<Vendor>('/api/v1/vendor-members/me/').then(res => res.data)
+export const fetchVendor = (id: number) =>
+  http.get<Vendor>(`/vendors/${id}/`).then(res => res.data)
 
 export const createVendor = (payload: VendorCreatePayload) =>
-  http.post<Vendor>('/api/v1/vendors/', payload).then(res => res.data)
+  http.post<Vendor>('/vendors/', payload).then(res => res.data)
 
 export const updateVendor = (id: number, payload: VendorUpdatePayload) =>
-  http.patch<Vendor>(`/api/v1/vendors/${id}/`, payload).then(res => res.data)
+  http.patch<Vendor>(`/vendors/${id}/`, payload).then(res => res.data)
 
 // Members
 export const listVendorMembers = () =>
-  http.get<VendorMember[]>('/api/v1/vendor-members/').then(res => res.data)
+  http.get<VendorMember[]>('/vendor-members/').then(res => res.data)
 
 export const inviteVendorMember = (payload: VendorMemberPayload) =>
-  http.post<VendorMember>('/api/v1/vendor-members/', payload).then(res => res.data)
+  http.post<VendorMember>('/vendor-members/', payload).then(res => res.data)
 
 export const updateVendorMember = (id: number, payload: Partial<VendorMemberPayload>) =>
-  http.patch<VendorMember>(`/api/v1/vendor-members/${id}/`, payload).then(res => res.data)
+  http.patch<VendorMember>(`/vendor-members/${id}/`, payload).then(res => res.data)
 
 // Stores
 export const listVendorStores = () =>
-  http.get<Store[]>('/api/v1/vendor-stores/').then(res => res.data)
+  http.get<Store[]>('/vendor-stores/').then(res => res.data)
 
 export const createVendorStore = (payload: StorePayload) =>
-  http.post<Store>('/api/v1/vendor-stores/', payload).then(res => res.data)
+  http.post<Store>('/vendor-stores/', payload).then(res => res.data)
 
 export const updateVendorStore = (id: number, payload: Partial<StorePayload>) =>
-  http.patch<Store>(`/api/v1/vendor-stores/${id}/`, payload).then(res => res.data)
+  http.patch<Store>(`/vendor-stores/${id}/`, payload).then(res => res.data)
 
 // Store access
 export const listStoreAccess = () =>
-  http.get<StoreAccess[]>('/api/v1/vendor-store-access/').then(res => res.data)
+  http.get<StoreAccess[]>('/vendor-store-access/').then(res => res.data)
 
 export const assignStoreAccess = (payload: StoreAccessPayload) =>
-  http.post<StoreAccess>('/api/v1/vendor-store-access/', payload).then(res => res.data)
+  http.post<StoreAccess>('/vendor-store-access/', payload).then(res => res.data)
 
 export const removeStoreAccess = (id: number) =>
-  http.delete(`/api/v1/vendor-store-access/${id}/`)
+  http.delete(`/vendor-store-access/${id}/`)
