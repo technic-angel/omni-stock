@@ -10,6 +10,7 @@ import CollectiblesListPage from '../../features/inventory/pages/CollectiblesLis
 import CollectibleEditPage from '../../features/inventory/pages/CollectibleEditPage'
 import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import VendorOverviewPage from '../../features/vendors/pages/VendorOverviewPage'
+import CreateVendorPage from '../../features/vendors/pages/CreateVendorPage'
 import LoginPage from '../../features/auth/pages/LoginPage'
 import RegisterPage from '../../features/auth/pages/RegisterPage'
 import LogoutPage from '../../features/auth/pages/LogoutPage'
@@ -70,6 +71,7 @@ const AppRoutes = () => {
         <Route path="/inventory" element={<CollectiblesListPage />} />
         <Route path="/inventory/:collectibleId/edit" element={<CollectibleEditPage />} />
         <Route path="/vendors" element={<VendorOverviewPage />} />
+        <Route path="/vendors/new" element={<CreateVendorPage />} />
         <Route path="/profile" element={<UserProfilePage />} />
       </Route>
       <Route
