@@ -402,10 +402,18 @@ export function Sidebar({ className = '' }: { className?: string }) {
           }`}
           onClick={() => !isMobile && setIsExpanded((v) => !v)}
         >
-          <div
+          <Link
+            to="/dashboard"
+            aria-label="Go to dashboard"
             className={`flex items-center justify-center ${
               isMobile || isExpanded ? 'w-auto' : 'w-16 h-16'
             } transition-all duration-500`}
+            onClick={(event) => {
+              event.stopPropagation()
+              if (isMobile) {
+                setMobileOpen(false)
+              }
+            }}
           >
             {isMobile ? (
               <img src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" alt="Omni-Stock" />
@@ -427,7 +435,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
                 />
               </div>
             )}
-          </div>
+          </Link>
           {!isMobile && isExpanded && (
             <div className="ml-auto">
               <ChevronLeft className="h-4 w-4 text-gray-400" />
