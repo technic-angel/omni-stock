@@ -3,7 +3,7 @@ import { describe, it, beforeEach, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BrowserRouter, useLocation } from 'react-router-dom'
 
-import { Sidebar } from './Sidebar'
+import { Sidebar, MobileSidebarTrigger } from './Sidebar'
 import { routerFuture } from '../routes/routerFuture'
 import { useCurrentUser } from '@/features/auth/hooks/useCurrentUser'
 import { useVendorInvites } from '@/features/vendors/hooks/useVendorInvites'
@@ -126,5 +126,37 @@ describe('Sidebar', () => {
     renderSidebar()
     expect(screen.queryByText('Vendor Settings')).toBeNull()
     expect(screen.getAllByAltText('Omni-Stock')[0]).toBeVisible()
+  })
+
+  it('shows no-vendor prompt when user has no vendor', () => {
+    mockUseCurrentUser.mockReturnValue({ data: { ...baseUser, active_vendor: null, active_store: null }, isLoading: false } as any)
+    renderSidebar()
+    expect(screen.getByText(/No vendor yet/i)).toBeVisible()
+    expect(screen.getByText(/Create Your First Vendor/i)).toHaveAttribute('href', '/vendors/new')
+  })
+
+  it('shows store creation call-to-action when vendor lacks store', () => {
+    mockUseCurrentUser.mockReturnValue({
+      data: { ...baseUser, active_store: null },
+      isLoading: false,
+    } as any)
+    renderSidebar()
+    expect(screen.getByText(/Store: None yet/i)).toBeVisible()
+    expect(screen.getByRole('link', { name: /Create First Store/i })).toHaveAttribute('href', '/stores/new')
+  })
+
+  it('renders search input only when store exists', () => {
+    const firstRender = renderSidebar()
+    expect(screen.getByPlaceholderText(/search inventory, stores/i)).toBeVisible()
+    firstRender.unmount()
+    mockUseCurrentUser.mockReturnValue({ data: { ...baseUser, active_store: null }, isLoading: false } as any)
+    renderSidebar()
+    expect(screen.queryByPlaceholderText(/search inventory, stores/i)).toBeNull()
+  })
+
+  it('renders mobile sheet when viewport is mobile', () => {
+    mockUseMediaQuery.mockReturnValue(true)
+    renderSidebar(<MobileSidebarTrigger />)
+    expect(screen.getByRole('button', { name: /open sidebar/i })).toBeVisible()
   })
 })

@@ -109,4 +109,26 @@ describe('CollectiblesList', () => {
 
     expect(screen.getByText(/this will permanently remove rare card/i)).toBeInTheDocument()
   })
+
+  it('surfaces deletion errors returned from the server', async () => {
+    const mutationError = new Error('boom')
+    ;(mutationError as any).response = { data: { detail: 'Cannot delete' } }
+    mockedUseCollectibles.mockReturnValue({
+      data: { results: [{ id: 1, name: 'Card A', language: 'EN', market_region: 'US' }] },
+      isLoading: false,
+      error: null,
+    } as any)
+    mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn().mockRejectedValue(mutationError) } as any)
+
+    renderComponent()
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+
+    await act(async () => {
+      const dialog = screen.getByTestId('confirm-dialog')
+      const confirmButton = within(dialog).getByRole('button', { name: /^delete$/i })
+      fireEvent.click(confirmButton)
+    })
+
+    expect(await screen.findByText(/cannot delete/i)).toBeInTheDocument()
+  })
 })
