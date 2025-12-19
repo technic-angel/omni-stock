@@ -15,15 +15,15 @@ from rest_framework.test import APIClient
 
 from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
+from backend.inventory.tests.utils import ensure_vendor_admin
 from backend.users.models import UserProfile
 
 User = get_user_model()
 
 
 def attach_vendor_profile(user, vendor=None):
-    vendor = vendor or VendorFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
-    return vendor
+    vendor, store = ensure_vendor_admin(user, vendor)
+    return vendor, store
 
 
 class TestAuthenticationRequirements:
@@ -134,12 +134,12 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_sku_is_required(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
         
-        payload = {"name": "Test Item", "quantity": 1}
+        payload = {"name": "Test Item", "quantity": 1, "store": store.id}
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
         assert resp.status_code == 400
@@ -150,12 +150,12 @@ class TestInputValidation:
         CollectibleFactory.create(sku="DUP-001")
         
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
         
-        payload = {"name": "Duplicate", "sku": "DUP-001", "quantity": 1}
+        payload = {"name": "Duplicate", "sku": "DUP-001", "quantity": 1, "store": store.id}
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
         assert resp.status_code == 400
@@ -164,12 +164,12 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_negative_quantity_rejected(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
         
-        payload = {"name": "Bad Qty", "sku": "NEG-001", "quantity": -5}
+        payload = {"name": "Bad Qty", "sku": "NEG-001", "quantity": -5, "store": store.id}
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
         assert resp.status_code == 400
@@ -177,7 +177,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_negative_prices_rejected(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -186,7 +186,8 @@ class TestInputValidation:
             "name": "Bad Price",
             "sku": "NEG-PRICE-001",
             "quantity": 1,
-            "price": "-10.50"
+            "price": "-10.50",
+            "store": store.id,
         }
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
@@ -195,18 +196,19 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_decimal_prices_accepted(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
-        
+        _, store = attach_vendor_profile(user)
+
         client = APIClient()
         client.force_authenticate(user=user)
-        
+
         payload = {
             "name": "Valid Price",
             "sku": "PRICE-001",
             "quantity": 1,
             "intake_price": "12.99",
             "price": "19.99",
-            "projected_price": "25.00"
+            "projected_price": "25.00",
+            "store": store.id,
         }
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
@@ -219,7 +221,7 @@ class TestInputValidation:
     @pytest.mark.django_db
     def test_invalid_image_url_rejected(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -228,7 +230,8 @@ class TestInputValidation:
             "name": "Bad URL",
             "sku": "URL-001",
             "quantity": 1,
-            "image_url": "not-a-valid-url"
+            "image_url": "not-a-valid-url",
+            "store": store.id,
         }
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
@@ -241,12 +244,12 @@ class TestStatusCodes:
     @pytest.mark.django_db
     def test_create_returns_201(self):
         user = UserFactory.create()
-        attach_vendor_profile(user)
+        _, store = attach_vendor_profile(user)
         
         client = APIClient()
         client.force_authenticate(user=user)
         
-        payload = {"name": "New Item", "sku": "STATUS-201", "quantity": 1}
+        payload = {"name": "New Item", "sku": "STATUS-201", "quantity": 1, "store": store.id}
         resp = client.post("/api/v1/collectibles/", payload, format="json")
         
         assert resp.status_code == 201
@@ -266,9 +269,9 @@ class TestStatusCodes:
     def test_update_returns_200(self):
         user = UserFactory.create()
         vendor = VendorFactory.create()
-        UserProfile.objects.create(user=user, vendor=vendor)
-        
-        item = CollectibleFactory.create(vendor=vendor, user=user, sku="UPD-200")
+        _, store = attach_vendor_profile(user, vendor)
+
+        item = CollectibleFactory.create(vendor=vendor, user=user, sku="UPD-200", store=store)
         
         client = APIClient()
         client.force_authenticate(user=user)
@@ -284,9 +287,9 @@ class TestStatusCodes:
     def test_delete_returns_204(self):
         user = UserFactory.create()
         vendor = VendorFactory.create()
-        UserProfile.objects.create(user=user, vendor=vendor)
-        
-        item = CollectibleFactory.create(vendor=vendor, user=user, sku="DEL-204")
+        _, store = attach_vendor_profile(user, vendor)
+
+        item = CollectibleFactory.create(vendor=vendor, user=user, sku="DEL-204", store=store)
         
         client = APIClient()
         client.force_authenticate(user=user)
