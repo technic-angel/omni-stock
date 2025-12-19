@@ -1,8 +1,8 @@
 import pytest
 from rest_framework.test import APIClient
 
-from backend.inventory.tests.factories import UserFactory, VendorFactory
-from backend.users.models import UserProfile
+from backend.inventory.tests.factories import StoreFactory, UserFactory, VendorFactory
+from backend.inventory.tests.utils import ensure_vendor_admin
 
 
 @pytest.mark.django_db
@@ -11,13 +11,14 @@ def test_create_card_details_with_invalid_date_format():
     client = APIClient()
     vendor = VendorFactory.create()
     user = UserFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor)
     client.force_authenticate(user=user)
 
     payload = {
         "name": "Bad Date",
         "sku": "BAD-001",
         "quantity": 1,
+        "store": store.id,
         "card_details": {"release_date": "not-a-date"},
     }
 
@@ -49,7 +50,10 @@ def test_user_without_vendor_cannot_create_collectible():
     user = UserFactory.create()
     client.force_authenticate(user=user)
 
-    payload = {"name": "User Owned", "sku": "USER-1", "quantity": 1}
+    other_vendor = VendorFactory.create()
+    store = StoreFactory.create(vendor=other_vendor)
+    payload = {"name": "User Owned", "sku": "USER-1", "quantity": 1, "store": store.id}
     resp = client.post("/api/v1/collectibles/", payload, format='json')
     assert resp.status_code == 403
-    assert "vendor" in resp.json().get("detail", "").lower()
+    detail = resp.json().get("detail", "").lower()
+    assert "store" in detail or "vendor" in detail

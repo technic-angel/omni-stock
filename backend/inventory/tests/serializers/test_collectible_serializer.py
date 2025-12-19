@@ -29,6 +29,7 @@ def test_collectible_serializer_roundtrip():
         "projected_price": "30.00",
     }
     store = StoreFactory.create()
+    payload["store"] = store.id
     ser = CollectibleSerializer(data=payload)
     assert ser.is_valid(), ser.errors
     obj = ser.save(store=store, vendor=store.vendor)
@@ -41,7 +42,13 @@ def test_collectible_serializer_roundtrip():
 @pytest.mark.django_db
 def test_collectible_serializer_image_url():
     store = StoreFactory.create()
-    payload = {"name": "Image Card", "sku": "SER-IMG", "quantity": 1, "image_url": "https://example.com/img.png"}
+    payload = {
+        "name": "Image Card",
+        "sku": "SER-IMG",
+        "quantity": 1,
+        "image_url": "https://example.com/img.png",
+        "store": store.id,
+    }
     ser = CollectibleSerializer(data=payload)
     assert ser.is_valid(), ser.errors
     obj = ser.save(store=store, vendor=store.vendor)
@@ -52,7 +59,14 @@ def test_collectible_serializer_image_url():
 
 @pytest.mark.django_db
 def test_collectible_serializer_rejects_non_https_image_url():
-    payload = {"name": "Image Card", "sku": "SER-IMG-HTTP", "quantity": 1, "image_url": "http://example.com/img.png"}
+    store = StoreFactory.create()
+    payload = {
+        "name": "Image Card",
+        "sku": "SER-IMG-HTTP",
+        "quantity": 1,
+        "image_url": "http://example.com/img.png",
+        "store": store.id,
+    }
     ser = CollectibleSerializer(data=payload)
     assert not ser.is_valid()
     assert "image_url" in ser.errors
@@ -61,11 +75,13 @@ def test_collectible_serializer_rejects_non_https_image_url():
 @pytest.mark.django_db
 @override_settings(ALLOWED_IMAGE_URL_HOSTS=["images.example.com"])
 def test_collectible_serializer_respects_allowed_image_hosts():
+    store = StoreFactory.create()
     allowed_payload = {
         "name": "Allowed Image",
         "sku": "SER-IMG-ALLOW",
         "quantity": 1,
         "image_url": "https://images.example.com/path/img.png",
+        "store": store.id,
     }
     ser = CollectibleSerializer(data=allowed_payload)
     assert ser.is_valid(), ser.errors
@@ -75,6 +91,7 @@ def test_collectible_serializer_respects_allowed_image_hosts():
         "sku": "SER-IMG-BLOCK",
         "quantity": 1,
         "image_url": "https://cdn.example.com/img.png",
+        "store": store.id,
     }
     ser = CollectibleSerializer(data=blocked_payload)
     assert not ser.is_valid()
@@ -83,7 +100,8 @@ def test_collectible_serializer_respects_allowed_image_hosts():
 
 @pytest.mark.django_db
 def test_collectible_serializer_quantity_validation():
-    payload = {"name": "Invalid Quantity", "sku": "NEG-001", "quantity": -5}
+    store = StoreFactory.create()
+    payload = {"name": "Invalid Quantity", "sku": "NEG-001", "quantity": -5, "store": store.id}
     ser = CollectibleSerializer(data=payload)
     assert not ser.is_valid()
     assert "quantity" in ser.errors
@@ -96,6 +114,7 @@ def test_collectible_serializer_creates_media_gallery():
         "name": "Gallery Item",
         "sku": "GAL-001",
         "quantity": 1,
+        "store": store.id,
         "image_payloads": [
             {"url": "https://cdn.dev/img1.png", "media_type": "primary", "sort_order": 0},
             {"url": "https://cdn.dev/img2.png", "media_type": "gallery", "sort_order": 1},

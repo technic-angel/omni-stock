@@ -39,6 +39,16 @@ export type CurrentUserResponse = {
     bio?: string | null
     profile_picture?: string | null
   } | null
+  active_vendor?: {
+    id: number
+    name: string
+    slug: string
+  } | null
+  active_store?: {
+    id: number
+    name: string
+    vendor_id: number
+  } | null
 }
 
 export type CompleteProfilePayload = {

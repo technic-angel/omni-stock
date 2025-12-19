@@ -19,6 +19,7 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<CollectibleType | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const collectibles = Array.isArray(data) ? data : data?.results ?? []
 
   const handleEdit = (event: React.MouseEvent, id: number) => {
     event.stopPropagation()
@@ -62,7 +63,7 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
   if (isLoading) return <div>Loading collectibles…</div>
   if (error) return <div>Error loading collectibles</div>
 
-  if (!data || data.results.length === 0) {
+  if (collectibles.length === 0) {
     return <div className="text-sm text-gray-600">No collectibles match the current filters.</div>
   }
 
@@ -74,7 +75,7 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
         </div>
       )}
       <ul className="space-y-2" data-cy="collectible-list">
-        {data.results.map((c: CollectibleType) => (
+        {collectibles.map((c: CollectibleType) => (
           <li
             key={c.id}
             className="rounded border p-3 hover:bg-gray-50 cursor-pointer"

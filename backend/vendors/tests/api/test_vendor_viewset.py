@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from backend.users.models import UserProfile
-from backend.vendors.models import Vendor
+from backend.vendors.models import Vendor, VendorMember, VendorMemberRole
 from backend.vendors.services.create_vendor import create_vendor
 
 User = get_user_model()
@@ -44,3 +44,24 @@ def test_vendor_viewset_create_attaches_profile():
     vendor = Vendor.objects.get(pk=vendor_id)
     profile = UserProfile.objects.get(user=user)
     assert profile.vendor == vendor
+
+
+@pytest.mark.django_db
+def test_vendor_viewset_create_bootstraps_owner_membership():
+    user = User.objects.create_user(username="owner", email="owner@example.com", password="Strongpass123")
+    UserProfile.objects.create(user=user)
+
+    client = APIClient()
+    client.force_authenticate(user=user)
+
+    payload = {"name": "Owner Vendor"}
+    resp = client.post("/api/v1/vendors/", payload, format="json")
+    assert resp.status_code == 201
+
+    vendor = Vendor.objects.get(pk=resp.json()["id"])
+    membership = VendorMember.objects.get(vendor=vendor, user=user)
+
+    assert membership.role == VendorMemberRole.OWNER
+    assert membership.is_active is True
+    assert membership.invite_status == VendorMember.InviteStatus.ACCEPTED
+    assert membership.active_store is not None
