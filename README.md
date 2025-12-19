@@ -1,6 +1,66 @@
-# Omni-Stock
+# Omni Stock — MVP Status
 
-![Omni-Stock Logo](frontend/public/branding/omni-stock-logo-horizontal-gem.svg)
+This README summarizes the current MVP state, what's been completed, and what's next.
+
+Quick context
+- Core goal: vendor + store management and inventory tracking (no sales analytics yet).
+- Deployments: frontend -> Vercel, backend -> Render, storage/DB -> Supabase. CI via GitHub Actions.
+
+Current MVP status (high level)
+
+- [x] Vendor model & membership design (documented)
+- [x] API types and client stubs in frontend (`frontend/src/features/vendors/api/vendorsApi.ts`)
+- [x] `StoreListCard` placeholder component exists (needs API wiring)
+- [x] `StoreForm` component exists for creating stores
+- [x] Design document: `documents/mvp plan final/MVP_Design_Document.md` (local, ignored)
+- [x] `.gitignore` updated to ignore `documents/`
+
+Checklist — what has been done
+
+- [x] Draft full MVP plan and data model (vendor, vendor member, store, store access, inventory, sale)
+- [x] Create design doc in `documents/mvp plan final/`
+- [x] Add `.gitignore` entry for local documents
+- [x] Replace root README with current MVP status and checklist
+
+Checklist — next implementation items (priority order)
+
+- [ ] Sprint 1 — Vendor & Member Management (2 weeks)
+   - [ ] Backend models: `Vendor`, `VendorMember`
+   - [ ] Endpoints: vendor CRUD, member invite/accept/update, transfer ownership
+   - [ ] Frontend: `VendorOverviewPage`, `InviteMemberModal`, `TransferOwnershipModal`
+   - [ ] Tests: permission and member flows
+
+- [ ] Sprint 2 — Stores & Access Controls (2 weeks)
+   - [ ] Backend models: `Store`, `StoreAccess`
+   - [ ] Endpoints: store CRUD, assign/remove access
+   - [ ] Frontend: `StoreListCard` (real data), `StoreDetailPage`, assign access UI
+
+- [ ] Sprint 3 — Inventory Core (2–3 weeks)
+   - [ ] Models: `InventoryItem` (commodity vs unique), `Sale`
+   - [ ] Endpoints: inventory CRUD, bulk-remove (make sale)
+   - [ ] Frontend: `InventoryTable`, `ItemFormModal`, `BasketBar`
+
+- [ ] Sprint 4 — Basket flow, QA, polish (1 week)
+
+Constraints & rules for MVP
+
+- No soft-delete for items (deletions are permanent).
+- Quantity tracked only for commodity items; unique collectibles are individual records with grade/condition.
+- Permission checks must be enforced: vendor membership roles and store access determine allowed actions.
+
+How to proceed
+
+- If you approve the plan, next I can: generate DB migration models, scaffold backend endpoints for Sprint 1, and wire the `StoreListCard` to the API.
+- I can also produce wireframes and component prop tables if you'd like UI-first work.
+
+Local design doc
+
+The full design document and additional planning material are in `documents/mvp plan final/MVP_Design_Document.md`. That folder is intentionally ignored by git (`.gitignore`) to keep local planning files private.
+
+Contact
+
+If anything here needs changing, reply with adjustments and I'll update the plan and start implementing.
+
 
 [![codecov](https://codecov.io/gh/technic-angel/omni-stock/graph/badge.svg?token=M19L9AHOPN)](https://codecov.io/gh/technic-angel/omni-stock)
 
