@@ -6,7 +6,14 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from backend.vendors.models import Store, StoreAccess, StoreAccessRole, Vendor, VendorMember, VendorMemberRole
+from backend.vendors.models import (
+    Store,
+    StoreAccess,
+    StoreAccessRole,
+    Vendor,
+    VendorMember,
+    VendorMemberRole,
+)
 from backend.vendors.services.store_defaults import ensure_default_store
 
 User = get_user_model()
