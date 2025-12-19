@@ -28,6 +28,8 @@ export type VendorMemberRole =
   | 'billing'
   | 'viewer'
 
+export type VendorInviteStatus = 'pending' | 'accepted' | 'declined' | 'revoked'
+
 export type VendorMember = {
   id: number
   user: number
@@ -36,6 +38,10 @@ export type VendorMember = {
   title?: string | null
   is_active: boolean
   joined_at: string
+  invite_status: VendorInviteStatus
+  invited_at?: string
+  responded_at?: string | null
+  active_store?: Store | null
 }
 
 export type VendorMemberPayload = {
@@ -97,6 +103,14 @@ export type StoreAccessPayload = {
   role?: StoreAccessRole
 }
 
+export type VendorSelectionPayload = {
+  vendor: number
+}
+
+export type StoreSelectionPayload = {
+  store: number
+}
+
 // Vendors
 
 export const fetchVendors = () =>
@@ -113,6 +127,11 @@ export const createVendor = (payload: VendorCreatePayload) =>
 
 export const updateVendor = (id: number, payload: VendorUpdatePayload) =>
   http.patch<Vendor>(`/vendors/${id}/`, payload).then(res => res.data)
+
+export const selectVendorMembership = (vendorId: number) =>
+  http.post<VendorMember>('/vendor-members/select/', { vendor: vendorId } satisfies VendorSelectionPayload).then(
+    res => res.data,
+  )
 
 // Members
 export const listVendorMembers = () =>
@@ -143,6 +162,9 @@ export const createVendorStore = (payload: StorePayload) =>
 
 export const updateVendorStore = (id: number, payload: Partial<StorePayload>) =>
   http.patch<Store>(`/vendor-stores/${id}/`, payload).then(res => res.data)
+
+export const selectVendorStore = (storeId: number) =>
+  http.post<Store>('/vendor-stores/select/', { store: storeId } satisfies StoreSelectionPayload).then(res => res.data)
 
 // Store access
 export const listStoreAccess = () =>
