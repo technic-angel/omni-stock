@@ -45,6 +45,8 @@ export type VendorMemberPayload = {
   is_active?: boolean
 }
 
+export type VendorInvite = VendorMember
+
 export type StoreType = 'retail' | 'online' | 'popup' | 'warehouse'
 
 export type Store = {
@@ -121,6 +123,16 @@ export const inviteVendorMember = (payload: VendorMemberPayload) =>
 
 export const updateVendorMember = (id: number, payload: Partial<VendorMemberPayload>) =>
   http.patch<VendorMember>(`/vendor-members/${id}/`, payload).then(res => res.data)
+
+// Invites
+export const listVendorInvites = () =>
+  http.get<VendorInvite[]>('/vendor-invites/').then(res => res.data)
+
+export const acceptVendorInvite = (id: number) =>
+  http.post<VendorInvite>(`/vendor-invites/${id}/accept/`, {}).then(res => res.data)
+
+export const declineVendorInvite = (id: number) =>
+  http.post<VendorInvite>(`/vendor-invites/${id}/decline/`, {}).then(res => res.data)
 
 // Stores
 export const listVendorStores = () =>

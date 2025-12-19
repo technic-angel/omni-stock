@@ -78,3 +78,5 @@ body,
     @apply bg-background text-foreground;
   }
 }
+
+/* (Previously added sidebar overrides removed — reverted to restore navbar visuals) */

@@ -201,29 +201,29 @@ export function Sidebar({ className = '' }: { className?: string }) {
       <div className="space-y-4 border-b border-gray-100 px-4 py-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Vendor</p>
-          <button
-            type="button"
-            className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900"
+          <Link
+            to="/vendors"
+            className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition hover:border-brand-primary hover:shadow-sm"
           >
             <span className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-brand-primary" /> {vendorName}
             </span>
-            <span className="text-xs text-gray-400">Switch</span>
-          </button>
+            <span className="text-xs text-gray-400">View</span>
+          </Link>
         </div>
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Store</p>
           {hasStore ? (
-            <button
-              type="button"
-              className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900"
+            <Link
+              to={currentUser?.active_store?.id ? `/stores/${currentUser.active_store.id}` : '/stores'}
+              className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition hover:border-brand-primary hover:shadow-sm"
             >
               <span className="flex items-center gap-2">
                 <Store className="h-4 w-4 text-indigo-500" /> {currentUser?.active_store?.name}
               </span>
-              <span className="text-xs text-gray-400">Switch</span>
-            </button>
+              <span className="text-xs text-gray-400">View</span>
+            </Link>
           ) : (
             <div className="mt-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 text-sm">
               <p className="font-medium text-gray-800">Store: None yet</p>
@@ -324,6 +324,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
         <div
           key={item.id}
           className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-400"
+          aria-hidden="true" // Mark as aria-hidden
         >
           <div className="flex items-center gap-2">
             <Icon className="h-4 w-4 text-gray-300" />
@@ -340,7 +341,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
         key={item.id}
         to={item.href}
         onClick={onLinkClick}
-        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-sm"
+        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-none focus:outline-none focus-visible:outline-none focus:ring-0"
       >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-gray-500" />

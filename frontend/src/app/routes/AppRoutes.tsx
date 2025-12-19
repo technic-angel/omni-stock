@@ -12,6 +12,11 @@ import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import VendorOverviewPage from '../../features/vendors/pages/VendorOverviewPage'
 import CreateVendorPage from '../../features/vendors/pages/CreateVendorPage'
 import CreateStorePage from '../../features/vendors/pages/CreateStorePage'
+import StoreDetailPage from '../../features/vendors/pages/StoreDetailPage'
+import VendorMembersPage from '../../features/vendors/pages/VendorMembersPage'
+import SwitchVendorPage from '../../features/vendors/pages/SwitchVendorPage'
+import SwitchStorePage from '../../features/vendors/pages/SwitchStorePage'
+import SettingsPage from '../../features/settings/pages/SettingsPage'
 import LoginPage from '../../features/auth/pages/LoginPage'
 import RegisterPage from '../../features/auth/pages/RegisterPage'
 import LogoutPage from '../../features/auth/pages/LogoutPage'
@@ -72,9 +77,14 @@ const AppRoutes = () => {
         <Route path="/inventory" element={<CollectiblesListPage />} />
         <Route path="/inventory/:collectibleId/edit" element={<CollectibleEditPage />} />
         <Route path="/vendors" element={<VendorOverviewPage />} />
+        <Route path="/vendors/members" element={<VendorMembersPage />} />
+        <Route path="/vendors/switch" element={<SwitchVendorPage />} />
         <Route path="/vendors/new" element={<CreateVendorPage />} />
         <Route path="/stores/new" element={<CreateStorePage />} />
+        <Route path="/stores/:storeId" element={<StoreDetailPage />} />
+        <Route path="/stores/switch" element={<SwitchStorePage />} />
         <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route
         path="/onboarding"
