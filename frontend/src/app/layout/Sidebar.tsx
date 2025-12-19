@@ -39,6 +39,7 @@ type NavItem = {
   requiresStore?: boolean
   comingSoon?: boolean
   matchPaths?: string[]
+  exact?: boolean
 }
 
 type QuickAccessItem = {
@@ -53,14 +54,28 @@ type QuickAccessItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: Home },
-  { id: 'inventory', name: 'Inventory', href: '/inventory', icon: Package, requiresStore: true },
-  { id: 'members', name: 'Members & Roles', href: '/vendors', icon: Users2 },
+  {
+    id: 'inventory',
+    name: 'Inventory',
+    href: '/inventory',
+    icon: Package,
+    requiresStore: true,
+    matchPaths: ['/inventory/add'],
+  },
+  {
+    id: 'members',
+    name: 'Members & Roles',
+    href: '/vendors/members',
+    icon: Users2,
+    matchPaths: ['/vendors/members'],
+  },
   {
     id: 'vendor-settings',
     name: 'Vendor Settings',
     href: '/vendors',
     icon: Settings,
     matchPaths: ['/vendors/settings'],
+    exact: true,
   },
 ]
 
@@ -163,8 +178,11 @@ export function Sidebar({ className = '' }: { className?: string }) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isMobile, setIsExpanded, setMobileOpen])
 
-  const isActivePath = (href: string) => {
+  const isActivePath = (href: string, exact = false) => {
     if (href === '/dashboard' && location.pathname === '/') return true
+    if (exact) {
+      return location.pathname === href
+    }
     return location.pathname === href || location.pathname.startsWith(href + '/')
   }
 
@@ -261,7 +279,10 @@ export function Sidebar({ className = '' }: { className?: string }) {
   }
 
   const resolvedIsActive = (item: NavItem) => {
-    const paths = item.matchPaths ?? (item.href ? [item.href] : [])
+    if (item.href && isActivePath(item.href, item.exact)) {
+      return true
+    }
+    const paths = item.matchPaths ?? []
     return paths.some((path) => isActivePath(path))
   }
 
