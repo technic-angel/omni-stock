@@ -79,16 +79,7 @@ const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-const QUICK_ACCESS_ITEMS: QuickAccessItem[] = [
-  {
-    id: 'add-item',
-    name: 'Add Item',
-    description: 'Global shortcut for the active store.',
-    icon: Plus,
-    href: '/inventory/add',
-    requiresStore: true,
-  },
-]
+const QUICK_ACCESS_ITEMS: QuickAccessItem[] = []
 
 if (ENABLE_LOW_STOCK_AND_AUDIT) {
   QUICK_ACCESS_ITEMS.push(
@@ -362,7 +353,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
         key={item.id}
         to={item.href}
         onClick={onLinkClick}
-        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-none focus:outline-none focus-visible:outline-none focus:ring-0"
+        className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1 focus-visible:ring-offset-gray-100"
       >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-gray-500" />
@@ -374,7 +365,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
   }
 
   const renderQuickAccess = (onLinkClick?: () => void) => {
-    if (!hasVendor || !showFullContent) return null
+    if (!hasVendor || !showFullContent || QUICK_ACCESS_ITEMS.length === 0) return null
     return (
       <div className="border-b border-gray-100 px-4 py-5">
         <div className="flex items-center justify-between">
@@ -527,7 +518,7 @@ export function Sidebar({ className = '' }: { className?: string }) {
 
   return (
     <div
-      className={`bg-white border-r border-gray-200 shadow-sm ${
+      className={`bg-white border-r border-gray-200 shadow-sm overflow-hidden ${
         isExpanded ? 'w-64' : 'w-16'
       } transition-all duration-700 ease-in-out ${className}`}
     >
