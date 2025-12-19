@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { uploadMock, getPublicUrlMock, fromMock } = vi.hoisted(() => {
   const uploadMock = vi.fn()
@@ -31,19 +31,26 @@ if (!globalThis.crypto) {
 // @ts-expect-error - assignment for test shim
 globalThis.crypto.randomUUID = randomUUID
 
-import {
-  SUPABASE_BUCKET,
-  isSupabaseConfigured,
-  uploadImageToSupabase,
-  validateImageFile,
-} from './supabase'
+let supabaseModule: typeof import('./supabase')
+
+const getSupabaseModule = () => {
+  if (!supabaseModule) {
+    throw new Error('Supabase module not loaded')
+  }
+  return supabaseModule
+}
 
 describe('supabase utilities', () => {
+  beforeAll(async () => {
+    supabaseModule = await import('./supabase')
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('validates mime type and size before upload', () => {
+    const { validateImageFile } = getSupabaseModule()
     expect(() =>
       validateImageFile(new File(['data'], 'photo.png', { type: 'image/png' })),
     ).not.toThrow()
@@ -57,6 +64,7 @@ describe('supabase utilities', () => {
   })
 
   it('uploads an image and returns the public URL', async () => {
+    const { SUPABASE_BUCKET, isSupabaseConfigured, uploadImageToSupabase } = getSupabaseModule()
     uploadMock.mockResolvedValueOnce({ data: { path: 'product-images/uuid-1234.png' }, error: null })
     getPublicUrlMock.mockReturnValueOnce({ data: { publicUrl: 'https://cdn.example/uuid-1234.png' } })
 
