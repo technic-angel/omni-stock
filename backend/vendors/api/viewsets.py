@@ -29,6 +29,7 @@ from backend.vendors.services.memberships import (
     create_store,
     deactivate_membership,
     decline_invite,
+    ensure_owner_membership,
     invite_member,
     remove_store_access,
     set_active_store,
@@ -58,6 +59,7 @@ class VendorViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         vendor = serializer.save()
+        ensure_owner_membership(vendor=vendor, user=self.request.user)
         self._attach_user_profile_vendor(vendor)
 
     def perform_update(self, serializer):
