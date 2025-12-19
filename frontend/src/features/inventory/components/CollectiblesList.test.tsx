@@ -50,6 +50,18 @@ describe('CollectiblesList', () => {
     expect(screen.getByText(/en — us/i)).toBeInTheDocument()
   })
 
+  it('supports responses that return a raw array', () => {
+    mockedUseCollectibles.mockReturnValue({
+      data: [{ id: 2, name: 'Loose Card', language: 'JP', market_region: 'JP' }],
+      isLoading: false,
+      error: null,
+    } as any)
+    mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any)
+    renderComponent()
+    expect(screen.getByText('Loose Card')).toBeInTheDocument()
+    expect(screen.getByText(/jp — jp/i)).toBeInTheDocument()
+  })
+
   it('shows empty state', () => {
     mockedUseCollectibles.mockReturnValue({
       data: { results: [] },
@@ -82,5 +94,41 @@ describe('CollectiblesList', () => {
     })
 
     expect(mutateSpy).toHaveBeenCalledWith(1)
+  })
+
+  it('shows selected collectible name inside confirm dialog', () => {
+    mockedUseCollectibles.mockReturnValue({
+      data: { results: [{ id: 5, name: 'Rare Card', language: 'EN', market_region: 'EU' }] },
+      isLoading: false,
+      error: null,
+    } as any)
+    mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any)
+
+    renderComponent()
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+
+    expect(screen.getByText(/this will permanently remove rare card/i)).toBeInTheDocument()
+  })
+
+  it('surfaces deletion errors returned from the server', async () => {
+    const mutationError = new Error('boom')
+    ;(mutationError as any).response = { data: { detail: 'Cannot delete' } }
+    mockedUseCollectibles.mockReturnValue({
+      data: { results: [{ id: 1, name: 'Card A', language: 'EN', market_region: 'US' }] },
+      isLoading: false,
+      error: null,
+    } as any)
+    mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn().mockRejectedValue(mutationError) } as any)
+
+    renderComponent()
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+
+    await act(async () => {
+      const dialog = screen.getByTestId('confirm-dialog')
+      const confirmButton = within(dialog).getByRole('button', { name: /^delete$/i })
+      fireEvent.click(confirmButton)
+    })
+
+    expect(await screen.findByText(/cannot delete/i)).toBeInTheDocument()
   })
 })

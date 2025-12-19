@@ -1,19 +1,23 @@
 "use client"
 
+import type { JSX } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  Home,
-  Package,
-  Plus,
+  AlertTriangle,
   Building2,
-  Heart,
-  Settings,
-  LogOut,
-  Menu,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
+  Home,
+  LogOut,
+  Menu,
+  Package,
+  Plus,
   Search,
+  Store,
+  Users2,
+  Settings,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '../../components/ui/sheet'
@@ -21,28 +25,84 @@ import { useLocalStorage } from '../../shared/hooks/useLocalStorage'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery'
 import { useCurrentUser } from '../../features/auth/hooks/useCurrentUser'
 
-// Configuration
-const ENABLE_SEARCH = false
-
-const PRIMARY_NAVIGATION = [
-  { name: 'Dashboard', href: '/dashboard', icon: Home, shortcut: '⌘1' },
-  { name: 'Inventory', href: '/inventory', icon: Package, shortcut: '⌘2' },
-  { name: 'Add Item', href: '/inventory/add', icon: Plus, shortcut: '⌘3' },
-]
-
-const QUICK_ACCESS = [
-  { name: 'Vendors', href: '/vendors', icon: Building2, color: 'text-blue-500' },
-  { name: 'Wishlist', href: '/wishlist', icon: Heart, color: 'text-pink-500' },
-  { name: 'Categories', href: '/categories', icon: Package, color: 'text-green-500' },
-]
-
+const ENABLE_LOW_STOCK_AND_AUDIT =
+  import.meta.env.VITE_ENABLE_LOW_STOCK_AND_AUDIT === 'true'
 const USER_ROLE = 'Owner'
 
-interface SidebarProps {
-  className?: string
+type IconComponent = (props: { className?: string }) => JSX.Element
+
+type NavItem = {
+  id: string
+  name: string
+  href?: string
+  icon: IconComponent
+  requiresStore?: boolean
+  comingSoon?: boolean
+  matchPaths?: string[]
+  exact?: boolean
 }
 
-export function Sidebar({ className = '' }: SidebarProps) {
+type QuickAccessItem = {
+  id: string
+  name: string
+  description: string
+  icon: IconComponent
+  href?: string
+  requiresStore?: boolean
+  comingSoon?: boolean
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard', name: 'Dashboard', href: '/dashboard', icon: Home },
+  {
+    id: 'inventory',
+    name: 'Inventory',
+    href: '/inventory',
+    icon: Package,
+    requiresStore: true,
+    matchPaths: ['/inventory/add'],
+  },
+  {
+    id: 'members',
+    name: 'Members & Roles',
+    href: '/vendors/members',
+    icon: Users2,
+    matchPaths: ['/vendors/members'],
+  },
+  {
+    id: 'vendor-settings',
+    name: 'Vendor Settings',
+    href: '/vendors',
+    icon: Settings,
+    matchPaths: ['/vendors/settings'],
+    exact: true,
+  },
+]
+
+const QUICK_ACCESS_ITEMS: QuickAccessItem[] = []
+
+if (ENABLE_LOW_STOCK_AND_AUDIT) {
+  QUICK_ACCESS_ITEMS.push(
+    {
+      id: 'low-stock',
+      name: 'Low Stock',
+      description: 'Instantly filter items that need restock.',
+      icon: AlertTriangle,
+      requiresStore: true,
+      comingSoon: true,
+    },
+    {
+      id: 'audit-log',
+      name: 'Audit Log',
+      description: 'Review recent price and inventory changes.',
+      icon: ClipboardList,
+      requiresStore: true,
+      comingSoon: true,
+    },
+  )
+}
+
+export function Sidebar({ className = '' }: { className?: string }) {
   const location = useLocation()
   const isMobile = useMediaQuery('(max-width: 768px)')
   const [isExpanded, setIsExpanded] = useLocalStorage('sidebar-expanded', true)
@@ -51,7 +111,10 @@ export function Sidebar({ className = '' }: SidebarProps) {
 
   const avatarUrl = currentUser?.profile?.profile_picture ?? null
   const userInitials = useMemo(() => {
-    const nameParts = [currentUser?.first_name, currentUser?.last_name].filter(Boolean).join(' ').trim()
+    const nameParts = [currentUser?.first_name, currentUser?.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim()
     const base = nameParts || currentUser?.username || currentUser?.email || 'JD'
     const initials = base
       .split(' ')
@@ -66,7 +129,10 @@ export function Sidebar({ className = '' }: SidebarProps) {
     const dimensionClasses = size === 'large' ? 'w-14 h-14' : 'w-10 h-10'
     const textSizeClass = size === 'large' ? 'text-lg' : 'text-xs'
     return (
-      <div data-testid={`sidebar-avatar-${size}`} className={`relative flex-shrink-0 overflow-hidden rounded-full shadow-sm transition-all duration-700 ${dimensionClasses}`}>
+      <div
+        data-testid={`sidebar-avatar-${size}`}
+        className={`relative flex-shrink-0 overflow-hidden rounded-full shadow-sm transition-all duration-700 ${dimensionClasses}`}
+      >
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" aria-hidden="true" />
         {avatarUrl ? (
           <img
@@ -77,7 +143,9 @@ export function Sidebar({ className = '' }: SidebarProps) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <span className={`relative z-10 flex h-full w-full items-center justify-center text-white font-semibold ${textSizeClass}`}>{userInitials}</span>
+          <span className={`relative z-10 flex h-full w-full items-center justify-center text-white font-semibold ${textSizeClass}`}>
+            {userInitials}
+          </span>
         )}
       </div>
     )
@@ -101,41 +169,273 @@ export function Sidebar({ className = '' }: SidebarProps) {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isMobile, setIsExpanded, setMobileOpen])
 
-  const isActivePath = (href: string) => {
+  const isActivePath = (href: string, exact = false) => {
     if (href === '/dashboard' && location.pathname === '/') return true
+    if (exact) {
+      return location.pathname === href
+    }
     return location.pathname === href || location.pathname.startsWith(href + '/')
+  }
+
+  const hasVendor = Boolean(currentUser?.active_vendor)
+  const hasStore = Boolean(currentUser?.active_store)
+  const showFullContent = isExpanded || isMobile
+
+  const renderNoVendorState = () => (
+    <div className="px-4 py-6">
+      <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-700">
+        <p className="font-semibold text-gray-900">No vendor yet</p>
+        <p className="mt-1 text-xs text-gray-500">
+          Vendors power stores, invite teammates, and manage billing.
+        </p>
+        <Link
+          to="/vendors/new"
+          className="mt-4 inline-flex w-full justify-center rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white"
+        >
+          Create Your First Vendor
+        </Link>
+      </div>
+    </div>
+  )
+
+  const renderVendorContext = () => {
+    if (!showFullContent) return null
+    if (!hasVendor) {
+      return renderNoVendorState()
+    }
+
+    const vendorName = currentUser?.active_vendor?.name ?? 'Select vendor'
+
+    return (
+      <div className="space-y-4 border-b border-gray-100 px-4 py-6">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Vendor</p>
+          <Link
+            to="/vendors"
+            className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition hover:border-brand-primary hover:shadow-sm"
+          >
+            <span className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-brand-primary" /> {vendorName}
+            </span>
+            <span className="text-xs text-gray-400">View</span>
+          </Link>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Store</p>
+          {hasStore ? (
+            <Link
+              to={currentUser?.active_store?.id ? `/stores/${currentUser.active_store.id}` : '/stores'}
+              className="mt-2 flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 transition hover:border-brand-primary hover:shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <Store className="h-4 w-4 text-indigo-500" /> {currentUser?.active_store?.name}
+              </span>
+              <span className="text-xs text-gray-400">View</span>
+            </Link>
+          ) : (
+            <div className="mt-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 text-sm">
+              <p className="font-medium text-gray-800">Store: None yet</p>
+              <p className="text-xs text-gray-500">Create a store to start managing inventory.</p>
+              <Link
+                to="/stores/new"
+                className="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-brand-primary"
+              >
+                Create First Store
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const renderSearchBar = () => {
+    if (!hasStore || !showFullContent) return null
+    return (
+      <div className="border-b border-gray-100 px-4 py-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search inventory, stores…"
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          />
+          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-gray-400">
+            ⌘K
+          </kbd>
+        </div>
+      </div>
+    )
+  }
+
+  const resolvedIsActive = (item: NavItem) => {
+    if (item.href && isActivePath(item.href, item.exact)) {
+      return true
+    }
+    const paths = item.matchPaths ?? []
+    return paths.some((path) => isActivePath(path))
+  }
+
+  const renderNavItem = (item: NavItem, onLinkClick?: () => void) => {
+    const Icon = item.icon
+    const disabled = !hasVendor || (item.requiresStore && !hasStore) || item.comingSoon || !item.href
+    const isActive = resolvedIsActive(item)
+    const baseClass = showFullContent
+      ? 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
+      : 'flex w-full items-center justify-center rounded-lg p-2 text-sm'
+
+    if (disabled) {
+      return (
+        <button
+          key={item.id}
+          type="button"
+          className={`${baseClass} border border-transparent text-gray-400`}
+          disabled
+        >
+          <Icon className="h-4 w-4" />
+          {showFullContent && <span>{item.name}</span>}
+          {item.comingSoon && <span className="ml-auto text-[10px] uppercase text-gray-300">soon</span>}
+        </button>
+      )
+    }
+
+    return (
+      <Link
+        key={item.id}
+        to={item.href}
+        onClick={onLinkClick}
+        className={`${baseClass} font-medium transition ${
+          isActive ? 'bg-brand-primary text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'
+        }`}
+      >
+        <Icon className="h-4 w-4" />
+        {showFullContent && <span>{item.name}</span>}
+      </Link>
+    )
+  }
+
+  const renderMainNavigation = (onLinkClick?: () => void) => {
+    if (!hasVendor) return null
+    return (
+      <div className="sidebar-toggle-area border-b border-gray-100 px-4 py-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Main</p>
+        <div className="mt-3 space-y-2">
+          {NAV_ITEMS.map((item) => renderNavItem(item, onLinkClick))}
+        </div>
+      </div>
+    )
+  }
+
+  const renderQuickAccessItem = (item: QuickAccessItem, onLinkClick?: () => void) => {
+    const Icon = item.icon
+    const disabled = !hasVendor || (item.requiresStore && !hasStore) || item.comingSoon || !item.href
+
+    if (disabled) {
+      return (
+        <div
+          key={item.id}
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-400"
+          aria-hidden="true" // Mark as aria-hidden
+        >
+          <div className="flex items-center gap-2">
+            <Icon className="h-4 w-4 text-gray-300" />
+            <span className="font-semibold">{item.name}</span>
+            {item.comingSoon && <span className="ml-auto text-[10px] uppercase text-gray-300">soon</span>}
+          </div>
+          <p className="mt-1 text-xs text-gray-400">{item.description}</p>
+        </div>
+      )
+    }
+
+    return (
+      <Link
+        key={item.id}
+        to={item.href}
+        onClick={onLinkClick}
+        className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1 focus-visible:ring-offset-gray-100"
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-gray-500" />
+          <span className="font-semibold">{item.name}</span>
+        </div>
+        <p className="mt-1 text-xs text-gray-500">{item.description}</p>
+      </Link>
+    )
+  }
+
+  const renderQuickAccess = (onLinkClick?: () => void) => {
+    if (!hasVendor || !showFullContent || QUICK_ACCESS_ITEMS.length === 0) return null
+    return (
+      <div className="border-b border-gray-100 px-4 py-5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Quick Access</p>
+          <Plus className="h-4 w-4 text-gray-400" />
+        </div>
+        <div className="mt-3 space-y-3">
+          {QUICK_ACCESS_ITEMS.map((item) => renderQuickAccessItem(item, onLinkClick))}
+        </div>
+      </div>
+    )
   }
 
   const NavigationContent = ({ onLinkClick }: { onLinkClick?: () => void }) => (
     <div
-      className="flex h-full flex-col bg-white"
+      className="flex h-full min-h-0 flex-col bg-white"
       onClick={(e) => {
+        if (isMobile) return
         const target = e.target as Element
-        const clickedInsideToggleArea = !isMobile && (e.target === e.currentTarget || target.closest?.('.sidebar-toggle-area'))
-        const clickedInteractive = Boolean(target.closest?.('a, button, input, textarea, select')) || Boolean(target.closest?.('.sidebar-link'))
+        const clickedInteractive =
+          Boolean(target.closest?.('a, button, input, textarea, select')) ||
+          Boolean(target.closest?.('.sidebar-link')) ||
+          Boolean(target.closest?.('[role="button"]'))
 
-        if (clickedInsideToggleArea && !clickedInteractive) {
+        if (!clickedInteractive) {
           setIsExpanded((v) => !v)
         }
       }}
     >
-      <div className="px-2 py-6 border-b border-gray-100">
+      <div className="flex-shrink-0 border-b border-gray-100 px-2 py-6">
         <div
-          className={`flex items-center cursor-pointer transition-all duration-300 hover:bg-gray-50 rounded-lg p-1 -m-1 overflow-hidden ${
+          className={`group flex items-center cursor-pointer transition-all duration-300 hover:bg-gray-50 rounded-lg p-1 -m-1 overflow-hidden ${
             isExpanded ? 'justify-start' : 'justify-center'
           }`}
           onClick={() => !isMobile && setIsExpanded((v) => !v)}
         >
-          <div className={`flex items-center justify-center ${isMobile || isExpanded ? 'w-auto' : 'w-16 h-16'} transition-all duration-500`}>
+          <Link
+            to="/dashboard"
+            aria-label="Go to dashboard"
+            className={`flex items-center justify-center ${
+              isMobile || isExpanded ? 'w-auto' : 'w-16 h-16'
+            } transition-all duration-500`}
+            onClick={(event) => {
+              event.stopPropagation()
+              if (isMobile) {
+                setMobileOpen(false)
+              }
+            }}
+          >
             {isMobile ? (
               <img src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" alt="Omni-Stock" />
             ) : (
               <div className="relative flex items-center justify-center">
-                <img src="/branding/omni-stock-icon-gem-tiffany.svg" alt="Omni-Stock" className={`h-16 w-16 object-contain transition-opacity duration-500 absolute ${isExpanded ? 'opacity-0' : 'opacity-100'}`} />
-                <img src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg" alt="Omni-Stock" className={`h-30 w-auto object-contain max-w-[300px] transition-opacity duration-500 ${isExpanded ? 'opacity-100' : 'opacity-0'}`} />
+                <img
+                  src="/branding/omni-stock-icon-gem-tiffany.svg"
+                  alt="Omni-Stock"
+                  className={`h-16 w-16 object-contain transition-opacity duration-500 absolute ${
+                    isExpanded ? 'opacity-0' : 'opacity-100'
+                  }`}
+                />
+                <img
+                  src="/branding/omni-stock-logo-horizontal-gem-tiffany.svg"
+                  alt="Omni-Stock"
+                  className={`h-30 w-auto object-contain max-w-[300px] transition-opacity duration-500 ${
+                    isExpanded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
               </div>
             )}
-          </div>
+          </Link>
           {!isMobile && isExpanded && (
             <div className="ml-auto">
               <ChevronLeft className="h-4 w-4 text-gray-400" />
@@ -143,107 +443,64 @@ export function Sidebar({ className = '' }: SidebarProps) {
           )}
           {!isMobile && !isExpanded && (
             <div className="absolute left-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">Expand sidebar</div>
+              <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                Expand sidebar
+              </div>
             </div>
           )}
         </div>
-
-        {(isExpanded || isMobile) && (
-          <div className="mt-4">
-            <div className={`relative ${ENABLE_SEARCH ? '' : 'opacity-50 pointer-events-none'}`}>
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all duration-200" disabled={!ENABLE_SEARCH} />
-              <kbd className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 font-mono">⌘K</kbd>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="flex-1 px-4 py-4 sidebar-toggle-area">
-        <nav className="space-y-1">
-          {PRIMARY_NAVIGATION.map((item) => {
-            const Icon = item.icon
-            const isActive = isActivePath(item.href)
-
-            return (
-              <Link key={item.name} to={item.href} onClick={onLinkClick} className={`sidebar-link group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-brand-primary text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'} ${!isExpanded && !isMobile ? 'justify-center' : 'justify-between'}`}>
-                <div className="flex items-center">
-                  <Icon className={`flex-shrink-0 h-5 w-5 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                  {(isExpanded || isMobile) && <span className="ml-3">{item.name}</span>}
-                </div>
-                {(isExpanded || isMobile) && item.shortcut && <span className={`text-xs ${isActive ? 'text-brand-primary-soft' : 'text-gray-400'}`}>{item.shortcut}</span>}
-              </Link>
-            )
-          })}
-        </nav>
-
-        {(isExpanded || isMobile) && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Quick Access</h3>
-              <Plus className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
-            </div>
-            <nav className="space-y-1">
-              {QUICK_ACCESS.map((item) => {
-                const Icon = item.icon
-                const isActive = isActivePath(item.href)
-                return (
-                  <Link key={item.name} to={item.href} onClick={onLinkClick} className={`sidebar-link group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:shadow-sm'}`}>
-                    <Icon className={`flex-shrink-0 h-4 w-4 ${item.color || 'text-gray-500'}`} />
-                    <span className="ml-3">{item.name}</span>
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-        )}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {renderVendorContext()}
+        {renderSearchBar()}
+        {renderMainNavigation(onLinkClick)}
+        {renderQuickAccess(onLinkClick)}
       </div>
 
-      <div className="border-t border-gray-100 sidebar-toggle-area">
-        {(isExpanded || isMobile) && (
-          <div className="p-4 transition-opacity duration-700">
-            <Link to="/profile" onClick={onLinkClick} className="sidebar-link flex items-center space-x-4">
-              <div className="flex items-center space-x-4">
-                {renderAvatar('large')}
-                <div className="flex-1 min-w-0">
-                  <div className="text-base font-medium text-gray-900 truncate">{currentUser?.full_name ?? currentUser?.username ?? 'John Doe'}</div>
-                  <div className="text-sm text-gray-500 truncate">{USER_ROLE} • {currentUser?.company_name ?? 'TechCorp'}</div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </div>
-            </Link>
-          </div>
+      <div className="flex-shrink-0 border-t border-gray-100 px-4 py-5">
+        {showFullContent && (
+          <Link
+            to="/profile"
+            onClick={onLinkClick}
+            className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3"
+          >
+            {renderAvatar('large')}
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-900">
+                {currentUser?.full_name ?? currentUser?.username ?? 'John Doe'}
+              </span>
+              <span className="text-xs text-gray-500">{USER_ROLE}</span>
+            </div>
+            <ChevronRight className="ml-auto h-4 w-4 text-gray-400" />
+          </Link>
         )}
 
-        {!isExpanded && !isMobile && (
-          <div className="p-1 flex justify-center">
-            {renderAvatar('small')}
-          </div>
+        {!showFullContent && !isMobile && (
+          <div className="p-1 flex justify-center">{renderAvatar('small')}</div>
         )}
 
-        <div className="p-4">
-          {(isExpanded || isMobile) && (
-            <div className="space-y-1">
-              <Link to="/settings" onClick={onLinkClick} className="sidebar-link group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:shadow-sm">
-                <Settings className="flex-shrink-0 h-4 w-4 text-gray-500 group-hover:text-gray-700" />
-                <span className="ml-3">Settings</span>
-              </Link>
-              <Link to="/logout" onClick={onLinkClick} className="sidebar-link group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-red-600 hover:shadow-sm">
-                <LogOut className="flex-shrink-0 h-4 w-4 text-gray-500 group-hover:text-red-500" />
-                <span className="ml-3">Sign out</span>
-              </Link>
-            </div>
-          )}
-          {!isExpanded && !isMobile && (
-            <div className="space-y-2">
-              <button className="w-full p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:shadow-sm group">
-                <Settings className="h-5 w-5 text-gray-500 mx-auto group-hover:text-gray-700" />
-              </button>
-              <button className="w-full p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 hover:shadow-sm hover:bg-red-50 group">
-                <LogOut className="h-5 w-5 text-gray-500 mx-auto group-hover:text-red-500" />
-              </button>
-            </div>
-          )}
+        <div className="mt-3 space-y-1">
+          <Link
+            to="/settings"
+            onClick={onLinkClick}
+            className={`sidebar-link group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:shadow-sm ${
+              showFullContent ? '' : 'justify-center'
+            }`}
+          >
+            <Settings className="flex-shrink-0 h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+            {showFullContent && <span className="ml-3">Settings</span>}
+          </Link>
+          <Link
+            to="/logout"
+            onClick={onLinkClick}
+            className={`sidebar-link group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 text-gray-600 hover:bg-gray-50 hover:text-red-600 hover:shadow-sm ${
+              showFullContent ? '' : 'justify-center'
+            }`}
+          >
+            <LogOut className="flex-shrink-0 h-4 w-4 text-gray-500 group-hover:text-red-500" />
+            {showFullContent && <span className="ml-3">Sign out</span>}
+          </Link>
         </div>
       </div>
     </div>
@@ -259,7 +516,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
               <span className="sr-only">Open sidebar</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
+          <SheetContent side="left" className="h-full w-64 p-0">
             <NavigationContent onLinkClick={() => setMobileOpen(false)} />
           </SheetContent>
         </Sheet>
@@ -268,8 +525,14 @@ export function Sidebar({ className = '' }: SidebarProps) {
   }
 
   return (
-    <div className={`bg-white border-r border-gray-200 shadow-sm overflow-hidden ${isExpanded ? 'w-64' : 'w-16'} transition-all duration-700 ease-in-out ${className}`}>
-      <NavigationContent />
+    <div
+      className={`bg-white border-r border-gray-200 shadow-sm overflow-hidden ${
+        isExpanded ? 'w-64' : 'w-16'
+      } transition-all duration-700 ease-in-out ${className}`}
+    >
+      <div className="h-full">
+        <NavigationContent />
+      </div>
     </div>
   )
 }

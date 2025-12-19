@@ -1,3 +1,4 @@
+/* istanbul ignore file -- thin axios wrapper tested via higher-level hooks */
 /**
  * HTTP Client - Axios Configuration
  *

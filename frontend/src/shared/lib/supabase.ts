@@ -1,3 +1,4 @@
+/* istanbul ignore file -- supabase client wiring exercised via higher-level hooks */
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL

@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 
 from backend.inventory.models import Collectible
 from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
-from backend.users.models import UserProfile
+from backend.inventory.tests.utils import ensure_vendor_admin
 
 
 @pytest.mark.django_db
@@ -17,7 +17,7 @@ def test_list_scoped_to_user_vendor():
 
     # Create a user and attach them to vendor1 via UserProfile
     user = UserFactory.create(username="vendoruser")
-    UserProfile.objects.create(user=user, vendor=vendor1)
+    ensure_vendor_admin(user, vendor=vendor1)
 
     client = APIClient()
     client.force_authenticate(user=user)
@@ -38,12 +38,18 @@ def test_create_with_wrong_vendor_forbidden():
     vendor2 = VendorFactory.create()
 
     user = UserFactory.create(username="creator")
-    UserProfile.objects.create(user=user, vendor=vendor1)
+    _, store = ensure_vendor_admin(user, vendor=vendor1)
 
     client = APIClient()
     client.force_authenticate(user=user)
 
-    payload = {"name": "Bad create", "sku": "BAD-001", "quantity": 1, "vendor": vendor2.id}
+    payload = {
+        "name": "Bad create",
+        "sku": "BAD-001",
+        "quantity": 1,
+        "vendor": vendor2.id,
+        "store": store.id,
+    }
     resp = client.post("/api/v1/collectibles/", payload, format='json')
 
     assert resp.status_code in (200, 201)
@@ -55,12 +61,12 @@ def test_create_with_wrong_vendor_forbidden():
 def test_owner_can_create_for_their_vendor():
     vendor1 = VendorFactory.create()
     user = UserFactory.create(username="owner")
-    UserProfile.objects.create(user=user, vendor=vendor1)
+    _, store = ensure_vendor_admin(user, vendor=vendor1)
 
     client = APIClient()
     client.force_authenticate(user=user)
 
-    payload = {"name": "Good create", "sku": "GOOD-001", "quantity": 2}
+    payload = {"name": "Good create", "sku": "GOOD-001", "quantity": 2, "store": store.id}
     resp = client.post("/api/v1/collectibles/", payload, format='json')
 
     assert resp.status_code in (200, 201)
@@ -71,9 +77,16 @@ def test_owner_can_create_for_their_vendor():
 def test_owner_can_update_their_collectible():
     vendor1 = VendorFactory.create()
     user = UserFactory.create(username="updater")
-    UserProfile.objects.create(user=user, vendor=vendor1)
+    _, store = ensure_vendor_admin(user, vendor=vendor1)
 
-    c = CollectibleFactory.create(vendor=vendor1, sku="UPD-001", name="Old name", quantity=1, user=user)
+    c = CollectibleFactory.create(
+        vendor=vendor1,
+        sku="UPD-001",
+        name="Old name",
+        quantity=1,
+        user=user,
+        store=store,
+    )
 
     client = APIClient()
     client.force_authenticate(user=user)
@@ -94,12 +107,19 @@ def test_cannot_update_other_vendors_collectible():
     vendor2 = VendorFactory.create()
 
     owner = UserFactory.create(username="owner2")
-    UserProfile.objects.create(user=owner, vendor=vendor2)
+    _, owner_store = ensure_vendor_admin(owner, vendor=vendor2)
 
-    c = CollectibleFactory.create(vendor=vendor2, sku="UPD-002", name="Owner name", quantity=1, user=owner)
+    c = CollectibleFactory.create(
+        vendor=vendor2,
+        sku="UPD-002",
+        name="Owner name",
+        quantity=1,
+        user=owner,
+        store=owner_store,
+    )
 
     intruder = UserFactory.create(username="intruder")
-    UserProfile.objects.create(user=intruder, vendor=vendor1)
+    ensure_vendor_admin(intruder, vendor=vendor1)
 
     client = APIClient()
     client.force_authenticate(user=intruder)
@@ -115,9 +135,9 @@ def test_cannot_update_other_vendors_collectible():
 def test_only_owner_can_delete_collectible():
     vendor1 = VendorFactory.create()
     user = UserFactory.create(username="deleter")
-    UserProfile.objects.create(user=user, vendor=vendor1)
+    _, store = ensure_vendor_admin(user, vendor=vendor1)
 
-    c = CollectibleFactory.create(vendor=vendor1, sku="DEL-001", user=user)
+    c = CollectibleFactory.create(vendor=vendor1, sku="DEL-001", user=user, store=store)
 
     client = APIClient()
     client.force_authenticate(user=user)
@@ -134,11 +154,11 @@ def test_cannot_delete_other_vendors_collectible():
     vendor2 = VendorFactory.create()
 
     owner = UserFactory.create(username="owner3")
-    UserProfile.objects.create(user=owner, vendor=vendor2)
-    c = CollectibleFactory.create(vendor=vendor2, sku="DEL-002", user=owner)
+    _, owner_store = ensure_vendor_admin(owner, vendor=vendor2)
+    c = CollectibleFactory.create(vendor=vendor2, sku="DEL-002", user=owner, store=owner_store)
 
     intruder = UserFactory.create(username="intruder2")
-    UserProfile.objects.create(user=intruder, vendor=vendor1)
+    ensure_vendor_admin(intruder, vendor=vendor1)
 
     client = APIClient()
     client.force_authenticate(user=intruder)

@@ -44,6 +44,7 @@ docs/local-master-plan.md
 docs/local/**
 # Ignore all docs in working tree (keep local only)
 docs/
+documents/
 
 # Test artifacts and generated files
 generated_schema.json

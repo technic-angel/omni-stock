@@ -9,6 +9,7 @@ from backend.inventory.tests.factories import (
     UserFactory,
     VendorFactory,
 )
+from backend.inventory.tests.utils import ensure_vendor_admin
 from backend.users.models import UserProfile
 from backend.vendors.models import StoreAccess, VendorMember, VendorMemberRole
 
@@ -25,14 +26,14 @@ def test_collectible_viewset_list_and_create():
     # API requires authentication by default; authenticate a test user
     user = UserFactory.create(username="tester")
     # attach the test user to the same vendor so the list is scoped to them
-    UserProfile.objects.create(user=user, vendor=first.vendor)
+    _, store = ensure_vendor_admin(user, vendor=first.vendor, store=first.store)
     client.force_authenticate(user=user)
 
     resp = client.get(url)
     assert resp.status_code == 200
     assert len(resp.json()) >= 2
 
-    payload = {"name": "Created via API", "sku": "VIEW-003", "quantity": 3}
+    payload = {"name": "Created via API", "sku": "VIEW-003", "quantity": 3, "store": store.id}
     resp = client.post(url, payload, format='json')
     assert resp.status_code in (200, 201)
     assert Collectible.objects.filter(sku="VIEW-003").exists()
@@ -44,7 +45,7 @@ def test_collectible_create_with_image_url():
 
     user = UserFactory.create(username="img_user")
     vendor = VendorFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor=vendor)
     client.force_authenticate(user=user)
 
     url = "/api/v1/collectibles/"
@@ -53,6 +54,7 @@ def test_collectible_create_with_image_url():
         "sku": "IMG-API-1",
         "quantity": 1,
         "image_url": "https://example.com/img.png",
+        "store": store.id,
     }
     resp = client.post(url, payload, format='json')
     assert resp.status_code in (200, 201)
@@ -65,7 +67,7 @@ def test_collectible_patch_image_url():
     client = APIClient()
     collectible = CollectibleFactory.create(sku="PATCH-IMG-1")
     user = UserFactory.create(username="patch_user")
-    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    ensure_vendor_admin(user, vendor=collectible.vendor, store=collectible.store)
     client.force_authenticate(user=user)
 
     url = f"/api/v1/collectibles/{collectible.pk}/"
@@ -82,7 +84,7 @@ def test_collectible_create_accepts_pricing_fields():
     client = APIClient()
     user = UserFactory.create(username="pricing_user")
     vendor = VendorFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor=vendor)
     client.force_authenticate(user=user)
 
     payload = {
@@ -94,6 +96,7 @@ def test_collectible_create_accepts_pricing_fields():
         "intake_price": "12.50",
         "price": "25.00",
         "projected_price": "30.00",
+        "store": store.id,
     }
     resp = client.post("/api/v1/collectibles/", payload, format="json")
     assert resp.status_code in (200, 201)
@@ -108,32 +111,34 @@ def test_collectible_create_rejects_negative_quantity():
     client = APIClient()
     user = UserFactory.create(username="neg_quantity")
     vendor = VendorFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor=vendor)
     client.force_authenticate(user=user)
 
-    payload = {"name": "Bad quantity", "sku": "NEG-002", "quantity": -1}
+    payload = {"name": "Bad quantity", "sku": "NEG-002", "quantity": -1, "store": store.id}
     resp = client.post("/api/v1/collectibles/", payload, format="json")
     assert resp.status_code == 400
 
 
 @pytest.mark.django_db
-def test_collectible_create_auto_assigns_default_store_when_missing():
+def test_collectible_create_requires_store_when_missing():
     client = APIClient()
     vendor = VendorFactory.create()
     assert vendor.stores.count() == 0
     user = UserFactory.create(username="auto_store_user")
     UserProfile.objects.create(user=user, vendor=vendor)
+    VendorMember.objects.create(
+        user=user,
+        vendor=vendor,
+        role=VendorMemberRole.OWNER,
+        is_active=True,
+        invite_status=VendorMember.InviteStatus.ACCEPTED,
+    )
     client.force_authenticate(user=user)
 
     payload = {"name": "Auto Store Item", "sku": "AUTO-001", "quantity": 1}
     resp = client.post("/api/v1/collectibles/", payload, format="json")
-    assert resp.status_code in (200, 201)
-
-    item = Collectible.objects.get(sku="AUTO-001")
-    assert item.store is not None
-    assert item.store.vendor == vendor
-    vendor.refresh_from_db()
-    assert vendor.stores.count() == 1
+    assert resp.status_code == 400
+    assert "store" in resp.json()
 
 
 @pytest.mark.django_db
@@ -152,7 +157,7 @@ def test_collectible_delete_requires_authentication():
 def test_collectible_delete_succeeds_for_vendor_user():
     collectible = CollectibleFactory.create(sku="DEL-OWN-1")
     user = UserFactory.create(username="del_user")
-    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    ensure_vendor_admin(user, vendor=collectible.vendor, store=collectible.store)
     collectible.user = user
     collectible.save()
 
@@ -171,7 +176,7 @@ def test_collectible_create_rejects_mismatched_store():
     vendor = VendorFactory.create()
     other_store = StoreFactory.create()
     user = UserFactory.create(username="store_mismatch")
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor=vendor)
     client.force_authenticate(user=user)
 
     payload = {"name": "Mismatch", "sku": "MISMATCH-1", "quantity": 1, "store": other_store.id}

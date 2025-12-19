@@ -109,6 +109,46 @@ def set_active_store(*, member: VendorMember, store: Store) -> VendorMember:
 
 
 @transaction.atomic
+def ensure_owner_membership(*, vendor: Vendor, user: User) -> VendorMember:
+    """
+    Guarantee that a user has an active OWNER membership for a vendor.
+
+    Used when bootstrapping a newly created vendor so the creator can
+    immediately administer stores, members, etc.
+    """
+
+    if vendor is None or user is None:
+        raise ValueError("Both vendor and user are required to ensure ownership.")
+
+    store = ensure_default_store(vendor)
+    defaults = {
+        "role": VendorMemberRole.OWNER,
+        "invite_status": VendorMember.InviteStatus.ACCEPTED,
+        "is_active": True,
+        "active_store": store,
+    }
+    member, created = VendorMember.objects.get_or_create(
+        vendor=vendor,
+        user=user,
+        defaults=defaults,
+    )
+    if not created:
+        dirty_fields = []
+        for field, value in defaults.items():
+            if getattr(member, field) != value:
+                setattr(member, field, value)
+                dirty_fields.append(field)
+        if dirty_fields:
+            member.save(update_fields=dirty_fields)
+
+    set_active_vendor(user=user, vendor=vendor)
+    if member.active_store_id != store.id:
+        set_active_store(member=member, store=store)
+
+    return member
+
+
+@transaction.atomic
 def create_store(*, vendor: Vendor, name: str, **kwargs) -> Store:
     return Store.objects.create(vendor=vendor, name=name, **kwargs)
 
@@ -148,4 +188,5 @@ __all__ = [
     "update_store",
     "assign_store_access",
     "remove_store_access",
+    "ensure_owner_membership",
 ]

@@ -8,7 +8,7 @@ from backend.inventory.tests.factories import (
     UserFactory,
     VendorFactory,
 )
-from backend.users.models import UserProfile
+from backend.inventory.tests.utils import ensure_vendor_admin
 
 
 @pytest.mark.django_db
@@ -26,7 +26,7 @@ def test_collectible_list_includes_card_details():
 
     # prepare and authenticate a user attached to the same vendor
     user = UserFactory.create(username="api_tester")
-    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    ensure_vendor_admin(user, vendor=collectible.vendor, store=collectible.store)
     client.force_authenticate(user=user)
 
     url = "/api/v1/collectibles/"
@@ -55,7 +55,7 @@ def test_filter_collectibles_by_card_language():
     CardDetailsFactory.create(collectible=c2, language="Japanese")
 
     user = UserFactory.create(username="filter_tester")
-    UserProfile.objects.create(user=user, vendor=c1.vendor)
+    ensure_vendor_admin(user, vendor=c1.vendor, store=c1.store)
     client.force_authenticate(user=user)
 
     url = "/api/v1/collectibles/?language=English"
@@ -76,7 +76,7 @@ def test_create_collectible_with_nested_card_details():
 
     vendor = VendorFactory.create(name="Nested Vendor")
     user = UserFactory.create(username="nested_creator")
-    UserProfile.objects.create(user=user, vendor=vendor)
+    _, store = ensure_vendor_admin(user, vendor)
     client.force_authenticate(user=user)
 
     payload = {
@@ -90,6 +90,7 @@ def test_create_collectible_with_nested_card_details():
         },
     }
 
+    payload["store"] = store.id
     resp = client.post("/api/v1/collectibles/", payload, format='json')
     assert resp.status_code in (200, 201)
 
@@ -107,7 +108,7 @@ def test_update_collectible_nested_card_details():
     CardDetailsFactory.create(collectible=collectible, language="German")
 
     user = UserFactory.create(username="upd_tester")
-    UserProfile.objects.create(user=user, vendor=collectible.vendor)
+    ensure_vendor_admin(user, vendor=collectible.vendor, store=collectible.store)
     client.force_authenticate(user=user)
 
     resp = client.patch(f"/api/v1/collectibles/{collectible.pk}/", {"card_details": {"language": "Dutch"}}, format='json')
