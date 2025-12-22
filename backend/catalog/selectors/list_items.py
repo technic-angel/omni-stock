@@ -4,8 +4,8 @@ from typing import Any, Mapping
 
 from django.db.models import QuerySet
 
-from backend.core.permissions import resolve_user_vendor
 from backend.catalog.models import CatalogItem
+from backend.core.permissions import resolve_user_vendor
 
 
 def list_items(*, user, filters: Mapping[str, Any] | None = None) -> QuerySet:

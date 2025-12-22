@@ -15,10 +15,10 @@ class Command(BaseCommand):
         from django.contrib.auth import get_user_model
 
         from backend.catalog.models import CardMetadata, CatalogItem
-        from backend.users.models import UserProfile
         from backend.org.models import Vendor
         from backend.org.services.memberships import ensure_owner_membership
         from backend.org.services.store_defaults import ensure_default_store
+        from backend.users.models import UserProfile
 
         try:
             from faker import Faker

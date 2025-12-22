@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from backend.catalog.tests.factories import StoreFactory, UserFactory, VendorFactory
+from backend.org.models import VendorMember, VendorMemberRole
 from backend.users.models import UserProfile
 from backend.users.services.create_user import create_user
-from backend.org.models import VendorMember, VendorMemberRole
 
 User = get_user_model()
 

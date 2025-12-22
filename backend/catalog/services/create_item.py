@@ -4,10 +4,10 @@ from typing import Any, Dict, List, Optional
 
 from django.db import transaction
 
-from backend.core.validators import validate_image_url
 from backend.catalog.models import CardMetadata, CatalogItem
 from backend.catalog.services.media import sync_item_media
 from backend.catalog.services.variants import sync_item_variants
+from backend.core.validators import validate_image_url
 
 
 def create_item(

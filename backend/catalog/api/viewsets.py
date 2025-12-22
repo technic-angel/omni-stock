@@ -5,7 +5,6 @@ from rest_framework import viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
-from backend.core.permissions import VendorScopedPermission, resolve_user_store, resolve_user_vendor
 from backend.catalog.api.serializers import CatalogItemSerializer
 from backend.catalog.models import CatalogItem
 from backend.catalog.selectors.get_item import get_item
@@ -13,6 +12,7 @@ from backend.catalog.selectors.list_items import list_items
 from backend.catalog.services.create_item import create_item
 from backend.catalog.services.delete_item import delete_item
 from backend.catalog.services.update_item import update_item
+from backend.core.permissions import VendorScopedPermission, resolve_user_store, resolve_user_vendor
 from backend.org.api.permissions import HasStoreAccess, user_has_store_access
 from backend.org.services.store_defaults import ensure_default_store
 

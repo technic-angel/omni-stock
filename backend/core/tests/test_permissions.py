@@ -1,7 +1,7 @@
 import pytest
 
-from backend.core.permissions import VendorScopedPermission
 from backend.catalog.tests.factories import CatalogItemFactory, UserFactory, VendorFactory
+from backend.core.permissions import VendorScopedPermission
 from backend.org.models import VendorMember, VendorMemberRole
 
 
