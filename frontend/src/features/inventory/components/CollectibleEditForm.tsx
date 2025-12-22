@@ -4,9 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import Card from '../../../shared/components/Card'
 import type { Collectible } from '../../../shared/types'
-import { collectibleSchema, CollectibleInput } from '../schema/itemSchema'
+import {
+  collectibleSchema,
+  CollectibleInput,
+  buildVariantPayloads,
+} from '../schema/itemSchema'
 import { useUpdateCollectible } from '../hooks/useUpdateCollectible'
 import { useCollectibleImageUpload } from '../hooks/useCollectibleImageUpload'
+import VariantFields from './VariantFields'
 
 type Props = {
   collectible: Collectible
@@ -21,6 +26,13 @@ const mapCollectibleToForm = (collectible: Collectible): CollectibleInput => ({
   market_region: collectible.market_region || '',
   image_url: collectible.image_url || undefined,
   image_file: undefined,
+  variants:
+    collectible.variants?.map((variant) => ({
+      condition: variant.condition || '',
+      grade: variant.grade || '',
+      quantity: variant.quantity ?? 0,
+      price_adjustment: variant.price_adjustment || '',
+    })) ?? [],
 })
 
 const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
@@ -33,6 +45,7 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
   } = useCollectibleImageUpload()
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -62,8 +75,13 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
       imageUrl = values.image_url
     }
 
-    const payload = { ...values, image_url: imageUrl }
+    const variantPayloads = buildVariantPayloads(values.variants)
+    const payload: Record<string, any> = { ...values, image_url: imageUrl }
+    if (variantPayloads) {
+      payload.variant_payloads = variantPayloads
+    }
     delete (payload as any).image_file
+    delete (payload as any).variants
 
     await mutateAsync(payload)
     onSuccess?.()
@@ -99,6 +117,12 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
           Market Region
           <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
         </label>
+        <VariantFields
+          control={control}
+          register={register}
+          errors={errors}
+          disabled={isPending || isUploading}
+        />
         <div className="text-xs text-gray-500">
           Current image:{' '}
           {collectible.image_url ? (

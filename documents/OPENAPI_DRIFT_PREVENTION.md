@@ -116,7 +116,7 @@ ln -sf ../../scripts/pre-commit-openapi.sh .git/hooks/pre-commit
 
 ```bash
 # 1. Edit backend code
-vim backend/inventory/models.py
+vim backend/catalog/models.py
 
 # 2. Regenerate schema
 ./scripts/update-openapi-schema.sh
@@ -125,7 +125,7 @@ vim backend/inventory/models.py
 git diff backend/api_schema.json
 
 # 4. Commit together
-git add backend/inventory/models.py backend/api_schema.json api_schema.json
+git add backend/catalog/models.py backend/api_schema.json api_schema.json
 git commit -m "Add new field to Collectible model and update OpenAPI schema"
 
 # 5. Push

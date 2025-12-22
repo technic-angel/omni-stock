@@ -105,7 +105,7 @@ $ curl https://omni-stock-pr-39.onrender.com/health/
 
 ### Authentication Test
 ```bash
-$ curl https://omni-stock-pr-39.onrender.com/api/v1/collectibles/
+$ curl https://omni-stock-pr-39.onrender.com/api/v1/catalog/items/
 {"detail":"Authentication credentials were not provided."}  ✅
 ```
 

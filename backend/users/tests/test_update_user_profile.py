@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 
 from backend.users.models import UserProfile
 from backend.users.services.update_user_profile import update_user_profile
-from backend.vendors.models import Vendor
 
 User = get_user_model()
 
@@ -37,21 +36,6 @@ def test_update_user_profile_updates_media():
 
     update_user_profile(user_id=user.id, avatar={})
     assert not user.media_files.filter(media_type="profile_avatar").exists()
-
-
-@pytest.mark.django_db
-def test_update_user_profile_sets_and_clears_vendor():
-    user = User.objects.create_user(username="vendor", email="vendor@example.com", password="pass1234")
-    profile, _ = UserProfile.objects.get_or_create(user=user)
-    vendor = Vendor.objects.create(name="Test Vendor")
-
-    update_user_profile(user_id=user.id, vendor_id=vendor.id)
-    profile.refresh_from_db()
-    assert profile.vendor == vendor
-
-    update_user_profile(user_id=user.id, clear_vendor=True)
-    profile.refresh_from_db()
-    assert profile.vendor is None
 
 
 @pytest.mark.django_db

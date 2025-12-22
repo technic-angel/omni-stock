@@ -79,7 +79,7 @@ python3 scripts/normalize_openapi.py \
 **Example workflow:**
 ```bash
 # Make backend changes
-vim backend/inventory/models.py
+vim backend/catalog/models.py
 
 # Regenerate schema
 ./scripts/update-openapi-schema.sh
@@ -88,7 +88,7 @@ vim backend/inventory/models.py
 git diff backend/api_schema.json
 
 # Commit together
-git add backend/inventory/models.py backend/api_schema.json api_schema.json
+git add backend/catalog/models.py backend/api_schema.json api_schema.json
 git commit -m "Add new field to Collectible model and update OpenAPI schema"
 ```
 

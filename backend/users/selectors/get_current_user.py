@@ -26,7 +26,7 @@ def get_current_user_with_profile(*, user_id: int) -> User:
         # user.profile is already loaded (no extra query)
         print(user.profile.bio)
     """
-    return User.objects.select_related("profile__vendor").get(id=user_id)
+    return User.objects.select_related("profile").get(id=user_id)
 
 
 __all__ = ["get_current_user_with_profile"]

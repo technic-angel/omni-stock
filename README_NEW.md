@@ -78,7 +78,7 @@ The API will be available at `http://localhost:8000`
 make test-ci
 
 # Run specific test file
-TEST=backend/inventory/tests/api/test_card_details_api.py make test-docker
+TEST=backend/catalog/tests/api/test_card_details_api.py make test-docker
 ```
 
 ### 5. Frontend Development (Optional)
@@ -246,11 +246,11 @@ Pull requests automatically trigger preview deployments:
 make test-ci
 
 # Run specific test file
-TEST=backend/inventory/tests/api/test_card_details_api.py make test-docker
+TEST=backend/catalog/tests/api/test_card_details_api.py make test-docker
 
 # Run tests in dev container
 make dev-shell
-pytest backend/inventory/tests/
+pytest backend/catalog/tests/
 ```
 
 ### E2E Testing

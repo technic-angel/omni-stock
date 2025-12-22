@@ -4,11 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from backend.users.validators import (
-    validate_birthdate,
-    validate_phone_number,
-)
-from backend.vendors.models import Vendor
+from backend.users.validators import validate_birthdate, validate_phone_number
 
 
 class UserRole(models.TextChoices):
@@ -83,13 +79,6 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
-    )
-    vendor = models.ForeignKey(
-        Vendor,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="users",
     )
     phone = models.CharField(max_length=40, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)

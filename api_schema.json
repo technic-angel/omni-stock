@@ -6,8 +6,8 @@
           ""
         ]
       },
-      "CardDetails": {
-        "description": "Serializer for the CardDetails nested object.",
+      "CardMetadata": {
+        "description": "Serializer for the CardMetadata nested object.",
         "properties": {
           "condition": {
             "description": "Human-readable condition (e.g., Mint, Near Mint).",
@@ -61,49 +61,14 @@
         },
         "type": "object"
       },
-      "ChangePassword": {
-        "description": "Serializer for password change.\n\nRequires current password verification before allowing password change.\nValidates new password against Django's password validators.",
-        "properties": {
-          "new_password": {
-            "description": "New password (min 8 characters)",
-            "minLength": 8,
-            "type": "string",
-            "writeOnly": true
-          },
-          "old_password": {
-            "description": "Current password for verification",
-            "type": "string",
-            "writeOnly": true
-          }
-        },
-        "required": [
-          "new_password",
-          "old_password"
-        ],
-        "type": "object"
-      },
-      "CheckEmailExists": {
-        "description": "Serializer to check if an email is already registered.\n\nUsed for client-side validation during registration.",
-        "properties": {
-          "email": {
-            "description": "Email address to check",
-            "format": "email",
-            "type": "string"
-          }
-        },
-        "required": [
-          "email"
-        ],
-        "type": "object"
-      },
-      "Collectible": {
-        "description": "Serializer for the Collectible model with nested card details support.",
+      "CatalogItem": {
+        "description": "Serializer for the CatalogItem model with nested card details support.",
         "properties": {
           "card_details": {
-            "$ref": "#/components/schemas/CardDetails"
+            "$ref": "#/components/schemas/CardMetadata"
           },
           "category": {
-            "description": "High-level category (e.g., TCG, Video Games, Collectibles).",
+            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
             "maxLength": 100,
             "nullable": true,
             "type": "string"
@@ -129,7 +94,7 @@
           },
           "image_payloads": {
             "items": {
-              "$ref": "#/components/schemas/InventoryMedia"
+              "$ref": "#/components/schemas/CatalogMedia"
             },
             "type": "array",
             "writeOnly": true
@@ -143,7 +108,7 @@
           },
           "images": {
             "items": {
-              "$ref": "#/components/schemas/InventoryMedia"
+              "$ref": "#/components/schemas/CatalogMedia"
             },
             "readOnly": true,
             "type": "array"
@@ -195,6 +160,19 @@
             "readOnly": true,
             "type": "integer"
           },
+          "variant_payloads": {
+            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "variants": {
+            "readOnly": true,
+            "type": "string"
+          },
           "vendor": {
             "nullable": true,
             "readOnly": true,
@@ -209,7 +187,121 @@
           "sku",
           "updated_at",
           "user",
+          "variants",
           "vendor"
+        ],
+        "type": "object"
+      },
+      "CatalogMedia": {
+        "description": "Serializer for media associated with collectibles.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "height": {
+            "description": "Height of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_primary": {
+            "description": "Whether this media is the primary display image.",
+            "type": "boolean"
+          },
+          "media_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CatalogMediaMediaTypeEnum"
+              }
+            ],
+            "description": "Classify this media (primary vs gallery).\n\n* `primary` - Primary Image\n* `gallery` - Gallery Image"
+          },
+          "metadata": {
+            "description": "Additional metadata about the media"
+          },
+          "size_kb": {
+            "description": "Size of the media file in kilobytes.",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "sort_order": {
+            "description": "Order of media files for display purposes.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url": {
+            "description": "Public URL of the media file.",
+            "format": "uri",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "width": {
+            "description": "Width of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at",
+          "url"
+        ],
+        "type": "object"
+      },
+      "CatalogMediaMediaTypeEnum": {
+        "description": "* `primary` - Primary Image\n* `gallery` - Gallery Image",
+        "enum": [
+          "primary",
+          "gallery"
+        ],
+        "type": "string"
+      },
+      "ChangePassword": {
+        "description": "Serializer for password change.\n\nRequires current password verification before allowing password change.\nValidates new password against Django's password validators.",
+        "properties": {
+          "new_password": {
+            "description": "New password (min 8 characters)",
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "old_password": {
+            "description": "Current password for verification",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "new_password",
+          "old_password"
+        ],
+        "type": "object"
+      },
+      "CheckEmailExists": {
+        "description": "Serializer to check if an email is already registered.\n\nUsed for client-side validation during registration.",
+        "properties": {
+          "email": {
+            "description": "Email address to check",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ],
         "type": "object"
       },
@@ -374,84 +466,6 @@
         ],
         "type": "object"
       },
-      "InventoryMedia": {
-        "description": "Serializer for media associated with collectibles.",
-        "properties": {
-          "created_at": {
-            "format": "date-time",
-            "readOnly": true,
-            "type": "string"
-          },
-          "height": {
-            "description": "Height of the media in pixels (if applicable).",
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer"
-          },
-          "id": {
-            "readOnly": true,
-            "type": "integer"
-          },
-          "is_primary": {
-            "description": "Whether this media is the primary display image.",
-            "type": "boolean"
-          },
-          "media_type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/InventoryMediaMediaTypeEnum"
-              }
-            ],
-            "description": "Classify this media (primary vs gallery).\n\n* `primary` - Primary Image\n* `gallery` - Gallery Image"
-          },
-          "metadata": {
-            "description": "Additional metadata about the media"
-          },
-          "size_kb": {
-            "description": "Size of the media file in kilobytes.",
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer"
-          },
-          "sort_order": {
-            "description": "Order of media files for display purposes.",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "readOnly": true,
-            "type": "string"
-          },
-          "url": {
-            "description": "Public URL of the media file.",
-            "format": "uri",
-            "maxLength": 200,
-            "type": "string"
-          },
-          "width": {
-            "description": "Width of the media in pixels (if applicable).",
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "created_at",
-          "id",
-          "updated_at",
-          "url"
-        ],
-        "type": "object"
-      },
-      "InventoryMediaMediaTypeEnum": {
-        "description": "* `primary` - Primary Image\n* `gallery` - Gallery Image",
-        "enum": [
-          "primary",
-          "gallery"
-        ],
-        "type": "string"
-      },
       "InviteStatusEnum": {
         "description": "* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
         "enum": [
@@ -519,14 +533,14 @@
         ],
         "type": "object"
       },
-      "PatchedCollectible": {
-        "description": "Serializer for the Collectible model with nested card details support.",
+      "PatchedCatalogItem": {
+        "description": "Serializer for the CatalogItem model with nested card details support.",
         "properties": {
           "card_details": {
-            "$ref": "#/components/schemas/CardDetails"
+            "$ref": "#/components/schemas/CardMetadata"
           },
           "category": {
-            "description": "High-level category (e.g., TCG, Video Games, Collectibles).",
+            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
             "maxLength": 100,
             "nullable": true,
             "type": "string"
@@ -552,7 +566,7 @@
           },
           "image_payloads": {
             "items": {
-              "$ref": "#/components/schemas/InventoryMedia"
+              "$ref": "#/components/schemas/CatalogMedia"
             },
             "type": "array",
             "writeOnly": true
@@ -566,7 +580,7 @@
           },
           "images": {
             "items": {
-              "$ref": "#/components/schemas/InventoryMedia"
+              "$ref": "#/components/schemas/CatalogMedia"
             },
             "readOnly": true,
             "type": "array"
@@ -617,6 +631,19 @@
             "nullable": true,
             "readOnly": true,
             "type": "integer"
+          },
+          "variant_payloads": {
+            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "variants": {
+            "readOnly": true,
+            "type": "string"
           },
           "vendor": {
             "nullable": true,
@@ -826,11 +853,6 @@
             "description": "Username (must be unique)",
             "maxLength": 150,
             "type": "string"
-          },
-          "vendor_id": {
-            "description": "ID of vendor to associate with (null to clear)",
-            "nullable": true,
-            "type": "integer"
           },
           "vendor_logo": {
             "allOf": [
@@ -1258,11 +1280,6 @@
             "maxLength": 150,
             "type": "string"
           },
-          "vendor_id": {
-            "description": "ID of vendor to associate with (null to clear)",
-            "nullable": true,
-            "type": "integer"
-          },
           "vendor_logo": {
             "allOf": [
               {
@@ -1352,24 +1369,12 @@
             "format": "date-time",
             "readOnly": true,
             "type": "string"
-          },
-          "vendor_id": {
-            "nullable": true,
-            "readOnly": true,
-            "type": "integer"
-          },
-          "vendor_name": {
-            "nullable": true,
-            "readOnly": true,
-            "type": "string"
           }
         },
         "required": [
           "created_at",
           "id",
-          "updated_at",
-          "vendor_id",
-          "vendor_name"
+          "updated_at"
         ],
         "type": "object"
       },
@@ -2202,17 +2207,17 @@
         ]
       }
     },
-    "/api/v1/collectibles/": {
+    "/api/v1/catalog/items/": {
       "get": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_list",
+        "operationId": "catalog_items_list",
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/Collectible"
+                    "$ref": "#/components/schemas/CatalogItem"
                   },
                   "type": "array"
                 }
@@ -2227,27 +2232,27 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       },
       "post": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_create",
+        "operationId": "catalog_items_create",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             }
           },
@@ -2258,7 +2263,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Collectible"
+                  "$ref": "#/components/schemas/CatalogItem"
                 }
               }
             },
@@ -2271,17 +2276,17 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       }
     },
-    "/api/v1/collectibles/{id}/": {
+    "/api/v1/catalog/items/{id}/": {
       "delete": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_destroy",
+        "operationId": "catalog_items_destroy",
         "parameters": [
           {
-            "description": "A unique integer value identifying this Collectible Item.",
+            "description": "A unique integer value identifying this Catalog Item.",
             "in": "path",
             "name": "id",
             "required": true,
@@ -2301,15 +2306,15 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       },
       "get": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_retrieve",
+        "operationId": "catalog_items_retrieve",
         "parameters": [
           {
-            "description": "A unique integer value identifying this Collectible Item.",
+            "description": "A unique integer value identifying this Catalog Item.",
             "in": "path",
             "name": "id",
             "required": true,
@@ -2323,7 +2328,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Collectible"
+                  "$ref": "#/components/schemas/CatalogItem"
                 }
               }
             },
@@ -2336,15 +2341,15 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       },
       "patch": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_partial_update",
+        "operationId": "catalog_items_partial_update",
         "parameters": [
           {
-            "description": "A unique integer value identifying this Collectible Item.",
+            "description": "A unique integer value identifying this Catalog Item.",
             "in": "path",
             "name": "id",
             "required": true,
@@ -2357,17 +2362,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedCollectible"
+                "$ref": "#/components/schemas/PatchedCatalogItem"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedCollectible"
+                "$ref": "#/components/schemas/PatchedCatalogItem"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/PatchedCollectible"
+                "$ref": "#/components/schemas/PatchedCatalogItem"
               }
             }
           }
@@ -2377,7 +2382,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Collectible"
+                  "$ref": "#/components/schemas/CatalogItem"
                 }
               }
             },
@@ -2390,15 +2395,15 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       },
       "put": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
-        "operationId": "collectibles_update",
+        "operationId": "catalog_items_update",
         "parameters": [
           {
-            "description": "A unique integer value identifying this Collectible Item.",
+            "description": "A unique integer value identifying this Catalog Item.",
             "in": "path",
             "name": "id",
             "required": true,
@@ -2411,17 +2416,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             },
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Collectible"
+                "$ref": "#/components/schemas/CatalogItem"
               }
             }
           },
@@ -2432,7 +2437,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Collectible"
+                  "$ref": "#/components/schemas/CatalogItem"
                 }
               }
             },
@@ -2445,7 +2450,7 @@
           }
         ],
         "tags": [
-          "collectibles"
+          "catalog"
         ]
       }
     },

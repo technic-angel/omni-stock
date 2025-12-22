@@ -34,7 +34,7 @@ describe('collectiblesApi', () => {
 
     const data = await fetchCollectibles({ page: 2 })
 
-    expect(mockGet).toHaveBeenCalledWith('/collectibles/', { params: { page: 2 } })
+    expect(mockGet).toHaveBeenCalledWith('/catalog/items/', { params: { page: 2 } })
     expect(data).toBe(payload)
   })
 
@@ -44,7 +44,7 @@ describe('collectiblesApi', () => {
 
     const data = await createCollectible(payload)
 
-    expect(mockPost).toHaveBeenCalledWith('/collectibles/', payload)
+    expect(mockPost).toHaveBeenCalledWith('/catalog/items/', payload)
     expect(data).toEqual({ id: 1 })
   })
 
@@ -53,7 +53,7 @@ describe('collectiblesApi', () => {
 
     const data = await fetchCollectible(5)
 
-    expect(mockGet).toHaveBeenCalledWith('/collectibles/5/')
+    expect(mockGet).toHaveBeenCalledWith('/catalog/items/5/')
     expect(data).toEqual({ id: 5 })
   })
 
@@ -62,7 +62,7 @@ describe('collectiblesApi', () => {
 
     const data = await updateCollectible(3, { name: 'Updated' })
 
-    expect(mockPatch).toHaveBeenCalledWith('/collectibles/3/', { name: 'Updated' })
+    expect(mockPatch).toHaveBeenCalledWith('/catalog/items/3/', { name: 'Updated' })
     expect(data).toEqual({ id: 3 })
   })
 
@@ -71,6 +71,6 @@ describe('collectiblesApi', () => {
 
     await deleteCollectible(9)
 
-    expect(mockDelete).toHaveBeenCalledWith('/collectibles/9/')
+    expect(mockDelete).toHaveBeenCalledWith('/catalog/items/9/')
   })
 })

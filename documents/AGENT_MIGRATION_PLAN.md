@@ -38,7 +38,7 @@ Create domain folder structure for:
 ### `backend/vendors/`
 Same structure.
 
-### `backend/inventory/`
+### `backend/catalog/`
 Same structure.
 
 No logic yet — only the folder + file layout.
