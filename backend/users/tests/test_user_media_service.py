@@ -1,6 +1,6 @@
 import pytest
 
-from backend.inventory.tests.factories import UserFactory
+from backend.catalog.tests.factories import UserFactory
 from backend.users.models import UserMedia, UserMediaType
 from backend.users.services.user_media import remove_user_media, upsert_user_media
 

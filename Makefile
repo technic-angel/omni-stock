@@ -18,7 +18,7 @@ dev-shell:
 
 test-docker:
     # Run pytest inside the dev container. You can pass TEST=mytests to override the default path.
-	TEST ?= backend/inventory/tests/api/test_card_details_api.py
+	TEST ?= backend/catalog/tests/api/test_card_details_api.py
 	docker compose $(S_COMPOSE) run --rm backend bash -lc "cd /usr/src/app && pytest -q $(TEST)"
 
 stop:

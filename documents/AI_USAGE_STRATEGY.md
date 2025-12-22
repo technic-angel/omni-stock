@@ -205,7 +205,8 @@ def test_search_returns_matching_items(user):
 
 # YOU write edge cases:
 def test_search_respects_vendor_scoping(user_with_vendor, other_vendor):
-    item1 = create_item(data={'name': 'Pokemon', 'vendor': user_with_vendor.profile.vendor})
+    vendor = resolve_user_vendor(user_with_vendor)
+    item1 = create_item(data={'name': 'Pokemon', 'vendor': vendor})
     item2 = create_item(data={'name': 'Pokemon', 'vendor': other_vendor})
     
     results = search_items(user=user_with_vendor, query='Pokemon')

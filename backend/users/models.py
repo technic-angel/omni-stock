@@ -8,8 +8,6 @@ from backend.users.validators import (
     validate_birthdate,
     validate_phone_number,
 )
-from backend.vendors.models import Vendor
-
 
 class UserRole(models.TextChoices):
     """Predefined user roles."""
@@ -83,13 +81,6 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="profile",
-    )
-    vendor = models.ForeignKey(
-        Vendor,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="users",
     )
     phone = models.CharField(max_length=40, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)

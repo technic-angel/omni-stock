@@ -47,7 +47,7 @@ Phase 1 — Models & Migrations (slices)
 - [x] 1.4 Add optional `StockLedger` model (0.5d)
   - Acceptance: migration created (optional for MVP but recommended).
 - [x] 1.5 Add `store = FK(Store, null=True, blank=True)` to `Collectible` (0.5d)
-  - Files: `backend/inventory/models.py`
+  - Files: `backend/catalog/models.py`
   - Acceptance: `makemigrations` shows new nullable FK.
 - [x] 1.6 Update `VendorSerializer`/ViewSet to surface flag-protected `stores` metadata (0.25d)
   - Allows quick verification that stores exist without changing behavior for users when flag off.
@@ -57,7 +57,7 @@ Phase 2 — Migrations & Backfill (slices)
   - Acceptance: migrations present in repo.
 - [x] 2.2 Create management command `create_default_stores` (0.75d)
   - Behavior: create "Default Store" per vendor if none exists.
-  - Files: `backend/inventory/management/commands/create_default_stores.py`
+  - Files: `backend/catalog/management/commands/create_default_stores.py`
   - Acceptance: command runs locally without error and creates stores for each vendor.
 - [x] 2.3 Backfill `Collectible.store` using management command (1d)
   - Behavior: assign collectibles to vendor's default store in batches, with logging.
@@ -76,7 +76,7 @@ Phase 3 — Services & Business Logic (slices)
 - [x] 3.4 Implement `create_store`, `update_store`, `archive_store` services (1d)
 - [x] 3.5 Implement `assign_member_to_store` and `remove_store_access` (0.5d)
 - [x] 3.6 Implement `transfer_stock` service with DB transaction and ledger entries (1–2d)
-  - Files: `backend/inventory/services/transfer_stock.py`, `backend/inventory/services/create_collectible.py`
+  - Files: `backend/catalog/services/transfer_stock.py`, `backend/catalog/services/create_collectible.py`
 - [x] 3.7 Update `resolve_user_vendor` / permission helpers to consult `VendorMember` when flag on (0.5d)
   - Ensures existing code paths fall back to profile vendor until membership data is ready.
 
@@ -115,10 +115,10 @@ Acceptance criteria per slice
 - Each slice must include automated tests (where applicable), schema docs updates (drf-spectacular), and a short PR description that links to this plan slice.
 
 File mapping (quick reference)
-- Backend models & migrations: `backend/vendors/models.py`, `backend/inventory/models.py`, `backend/vendors/migrations/`, `backend/inventory/migrations/`
-- Backend services: `backend/vendors/services/`, `backend/inventory/services/`
-- Backend APIs: `backend/vendors/api/`, `backend/inventory/api/`
-- Management commands: `backend/inventory/management/commands/`
+- Backend models & migrations: `backend/vendors/models.py`, `backend/catalog/models.py`, `backend/vendors/migrations/`, `backend/catalog/migrations/`
+- Backend services: `backend/vendors/services/`, `backend/catalog/services/`
+- Backend APIs: `backend/vendors/api/`, `backend/catalog/api/`
+- Management commands: `backend/catalog/management/commands/`
 - Frontend API & hooks: `frontend/src/features/vendors/api/vendorsApi.ts`, `frontend/src/features/vendors/hooks/`
 - Frontend components: `frontend/src/features/vendors/components/`, `frontend/src/features/inventory/components/`
 
@@ -343,7 +343,7 @@ API Contract Examples (minimal)
 - POST /api/v1/stores/ -> create store (payload has vendor_id)
 - GET /api/v1/stores/?vendor={id} -> list stores
 - POST /api/v1/stores/{id}/access/ -> assign member to store
-- POST /api/v1/collectibles/ -> create collectible with `store` field
+- POST /api/v1/catalog/items/ -> create catalog item with `store` field
 
 Testing Plan
 ------------

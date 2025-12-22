@@ -68,16 +68,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
     This handles the profile-specific fields like bio, phone, and profile_picture.
     The profile_picture field is automatically converted to a full URL by DRF.
     """
-    
-    vendor_id = serializers.IntegerField(source='vendor.id', read_only=True, allow_null=True)
-    vendor_name = serializers.CharField(source='vendor.name', read_only=True, allow_null=True)
-
     class Meta:
         model = UserProfile
         fields = [
-            "id", "phone", "bio", "profile_picture", 
-            "vendor_id", "vendor_name",
-            "created_at", "updated_at"
+            "id",
+            "phone",
+            "bio",
+            "profile_picture",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -245,12 +244,6 @@ class UpdateProfileSerializer(serializers.Serializer):
         allow_null=True,
         help_text="User bio/description"
     )
-    vendor_id = serializers.IntegerField(
-        required=False,
-        allow_null=True,
-        help_text="ID of vendor to associate with (null to clear)"
-    )
-
     avatar = UserMediaSerializer(required=False, allow_null=True)
     vendor_logo = UserMediaSerializer(required=False, allow_null=True)
     storefront_banner = UserMediaSerializer(required=False, allow_null=True)
@@ -282,14 +275,6 @@ class UpdateProfileSerializer(serializers.Serializer):
             raise serializers.ValidationError("A user with that email already exists.")
         return value
     
-    def validate_vendor_id(self, value):
-        """Check vendor exists."""
-        if value is not None:
-            from backend.vendors.models import Vendor
-            if not Vendor.objects.filter(id=value).exists():
-                raise serializers.ValidationError("Vendor not found.")
-        return value
-    
     def validate(self, attrs):
         """Prevent sending both upload and delete flags together."""
         if attrs.get("delete_profile_picture") and attrs.get("profile_picture_url"):
@@ -302,7 +287,6 @@ class UpdateProfileSerializer(serializers.Serializer):
         """Update user profile via service layer."""
         from backend.users.services.update_user_profile import update_user_profile
 
-        vendor_id = validated_data.get("vendor_id")
         profile_picture_url = validated_data.pop("profile_picture_url", None)
         profile_picture_provided = "profile_picture_url" in validated_data or profile_picture_url is not None
         delete_picture = validated_data.pop("delete_profile_picture", False)
@@ -320,8 +304,6 @@ class UpdateProfileSerializer(serializers.Serializer):
             birthdate=validated_data.get("birthdate"),
             phone=validated_data.get("phone"),
             bio=validated_data.get("bio"),
-            vendor_id=vendor_id if vendor_id else None,
-            clear_vendor=vendor_id is None and "vendor_id" in validated_data,
         )
 
         # Handle media uploads/deletes meta data

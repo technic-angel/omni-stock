@@ -130,12 +130,12 @@ GET http://localhost:4000/api/v1/dashboard/summary/
 
 ### Inventory
 ```bash
-GET    http://localhost:4000/api/v1/collectibles/
-POST   http://localhost:4000/api/v1/collectibles/
-GET    http://localhost:4000/api/v1/collectibles/{id}/
-PUT    http://localhost:4000/api/v1/collectibles/{id}/
-PATCH  http://localhost:4000/api/v1/collectibles/{id}/
-DELETE http://localhost:4000/api/v1/collectibles/{id}/
+GET    http://localhost:4000/api/v1/catalog/items/
+POST   http://localhost:4000/api/v1/catalog/items/
+GET    http://localhost:4000/api/v1/catalog/items/{id}/
+PUT    http://localhost:4000/api/v1/catalog/items/{id}/
+PATCH  http://localhost:4000/api/v1/catalog/items/{id}/
+DELETE http://localhost:4000/api/v1/catalog/items/{id}/
 ```
 
 ### Vendors

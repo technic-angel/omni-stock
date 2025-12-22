@@ -34,7 +34,7 @@
 # After
 {
     "count": 247,
-    "next": "/api/v1/collectibles/?page=2",
+    "next": "/api/v1/catalog/items/?page=2",
     "previous": null,
     "page": 1,
     "page_size": 20,
@@ -321,7 +321,7 @@ CORS_ALLOW_CREDENTIALS = True
 ### 5.1 API Integration Tests
 
 ```python
-# inventory/tests/test_api.py
+# catalog/tests/test_api.py
 class CollectibleAPITestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user('test', 'test@test.com', 'pass')
@@ -334,7 +334,7 @@ class CollectibleAPITestCase(APITestCase):
             vendor=self.vendor,
             sku='TEST001'
         )
-        response = self.client.get('/api/v1/collectibles/')
+        response = self.client.get('/api/v1/catalog/items/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
     
@@ -343,7 +343,7 @@ class CollectibleAPITestCase(APITestCase):
         other_vendor = Vendor.objects.create(name='Other Vendor', owner=other_user)
         Collectible.objects.create(name='Other Item', vendor=other_vendor)
         
-        response = self.client.get('/api/v1/collectibles/')
+        response = self.client.get('/api/v1/catalog/items/')
         self.assertEqual(len(response.data['results']), 0)
 ```
 
@@ -352,7 +352,7 @@ class CollectibleAPITestCase(APITestCase):
 ### 5.2 Service Layer Tests
 
 ```python
-# inventory/tests/test_services.py
+# catalog/tests/test_services.py
 class CollectibleServiceTestCase(TestCase):
     def test_create_collectible_assigns_sku(self):
         vendor = VendorFactory()

@@ -34,6 +34,7 @@ const renderForm = (collectibleOverrides: Partial<CollectibleProp> = {}) =>
         name: 'Sample',
         sku: 'SKU-1',
         quantity: 5,
+        variants: [],
         ...collectibleOverrides,
       }}
       onSuccess={vi.fn()}
@@ -100,6 +101,32 @@ describe('CollectibleEditForm', () => {
       expect(mutateSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           image_url: 'https://cdn.current.png',
+        }),
+      ),
+    )
+  })
+
+  it('sends variant payloads on submit', async () => {
+    renderForm({
+      variants: [{ id: 10, condition: 'Raw', grade: null, quantity: 1, price_adjustment: null }],
+    })
+
+    fireEvent.change(screen.getByLabelText('Variant 1 Quantity'), { target: { value: 3 } })
+    fireEvent.change(screen.getByLabelText('Variant 1 Price Adjustment'), {
+      target: { value: '125.00' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+
+    await waitFor(() =>
+      expect(mutateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variant_payloads: [
+            {
+              condition: 'Raw',
+              quantity: 3,
+              price_adjustment: '125.00',
+            },
+          ],
         }),
       ),
     )

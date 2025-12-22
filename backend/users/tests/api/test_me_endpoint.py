@@ -4,10 +4,10 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from backend.inventory.tests.factories import StoreFactory, UserFactory, VendorFactory
+from backend.catalog.tests.factories import StoreFactory, UserFactory, VendorFactory
 from backend.users.models import UserProfile
 from backend.users.services.create_user import create_user
-from backend.vendors.models import VendorMember, VendorMemberRole
+from backend.org.models import VendorMember, VendorMemberRole
 
 User = get_user_model()
 
@@ -212,13 +212,14 @@ def test_me_endpoint_includes_active_vendor_and_store(settings):
     vendor = VendorFactory.create()
     store = StoreFactory.create(vendor=vendor)
     user = UserFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
+    UserProfile.objects.create(user=user)
     VendorMember.objects.create(
         vendor=vendor,
         user=user,
         role=VendorMemberRole.ADMIN,
         is_active=True,
         active_store=store,
+        is_primary=True,
     )
 
     client = APIClient()

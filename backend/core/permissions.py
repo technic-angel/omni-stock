@@ -3,43 +3,38 @@
 from django.conf import settings
 from rest_framework.permissions import BasePermission
 
-from backend.vendors.services.store_defaults import ensure_default_store
+from backend.org.services.store_defaults import ensure_default_store
+
+
+def _get_active_membership(user):
+    memberships = getattr(user, "vendor_memberships", None)
+    if memberships is None:
+        return None
+    qs = memberships.filter(is_active=True).select_related("vendor", "active_store")
+    membership = qs.filter(is_primary=True).first()
+    if membership:
+        return membership
+    return qs.first()
 
 
 def resolve_user_vendor(user):
-    """Return the vendor associated with the user's profile or membership."""
+    """Return the vendor associated with the user's active membership."""
     if not user:
         return None
-    profile = getattr(user, "profile", None)
-    preferred_vendor = getattr(profile, "vendor", None) if profile else None
-    if getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
-        memberships = getattr(user, "vendor_memberships", None)
-        if memberships is None:
-            return preferred_vendor
-        qs = memberships.filter(is_active=True).select_related("vendor")
-        if preferred_vendor:
-            membership = qs.filter(vendor=preferred_vendor).first()
-            if membership and membership.vendor:
-                return membership.vendor
-        membership = qs.first()
-        if membership and membership.vendor:
-            return membership.vendor
-    return preferred_vendor
+    membership = _get_active_membership(user)
+    if membership and membership.vendor:
+        return membership.vendor
+    return None
 
 
 def resolve_user_store(user):
     """Resolve the store selected by the current user."""
-    vendor = resolve_user_vendor(user)
-    if vendor is None or not getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
+    if not getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
         return None
-    memberships = getattr(user, "vendor_memberships", None)
-    if memberships is None:
-        return ensure_default_store(vendor)
-    membership = (
-        memberships.filter(is_active=True, vendor=vendor)
-        .select_related("active_store")
-        .first()
-    )
+    membership = _get_active_membership(user)
+    vendor = membership.vendor if membership else None
+    if vendor is None:
+        return None
     if membership and membership.active_store and membership.active_store.vendor_id == vendor.id:
         return membership.active_store
     return ensure_default_store(vendor)

@@ -27,8 +27,10 @@ If that lived in a view, I'd have to mock HTTP requests just to test it. But as 
 ```python
 def list_items(*, user, filters=None):
     qs = Collectible.objects.select_related('vendor', 'user')
-    if user.profile.vendor:
-        qs = qs.filter(vendor=user.profile.vendor)
+    from backend.core.permissions import resolve_user_vendor
+    vendor = resolve_user_vendor(user)
+    if vendor:
+        qs = qs.filter(vendor=vendor)
     if filters:
         # Apply filters...
     return qs
@@ -513,7 +515,8 @@ This would enforce consistency at the DB level, catching any bugs in application
 *Test*:
 ```python
 def test_list_items_scopes_by_vendor(user_with_vendor, other_vendor):
-    item1 = create_item(data={'vendor': user_with_vendor.profile.vendor, ...})
+    vendor = resolve_user_vendor(user_with_vendor)
+    item1 = create_item(data={'vendor': vendor, ...})
     item2 = create_item(data={'vendor': other_vendor, ...})
     
     items = list_items(user=user_with_vendor)

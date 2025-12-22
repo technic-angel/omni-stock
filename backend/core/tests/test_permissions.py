@@ -1,16 +1,22 @@
 import pytest
 
 from backend.core.permissions import VendorScopedPermission
-from backend.inventory.tests.factories import CollectibleFactory, UserFactory, VendorFactory
-from backend.users.models import UserProfile
+from backend.catalog.tests.factories import CatalogItemFactory, UserFactory, VendorFactory
+from backend.org.models import VendorMember, VendorMemberRole
 
 
 @pytest.mark.django_db
 def test_vendor_scoped_permission_allows_owner_vendor():
     vendor = VendorFactory.create()
     user = UserFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
-    collectible = CollectibleFactory.create(vendor=vendor, user=user)
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        is_primary=True,
+    )
+    collectible = CatalogItemFactory.create(vendor=vendor, user=user)
 
     request = type("Request", (), {"user": user})
     perm = VendorScopedPermission()
@@ -23,8 +29,14 @@ def test_vendor_scoped_permission_denies_other_vendor():
     vendor = VendorFactory.create()
     other_vendor = VendorFactory.create()
     user = UserFactory.create()
-    UserProfile.objects.create(user=user, vendor=vendor)
-    collectible = CollectibleFactory.create(vendor=other_vendor)
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        is_primary=True,
+    )
+    collectible = CatalogItemFactory.create(vendor=other_vendor)
 
     request = type("Request", (), {"user": user})
     perm = VendorScopedPermission()
@@ -36,8 +48,8 @@ def test_vendor_scoped_permission_denies_other_vendor():
 def test_user_without_vendor_must_own_collectible():
     user = UserFactory.create()
     vendor = VendorFactory.create()
-    own_collectible = CollectibleFactory.create(user=user, vendor=vendor)
-    other_collectible = CollectibleFactory.create()
+    own_collectible = CatalogItemFactory.create(user=user, vendor=vendor)
+    other_collectible = CatalogItemFactory.create()
 
     request = type("Request", (), {"user": user})
     perm = VendorScopedPermission()

@@ -30,7 +30,7 @@ This rulebook defines strict requirements for how any GitHub Copilot Agent must 
 3. Only create files inside approved domain folders:
    - `backend/users/`
    - `backend/vendors/`
-   - `backend/inventory/`
+   - `backend/catalog/`
    - `frontend/src/features/*`
 4. Never create new folders without explaining why and waiting for approval.
 5. Maintain strict separation of concerns:

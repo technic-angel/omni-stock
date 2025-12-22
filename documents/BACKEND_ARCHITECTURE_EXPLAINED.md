@@ -142,8 +142,8 @@ class UserProfile(models.Model):
 
 **Relationship:**
 - `user.profile` → access UserProfile from User
-- `profile.vendor` → access Vendor from UserProfile
-- `vendor.users.all()` → all profiles linked to a vendor
+- `VendorMember` records link users to vendors; a membership can be marked `is_primary` to represent the selected vendor.
+- `vendor.users.all()` → all profiles linked to a vendor (profile exists independently of memberships)
 
 ---
 
@@ -484,20 +484,20 @@ def perform_create(self, serializer):
 
 ```python
 def _resolve_vendor(self, *, user, posted_vendor, current_vendor=None):
-    profile_vendor = resolve_user_vendor(user)
-    
-    if profile_vendor is not None:
-        if posted_vendor is not None and posted_vendor != profile_vendor:
+    active_vendor = resolve_user_vendor(user)
+
+    if active_vendor is not None:
+        if posted_vendor is not None and posted_vendor != active_vendor:
             raise PermissionDenied("You cannot create a Collectible for another vendor.")
-        return profile_vendor
+        return active_vendor
 ```
 
 **What This Prevents:**
 - User A cannot create items for User B's vendor
 - User cannot pass `vendor: 99` in request to hijack another vendor
-- Always uses vendor from JWT token (extracted from user.profile.vendor)
+- Always uses the active vendor derived from the user's memberships (JWT identifies the user, not the vendor)
 
-This is **multi-tenant security** - critical for SaaS applications.
+This is **multi-tenant security** - critical for SaaS applications. Vendor access is governed by active `VendorMember` records (`is_primary=True`) rather than a field on the profile.
 
 ---
 
@@ -582,9 +582,9 @@ def list_items(*, user, filters: Mapping[str, Any] | None = None) -> QuerySet:
         return base_qs.none()
     
     # Multi-tenant scoping: only your vendor's items
-    profile = getattr(user, "profile", None)
-    if profile is not None and getattr(profile, "vendor", None) is not None:
-        scoped = base_qs.filter(vendor=profile.vendor)
+    vendor = resolve_user_vendor(user)
+    if vendor is not None:
+        scoped = base_qs.filter(vendor=vendor)
     else:
         scoped = base_qs.filter(user=user)
     
@@ -610,7 +610,11 @@ def list_items(*, user, filters: Mapping[str, Any] | None = None) -> QuerySet:
 
 **2. Multi-tenant scoping:**
 ```python
-scoped = base_qs.filter(vendor=profile.vendor)
+vendor = resolve_user_vendor(user)
+if vendor:
+    scoped = base_qs.filter(vendor=vendor)
+else:
+    scoped = base_qs.filter(user=user)
 ```
 - **Critical security:** Users only see their data
 - Applied at queryset level (impossible to accidentally leak data)
@@ -638,7 +642,8 @@ if language:
 **Before (traditional Django):**
 ```python
 # In view:
-collectibles = Collectible.objects.filter(vendor=request.user.profile.vendor)
+vendor = resolve_user_vendor(request.user)
+collectibles = Collectible.objects.filter(vendor=vendor) if vendor else Collectible.objects.none()
 if category := request.GET.get('category'):
     collectibles = collectibles.filter(category=category)
 # Business logic mixed with HTTP handling
@@ -941,8 +946,9 @@ def list_items(*, user, filters=None) -> QuerySet:
     
     # Apply vendor scoping
     profile = getattr(user, "profile", None)
-    if profile and profile.vendor:
-        scoped = base_qs.filter(vendor=profile.vendor)
+    vendor = resolve_user_vendor(user)
+    if vendor:
+        scoped = base_qs.filter(vendor=vendor)
     else:
         scoped = base_qs.filter(user=user)
     
@@ -1301,7 +1307,7 @@ CardDetails
 - **Why:** Extends User with app-specific data
 
 **UserProfile → Vendor:** ForeignKey (ManyToOne)
-- `profile.vendor` → Vendor
+- `VendorMember.is_primary` → marks the active vendor for a user
 - `vendor.users.all()` → QuerySet of UserProfile
 - **Why:** Multiple users can belong to one vendor (future team accounts)
 
@@ -1374,7 +1380,7 @@ Comprehensive test suite with 93% coverage.
 ### Test Structure
 
 ```
-backend/inventory/tests/
+backend/catalog/tests/
 ├── api/
 │   ├── test_api_security.py       # 91 tests (authentication, permissions, validation)
 │   ├── test_viewsets.py           # ViewSet CRUD tests
@@ -1472,11 +1478,11 @@ def authenticated_client(user, api_client):
 ```
 Name                                    Stmts   Miss  Cover
 -----------------------------------------------------------
-backend/inventory/models.py               45      0   100%
-backend/inventory/api/serializers.py      52      3    94%
-backend/inventory/api/viewsets.py         67      5    93%
-backend/inventory/services/create.py      18      1    94%
-backend/inventory/selectors/list.py       24      2    92%
+backend/catalog/models.py               45      0   100%
+backend/catalog/api/serializers.py      52      3    94%
+backend/catalog/api/viewsets.py         67      5    93%
+backend/catalog/services/create.py      18      1    94%
+backend/catalog/selectors/list.py       24      2    92%
 backend/core/permissions.py               32      1    97%
 backend/vendors/api/viewsets.py           28      2    93%
 backend/users/api/viewsets.py             41      3    93%

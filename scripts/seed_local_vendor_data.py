@@ -17,7 +17,7 @@ from django.contrib.auth import get_user_model  # noqa  # pylint: disable=wrong-
 from django.utils import timezone  # noqa  # pylint: disable=wrong-import-position
 
 from backend.users.models import UserProfile, UserRole  # noqa  # pylint: disable=wrong-import-position
-from backend.vendors.models import (  # noqa  # pylint: disable=wrong-import-position
+from backend.org.models import (  # noqa  # pylint: disable=wrong-import-position
     Store,
     StoreAccess,
     StoreAccessRole,
@@ -26,6 +26,11 @@ from backend.vendors.models import (  # noqa  # pylint: disable=wrong-import-pos
     VendorMember,
     VendorMemberRole,
 )
+
+
+ADMIN_USERNAME = os.environ.get("SEED_ADMIN_USERNAME", "admin")
+ADMIN_EMAIL = os.environ.get("SEED_ADMIN_EMAIL", "admin@example.com")
+ADMIN_PASSWORD = os.environ.get("SEED_ADMIN_PASSWORD", "1Tsn0tp@sssw0rd")
 
 
 def ensure_user(username: str, email: str, password: str):
@@ -126,14 +131,16 @@ def ensure_membership(user, vendor, stores):
     UserProfile.objects.update_or_create(
         user=user,
         defaults={
-            "vendor": vendor,
-            "metadata": {"seeded_at": datetime.utcnow().isoformat()},
+            "metadata": {
+                "seeded_at": datetime.utcnow().isoformat(),
+                "default_vendor": vendor.name,
+            },
         },
     )
 
 
 def main():
-    admin_user = ensure_user(username="admin", email="admin@example.com", password="1Tsn0tp@sssw0rd")
+    admin_user = ensure_user(username=ADMIN_USERNAME, email=ADMIN_EMAIL, password=ADMIN_PASSWORD)
 
     vendor = ensure_vendor(
         name="Mellycorp",
@@ -146,6 +153,8 @@ def main():
     ensure_membership(admin_user, vendor, stores)
 
     print("\n🎉 Local vendor/store data ready for testing.")
+    print(f"   • Username: {ADMIN_USERNAME}")
+    print("   • Password: ********")
 
 
 main()

@@ -44,7 +44,7 @@ This sprint begins AFTER the agent loads `/documents`.
 #### **1.1 — Create domain folders**
 - backend/users
 - backend/vendors
-- backend/inventory
+- backend/catalog
 - backend/core
 
 #### **1.2 — Create empty API/Services/Selectors/Tests files**

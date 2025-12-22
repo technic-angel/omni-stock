@@ -34,11 +34,9 @@ from backend.users.api.viewsets import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     # --- API Endpoints ---
-    # Link the app-level URLs to the /api/v1/collectibles/ path
-    # Ensure the prefix ends with a trailing slash so included routes
-    # are mounted at `/api/v1/...`, e.g. `/api/v1/collectibles/`.
-    path('api/v1/', include('backend.inventory.api.urls')),
-    path('api/v1/', include('backend.vendors.api.urls')),
+    # Link app-level URLs to /api/v1/... so routers expose domain-specific paths
+    path('api/v1/', include('backend.catalog.api.urls')),
+    path('api/v1/', include('backend.org.api.urls')),
     # JWT token endpoints under /api/v1/auth/
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

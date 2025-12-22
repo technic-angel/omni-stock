@@ -126,8 +126,8 @@ Contains framework-level utilities:
 Examples:
 
 ```
-backend/inventory/services/create_item.py
-backend/inventory/services/update_item.py
+backend/catalog/services/create_item.py
+backend/catalog/services/update_item.py
 backend/vendors/services/create_vendor.py
 backend/users/services/create_user.py
 ```
@@ -154,8 +154,8 @@ backend/users/services/create_user.py
 Examples:
 
 ```
-backend/inventory/selectors/get_item.py
-backend/inventory/selectors/list_items.py
+backend/catalog/selectors/get_item.py
+backend/catalog/selectors/list_items.py
 ```
 
 Selectors perform:
