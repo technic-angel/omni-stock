@@ -8,7 +8,6 @@ from django.db import transaction
 
 from backend.users.models import UserMediaType, UserProfile
 from backend.users.services.user_media import remove_user_media, upsert_user_media
-from backend.vendors.models import Vendor
 
 User = get_user_model()
 _UNSET = object()
@@ -31,8 +30,6 @@ def update_user_profile(
     mark_profile_completed: bool = False,
     phone: Optional[str] = None,
     bio: Optional[str] = None,
-    vendor_id: Optional[int] = None,
-    clear_vendor: bool = False,
     profile_picture_url: Optional[str] = None,
     delete_profile_picture: bool = False,
     avatar: Optional[dict] = _UNSET,
@@ -50,8 +47,6 @@ def update_user_profile(
         last_name: New last name (optional)
         phone: New phone number (optional)
         bio: New bio text (optional)
-        vendor_id: ID of vendor to associate with (optional)
-        clear_vendor: If True, remove vendor association
         profile_picture_url: URL of the uploaded profile picture (optional)
         delete_profile_picture: If True, remove profile picture
         
@@ -60,7 +55,6 @@ def update_user_profile(
         
     Raises:
         User.DoesNotExist: If user not found
-        Vendor.DoesNotExist: If vendor_id provided but not found
     """
     # Get user and profile with locks (create profile if missing)
     user = User.objects.select_for_update().get(id=user_id)
@@ -114,15 +108,6 @@ def update_user_profile(
     
     if bio is not None:
         profile.bio = bio
-        profile_changed = True
-    
-    # Handle vendor association
-    if clear_vendor:
-        profile.vendor = None
-        profile_changed = True
-    elif vendor_id is not None:
-        vendor = Vendor.objects.get(id=vendor_id)
-        profile.vendor = vendor
         profile_changed = True
     
     # Handle profile picture

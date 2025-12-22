@@ -4,6 +4,14 @@ export interface CardDetails {
   external_ids?: Record<string, string>
 }
 
+export interface CatalogVariant {
+  id: number
+  condition?: string | null
+  grade?: string | null
+  quantity: number
+  price_adjustment?: string | null
+}
+
 export interface Collectible {
   id: number
   name: string
@@ -13,6 +21,7 @@ export interface Collectible {
   market_region?: string
   image_url?: string | null
   card_details?: CardDetails | null
+  variants?: CatalogVariant[]
 }
 
 export interface Paginated<T> {

@@ -6,7 +6,6 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from backend.users.models import UserProfile
-from backend.vendors.models import Vendor
 
 User = get_user_model()
 
@@ -27,15 +26,6 @@ def user_with_profile(db):
     # Explicitly create profile (no auto-signal in this project)
     UserProfile.objects.create(user=user)
     return user
-
-
-@pytest.fixture
-def vendor(db):
-    """Create a test vendor."""
-    return Vendor.objects.create(
-        name="Test Vendor",
-        description="Test vendor description"
-    )
 
 
 @pytest.fixture
@@ -127,51 +117,6 @@ def test_update_username_duplicate_rejected(authenticated_client, user_with_prof
     
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "username" in response.data
-
-
-@pytest.mark.django_db
-def test_link_user_to_vendor(authenticated_client, user_with_profile, vendor):
-    """Test linking user to vendor."""
-    response = authenticated_client.patch(
-        "/api/v1/auth/me/",
-        data={"vendor_id": vendor.id},
-        format="json"
-    )
-    
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["profile"]["vendor_id"] == vendor.id
-    assert response.data["profile"]["vendor_name"] == vendor.name
-
-
-@pytest.mark.django_db
-def test_clear_vendor_association(authenticated_client, user_with_profile, vendor):
-    """Test clearing vendor association."""
-    # First link to vendor
-    user_with_profile.profile.vendor = vendor
-    user_with_profile.profile.save()
-    
-    # Now clear it
-    response = authenticated_client.patch(
-        "/api/v1/auth/me/",
-        data={"vendor_id": None},
-        format="json"
-    )
-    
-    assert response.status_code == status.HTTP_200_OK
-    assert response.data["profile"]["vendor_id"] is None
-
-
-@pytest.mark.django_db
-def test_invalid_vendor_rejected(authenticated_client, user_with_profile):
-    """Test that invalid vendor ID is rejected."""
-    response = authenticated_client.patch(
-        "/api/v1/auth/me/",
-        data={"vendor_id": 99999},
-        format="json"
-    )
-    
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "vendor_id" in response.data
 
 
 @pytest.mark.django_db

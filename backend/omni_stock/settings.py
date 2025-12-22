@@ -110,8 +110,8 @@ INSTALLED_APPS = [
     # Local Apps 
     'backend.core.apps.CoreConfig',
     'backend.users.apps.UsersConfig',
-    'backend.vendors.apps.VendorsConfig',
-    'backend.inventory.apps.InventoryConfig',
+    'backend.org.apps.OrgConfig',
+    'backend.catalog.apps.CatalogConfig',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -152,6 +152,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.onrender\.com$",  # All Render domains including PR previews
     r"^https://.*\.vercel\.app$",     # All Vercel preview deployments
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # CSRF trusted origins - add Render domains automatically
 _csrf_origins = env.list('CSRF_TRUSTED_ORIGINS', default=[])

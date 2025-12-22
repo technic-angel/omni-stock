@@ -4,8 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import Card from '../../../shared/components/Card'
 import { useCreateCollectible } from '../hooks/useCreateCollectible'
-import { collectibleSchema, CollectibleInput } from '../schema/itemSchema'
+import {
+  collectibleSchema,
+  CollectibleInput,
+  buildVariantPayloads,
+} from '../schema/itemSchema'
 import { useCollectibleImageUpload } from '../hooks/useCollectibleImageUpload'
+import VariantFields from './VariantFields'
 
 type Props = {
   onCreated?: () => void
@@ -21,6 +26,7 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
   } = useCollectibleImageUpload()
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -33,6 +39,7 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
       language: '',
       market_region: '',
       image_file: undefined,
+      variants: [],
     },
   })
 
@@ -48,8 +55,13 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
         return
       }
     }
-    const payload = { ...values, image_url: imageUrl }
+    const variantPayloads = buildVariantPayloads(values.variants)
+    const payload: Record<string, any> = { ...values, image_url: imageUrl }
+    if (variantPayloads) {
+      payload.variant_payloads = variantPayloads
+    }
     delete (payload as any).image_file
+    delete (payload as any).variants
 
     await mutateAsync(payload)
     reset()
@@ -86,6 +98,12 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
           Market Region
           <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
         </label>
+        <VariantFields
+          control={control}
+          register={register}
+          errors={errors}
+          disabled={isPending || isUploading}
+        />
         <label className="block text-sm">
           Image
           <input
