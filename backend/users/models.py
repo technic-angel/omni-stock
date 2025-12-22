@@ -4,10 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from backend.users.validators import (
-    validate_birthdate,
-    validate_phone_number,
-)
+from backend.users.validators import validate_birthdate, validate_phone_number
 
 class UserRole(models.TextChoices):
     """Predefined user roles."""
