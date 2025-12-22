@@ -282,9 +282,6 @@ omni-stock/
 │   └── cypress/          # E2E tests
 └── scripts/              # Utility scripts (seed, openapi, tooling)
 
-> Internal planning documents live in a local-only `documents/` folder that is intentionally ignored by git to keep the public repo lean.
-```
-
 ## Contributing
 
 1. Create a feature branch from `main`
