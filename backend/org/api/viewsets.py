@@ -20,7 +20,7 @@ from backend.org.api.serializers import (
     VendorSelectionSerializer,
     VendorSerializer,
 )
-from backend.org.models import Store, StoreAccess, Vendor, VendorMember, VendorMemberRole
+from backend.org.models import Store, StoreAccess, VendorMember, VendorMemberRole
 from backend.org.selectors.get_vendor import get_vendor
 from backend.org.selectors.list_vendors import list_vendors
 from backend.org.services.memberships import (
