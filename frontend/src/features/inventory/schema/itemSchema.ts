@@ -17,8 +17,13 @@ export const collectibleSchema = z.object({
     .number({ invalid_type_error: 'Quantity must be a number' })
     .int('Quantity must be an integer')
     .min(0, 'Quantity must be at least 0'),
-  language: z.string().optional(),
-  market_region: z.string().optional(),
+  category: z.string().optional(),
+  card_details: z.object({
+    language: z.string().optional(),
+    market_region: z.string().optional(),
+    psa_grade: z.string().optional(),
+    condition: z.string().optional(),
+  }).optional(),
   image_url: z.string().url().optional(),
   image_file: z
     .any()
@@ -32,6 +37,8 @@ export const collectibleSchema = z.object({
     }),
   variants: z.array(variantInputSchema).default([]),
 })
+
+export type CollectibleInput = z.infer<typeof collectibleSchema>
 
 export type VariantInput = z.infer<typeof variantInputSchema>
 

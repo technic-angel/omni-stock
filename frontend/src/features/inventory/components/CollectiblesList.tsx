@@ -1,11 +1,21 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Edit2, Trash2 } from 'lucide-react'
 
 import { useCollectibles } from '../hooks/useCollectibles'
 import { useDeleteCollectible } from '../hooks/useDeleteCollectible'
 import ConfirmDialog from '../../../shared/components/ConfirmDialog'
 import type { Collectible as CollectibleType } from '../../../shared/types'
 import type { InventoryFiltersInput } from '../schema/filtersSchema'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Button } from '@/components/ui/button'
 
 type Props = {
   filters: InventoryFiltersInput
@@ -60,66 +70,108 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
     setDeleteError(null)
   }
 
-  if (isLoading) return <div>Loading collectibles…</div>
-  if (error) return <div>Error loading collectibles</div>
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500">Loading collectibles…</div>
+  if (error) return <div className="p-8 text-center text-red-500">Error loading collectibles</div>
 
   if (collectibles.length === 0) {
-    return <div className="text-sm text-gray-600">No collectibles match the current filters.</div>
+    return <div className="p-8 text-center text-gray-500">No collectibles match the current filters.</div>
   }
 
   return (
     <>
       {deleteError && (
-        <div className="mb-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+        <div className="m-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {deleteError}
         </div>
       )}
-      <ul className="space-y-2" data-cy="collectible-list">
-        {collectibles.map((c: CollectibleType) => (
-          <li
-            key={c.id}
-            className="rounded border p-3 hover:bg-gray-50 cursor-pointer"
-            data-cy="collectible-row"
-            onClick={() => onSelect?.(c)}
-          >
-            <div className="font-medium" data-cy="collectible-name">
-              {c.name}
-            </div>
-            <div className="text-sm text-gray-600">
-              {c.language} — {c.market_region}
-            </div>
-            <div className="mt-2 flex gap-2">
-              <button
-                data-cy="collectible-edit"
-                className="text-sm text-blue-600"
-                type="button"
-                onClick={(event) => handleEdit(event, c.id)}
-              >
-                Edit
-              </button>
-              <button
-                data-cy="collectible-delete"
-                className="text-sm text-red-600 disabled:opacity-50"
-                type="button"
-                disabled={pendingDeleteId === c.id}
-                onClick={(event) => handleDeleteRequest(event, c)}
-              >
-                {pendingDeleteId === c.id ? 'Deleting…' : 'Delete'}
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-[300px]">Name</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Qty/Grade</TableHead>
+            <TableHead>Market Region</TableHead>
+            <TableHead>Language</TableHead>
+            <TableHead>Last Updated</TableHead>
+            <TableHead className="w-[100px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {collectibles.map((c: CollectibleType) => (
+            <TableRow 
+              key={c.id} 
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => onSelect?.(c)}
+            >
+              <TableCell className="font-medium">
+                <div className="flex flex-col">
+                  <span>{c.name}</span>
+                  {c.sku && <span className="text-xs text-gray-500 font-normal">{c.sku}</span>}
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="inline-flex items-center rounded-full bg-brand-primary-soft px-2.5 py-0.5 text-xs font-medium text-brand-primary capitalize">
+                  {c.category || 'Collectible'}
+                </span>
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col">
+                  <span>{c.quantity || 0}x</span>
+                  {c.card_details?.psa_grade && (
+                    <span className="text-xs text-gray-500">PSA {c.card_details.psa_grade}</span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>{c.card_details?.market_region || '-'}</TableCell>
+              <TableCell>{c.card_details?.language || '-'}</TableCell>
+              <TableCell className="text-gray-500">
+                {formatDate(c.updated_at)}
+              </TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-brand-primary hover:text-brand-primary-dark hover:bg-brand-primary-soft"
+                    onClick={(e) => handleEdit(e as any, c.id)}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={(e) => handleDeleteRequest(e as any, c)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
       <ConfirmDialog
-        isOpen={Boolean(deleteTarget)}
-        title="Delete collectible"
+        isOpen={!!deleteTarget}
+        title="Delete Item"
         description={confirmDialogDescription}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
-        isConfirming={pendingDeleteId === deleteTarget?.id}
-        confirmButtonClassName="bg-red-600"
+        isLoading={pendingDeleteId !== null}
+        variant="destructive"
       />
     </>
   )
