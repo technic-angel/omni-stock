@@ -6,6 +6,7 @@ from django.db import models
 
 from backend.users.validators import validate_birthdate, validate_phone_number
 
+
 class UserRole(models.TextChoices):
     """Predefined user roles."""
 
