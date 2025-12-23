@@ -31,7 +31,7 @@ const InventoryDetailSidebar = ({ collectible, onDelete }: Props) => {
           <h3 className="text-xl font-bold text-gray-900">{collectible.name}</h3>
           {collectible.sku && <p className="text-sm text-gray-500">{collectible.sku}</p>}
         </div>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label="Item actions menu">
           <MoreVertical className="h-5 w-5 text-gray-400" />
         </Button>
       </div>

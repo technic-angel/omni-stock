@@ -4,8 +4,13 @@ const VideoGameFields = () => {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Platform</label>
-        <select className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20">
+        <label className="text-sm font-medium text-gray-700" htmlFor="video-platform">
+          Platform
+        </label>
+        <select
+          id="video-platform"
+          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+        >
           <option>Nintendo Switch</option>
           <option>PlayStation 5</option>
           <option>Xbox Series X</option>
@@ -15,8 +20,13 @@ const VideoGameFields = () => {
         </select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Region</label>
-        <select className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20">
+        <label className="text-sm font-medium text-gray-700" htmlFor="video-region">
+          Region
+        </label>
+        <select
+          id="video-region"
+          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+        >
           <option>NTSC-U (US/Canada)</option>
           <option>NTSC-J (Japan)</option>
           <option>PAL (Europe/Australia)</option>
@@ -24,8 +34,13 @@ const VideoGameFields = () => {
         </select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Completeness</label>
-        <select className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20">
+        <label className="text-sm font-medium text-gray-700" htmlFor="video-completeness">
+          Completeness
+        </label>
+        <select
+          id="video-completeness"
+          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+        >
           <option>Loose (Cart/Disc only)</option>
           <option>CIB (Complete in Box)</option>
           <option>New / Sealed</option>
@@ -33,8 +48,11 @@ const VideoGameFields = () => {
         </select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Genre</label>
+        <label className="text-sm font-medium text-gray-700" htmlFor="video-genre">
+          Genre
+        </label>
         <input
+          id="video-genre"
           type="text"
           placeholder="e.g. RPG, Action"
           className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"

@@ -38,6 +38,7 @@ const InventoryFiltersForm = ({ defaultFilters, onChange }: Props) => {
       onSubmit={handleSubmit(onChange)}
       className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
       data-cy="collectibles-filters"
+      data-testid="inventory-filters-form"
     >
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[240px]">
@@ -51,6 +52,7 @@ const InventoryFiltersForm = ({ defaultFilters, onChange }: Props) => {
         
         <div className="flex flex-wrap items-center gap-2">
           <select
+            aria-label="Category filter"
             className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-primary"
             {...register('category')}
           >
@@ -60,6 +62,7 @@ const InventoryFiltersForm = ({ defaultFilters, onChange }: Props) => {
           </select>
 
           <select
+            aria-label="Language filter"
             className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-primary"
             {...register('language')}
           >
@@ -69,6 +72,7 @@ const InventoryFiltersForm = ({ defaultFilters, onChange }: Props) => {
           </select>
 
           <select
+            aria-label="Market region filter"
             className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-primary"
             {...register('market_region')}
           >

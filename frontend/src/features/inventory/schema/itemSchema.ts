@@ -38,8 +38,6 @@ export const collectibleSchema = z.object({
   variants: z.array(variantInputSchema).default([]),
 })
 
-export type CollectibleInput = z.infer<typeof collectibleSchema>
-
 export type VariantInput = z.infer<typeof variantInputSchema>
 
 export type VariantPayload = {

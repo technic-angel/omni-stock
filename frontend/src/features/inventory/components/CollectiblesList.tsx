@@ -139,17 +139,19 @@ const CollectiblesList = ({ filters, onSelect }: Props) => {
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Edit ${c.name}`}
                     className="h-8 w-8 text-brand-primary hover:text-brand-primary-dark hover:bg-brand-primary-soft"
                     onClick={(e) => handleEdit(e as any, c.id)}
                   >
                     <Edit2 className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Delete ${c.name}`}
                     className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                     onClick={(e) => handleDeleteRequest(e as any, c)}
                   >

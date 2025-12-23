@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ImagePlus, ArrowLeft, Save, X, ChevronDown } from 'lucide-react'
+import { ImagePlus, Save, X, ChevronDown } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import Page from '../../../shared/components/Page'
@@ -91,8 +91,13 @@ const AddCollectiblePage = () => {
                 General Information
               </h3>
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600">
-                <span>Assign to Store:</span>
-                <select className="bg-transparent font-bold text-gray-900 focus:outline-none">
+                <label htmlFor="add-item-store" className="sr-only">
+                  Assign to Store
+                </label>
+                <select
+                  id="add-item-store"
+                  className="bg-transparent font-bold text-gray-900 focus:outline-none"
+                >
                   <option>Flagship Store</option>
                   <option>Secondary Store</option>
                   <option>Warehouse</option>
@@ -102,8 +107,11 @@ const AddCollectiblePage = () => {
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Item Name</label>
+                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-name">
+                  Item Name
+                </label>
                 <input
+                  id="add-item-name"
                   type="text"
                   placeholder="e.g. Charizard VMAX - Shining Fates"
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
@@ -111,9 +119,12 @@ const AddCollectiblePage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Category</label>
+                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-category">
+                  Category
+                </label>
                 <div className="relative">
                   <select 
+                    id="add-item-category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value as CategoryType)}
                     className="w-full appearance-none rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
@@ -128,8 +139,11 @@ const AddCollectiblePage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">SKU / Identifier</label>
+                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-sku">
+                  SKU / Identifier
+                </label>
                 <input
+                  id="add-item-sku"
                   type="text"
                   placeholder="e.g. POK-SF-001"
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
@@ -137,8 +151,11 @@ const AddCollectiblePage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Initial Quantity</label>
+                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-quantity">
+                  Initial Quantity
+                </label>
                 <input
+                  id="add-item-quantity"
                   type="number"
                   min="0"
                   defaultValue="1"
@@ -147,8 +164,11 @@ const AddCollectiblePage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Base Price ($)</label>
+                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-price">
+                  Base Price ($)
+                </label>
                 <input
+                  id="add-item-price"
                   type="number"
                   step="0.01"
                   placeholder="0.00"
