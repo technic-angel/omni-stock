@@ -536,4 +536,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
-          files: ./artifacts/backend-coverage-report-3.10/coverage.xml,./artifacts/backend-coverage-report-3.11/coverage.xml,./artifacts/frontend-coverage-report/lcov.info
+          files: ./artifacts/backend-coverage-report-3.10/backend/coverage.xml,./artifacts/backend-coverage-report-3.11/backend/coverage.xml,./artifacts/frontend-coverage-report/frontend/coverage/lcov.info

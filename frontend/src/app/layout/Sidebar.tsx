@@ -60,7 +60,7 @@ const NAV_ITEMS: NavItem[] = [
     href: '/inventory',
     icon: Package,
     requiresStore: true,
-    matchPaths: ['/inventory/add'],
+    matchPaths: ['/inventory/new'],
   },
   {
     id: 'members',
@@ -79,7 +79,16 @@ const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-const QUICK_ACCESS_ITEMS: QuickAccessItem[] = []
+const QUICK_ACCESS_ITEMS: QuickAccessItem[] = [
+  {
+    id: 'add-item',
+    name: 'Add New Item',
+    description: 'Create a new collectible in your inventory.',
+    icon: Plus,
+    href: '/inventory/new',
+    requiresStore: true,
+  },
+]
 
 if (ENABLE_LOW_STOCK_AND_AUDIT) {
   QUICK_ACCESS_ITEMS.push(
@@ -335,15 +344,17 @@ export function Sidebar({ className = '' }: { className?: string }) {
       return (
         <div
           key={item.id}
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-400"
-          aria-hidden="true" // Mark as aria-hidden
+          className="group block w-full rounded-lg border border-gray-200/60 bg-gray-50 p-3.5 transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-gray-300" />
-            <span className="font-semibold">{item.name}</span>
-            {item.comingSoon && <span className="ml-auto text-[10px] uppercase text-gray-300">soon</span>}
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-gray-100">
+              <Icon className="h-4 w-4 text-gray-300" />
+            </div>
+            <div className="flex-1 min-w-0 pt-0.5">
+              <div className="text-sm font-semibold text-gray-400">{item.name}</div>
+              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-gray-300 font-medium">Coming Soon</p>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-gray-400">{item.description}</p>
         </div>
       )
     }
@@ -353,13 +364,17 @@ export function Sidebar({ className = '' }: { className?: string }) {
         key={item.id}
         to={item.href}
         onClick={onLinkClick}
-        className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-gray-700 transition hover:border-brand-primary hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1 focus-visible:ring-offset-gray-100"
+        className="group block w-full rounded-lg border border-gray-200/60 bg-white p-3.5 transition-all hover:border-brand-primary hover:bg-brand-primary/[0.02] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
       >
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-gray-500" />
-          <span className="font-semibold">{item.name}</span>
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-brand-primary/10 text-brand-primary transition-all group-hover:bg-brand-primary group-hover:text-white group-hover:scale-105">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="text-sm font-semibold text-gray-900 group-hover:text-brand-primary transition-colors">{item.name}</div>
+            <p className="mt-0.5 text-[11px] leading-tight text-gray-500 line-clamp-2">{item.description}</p>
+          </div>
         </div>
-        <p className="mt-1 text-xs text-gray-500">{item.description}</p>
       </Link>
     )
   }
@@ -367,12 +382,11 @@ export function Sidebar({ className = '' }: { className?: string }) {
   const renderQuickAccess = (onLinkClick?: () => void) => {
     if (!hasVendor || !showFullContent || QUICK_ACCESS_ITEMS.length === 0) return null
     return (
-      <div className="border-b border-gray-100 px-4 py-5">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Quick Access</p>
-          <Plus className="h-4 w-4 text-gray-400" />
+      <div className="border-b border-gray-100 px-4 py-4">
+        <div className="mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Quick Actions</p>
         </div>
-        <div className="mt-3 space-y-3">
+        <div className="space-y-2">
           {QUICK_ACCESS_ITEMS.map((item) => renderQuickAccessItem(item, onLinkClick))}
         </div>
       </div>
@@ -454,8 +468,8 @@ export function Sidebar({ className = '' }: { className?: string }) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         {renderVendorContext()}
         {renderSearchBar()}
-        {renderMainNavigation(onLinkClick)}
         {renderQuickAccess(onLinkClick)}
+        {renderMainNavigation(onLinkClick)}
       </div>
 
       <div className="flex-shrink-0 border-t border-gray-100 px-4 py-5">

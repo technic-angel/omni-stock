@@ -22,8 +22,13 @@ const mapCollectibleToForm = (collectible: Collectible): CollectibleInput => ({
   name: collectible.name || '',
   sku: collectible.sku || '',
   quantity: collectible.quantity ?? 0,
-  language: collectible.language || '',
-  market_region: collectible.market_region || '',
+  category: collectible.category || 'pokemon_card',
+  card_details: {
+    language: collectible.card_details?.language || '',
+    market_region: collectible.card_details?.market_region || '',
+    psa_grade: collectible.card_details?.psa_grade || '',
+    condition: collectible.card_details?.condition || '',
+  },
   image_url: collectible.image_url || undefined,
   image_file: undefined,
   variants:
@@ -76,12 +81,17 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
     }
 
     const variantPayloads = buildVariantPayloads(values.variants)
-    const payload: Record<string, any> = { ...values, image_url: imageUrl }
+    const payload: Record<string, any> = { 
+      ...values, 
+      image_url: imageUrl,
+      card_metadata: values.card_details
+    }
     if (variantPayloads) {
       payload.variant_payloads = variantPayloads
     }
     delete (payload as any).image_file
     delete (payload as any).variants
+    delete (payload as any).card_details
 
     await mutateAsync(payload)
     onSuccess?.()
@@ -110,12 +120,19 @@ const CollectibleEditForm = ({ collectible, onSuccess }: Props) => {
           {errors.quantity && <p className="text-xs text-red-600">{errors.quantity.message}</p>}
         </label>
         <label className="block text-sm">
+          Category
+          <select className="mt-1 w-full rounded border p-2" {...register('category')}>
+            <option value="pokemon_card">Pokémon Card</option>
+            <option value="sealed_product">Sealed Product</option>
+          </select>
+        </label>
+        <label className="block text-sm">
           Language
-          <input className="mt-1 w-full rounded border p-2" {...register('language')} />
+          <input className="mt-1 w-full rounded border p-2" {...register('card_details.language')} />
         </label>
         <label className="block text-sm">
           Market Region
-          <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
+          <input className="mt-1 w-full rounded border p-2" {...register('card_details.market_region')} />
         </label>
         <VariantFields
           control={control}

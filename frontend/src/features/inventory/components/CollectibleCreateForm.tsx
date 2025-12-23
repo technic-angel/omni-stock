@@ -36,8 +36,11 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
       name: '',
       sku: '',
       quantity: 0,
-      language: '',
-      market_region: '',
+      category: 'pokemon_card',
+      card_details: {
+        language: '',
+        market_region: '',
+      },
       image_file: undefined,
       variants: [],
     },
@@ -56,12 +59,17 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
       }
     }
     const variantPayloads = buildVariantPayloads(values.variants)
-    const payload: Record<string, any> = { ...values, image_url: imageUrl }
+    const payload: Record<string, any> = { 
+      ...values, 
+      image_url: imageUrl,
+      card_metadata: values.card_details // Backend expects card_metadata
+    }
     if (variantPayloads) {
       payload.variant_payloads = variantPayloads
     }
     delete (payload as any).image_file
     delete (payload as any).variants
+    delete (payload as any).card_details
 
     await mutateAsync(payload)
     reset()
@@ -91,12 +99,19 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
           {errors.quantity && <p className="text-xs text-red-600">{errors.quantity.message}</p>}
         </label>
         <label className="block text-sm">
+          Category
+          <select className="mt-1 w-full rounded border p-2" {...register('category')}>
+            <option value="pokemon_card">Pokémon Card</option>
+            <option value="sealed_product">Sealed Product</option>
+          </select>
+        </label>
+        <label className="block text-sm">
           Language
-          <input className="mt-1 w-full rounded border p-2" {...register('language')} />
+          <input className="mt-1 w-full rounded border p-2" {...register('card_details.language')} />
         </label>
         <label className="block text-sm">
           Market Region
-          <input className="mt-1 w-full rounded border p-2" {...register('market_region')} />
+          <input className="mt-1 w-full rounded border p-2" {...register('card_details.market_region')} />
         </label>
         <VariantFields
           control={control}

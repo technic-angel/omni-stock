@@ -40,26 +40,43 @@ describe('CollectiblesList', () => {
 
   it('renders list items', () => {
     mockedUseCollectibles.mockReturnValue({
-      data: { results: [{ id: 1, name: 'Card A', language: 'EN', market_region: 'US' }] },
+      data: {
+        results: [
+          {
+            id: 1,
+            name: 'Card A',
+            category: 'pokemon_card',
+            card_details: { language: 'English', market_region: 'US' },
+            quantity: 2,
+          },
+        ],
+      },
       isLoading: false,
       error: null,
     } as any)
     mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any)
     renderComponent()
     expect(screen.getByText('Card A')).toBeInTheDocument()
-    expect(screen.getByText(/en — us/i)).toBeInTheDocument()
+    expect(screen.getByText(/pokemon_card/i)).toBeInTheDocument()
+    expect(screen.getByText('English')).toBeInTheDocument()
   })
 
   it('supports responses that return a raw array', () => {
     mockedUseCollectibles.mockReturnValue({
-      data: [{ id: 2, name: 'Loose Card', language: 'JP', market_region: 'JP' }],
+      data: [
+        {
+          id: 2,
+          name: 'Loose Card',
+          card_details: { language: 'Japanese', market_region: 'JP' },
+        },
+      ],
       isLoading: false,
       error: null,
     } as any)
     mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any)
     renderComponent()
     expect(screen.getByText('Loose Card')).toBeInTheDocument()
-    expect(screen.getByText(/jp — jp/i)).toBeInTheDocument()
+    expect(screen.getByText('Japanese')).toBeInTheDocument()
   })
 
   it('shows empty state', () => {
@@ -84,8 +101,8 @@ describe('CollectiblesList', () => {
 
     renderComponent()
 
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
-    expect(screen.getByText(/delete collectible/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Delete Card A/i }))
+    expect(screen.getByText(/Delete Item/i)).toBeInTheDocument()
 
     await act(async () => {
       const dialog = screen.getByTestId('confirm-dialog')
@@ -105,9 +122,9 @@ describe('CollectiblesList', () => {
     mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn(), isPending: false } as any)
 
     renderComponent()
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Delete Rare Card/i }))
 
-    expect(screen.getByText(/this will permanently remove rare card/i)).toBeInTheDocument()
+    expect(screen.getByText(/This will permanently remove Rare Card/i)).toBeInTheDocument()
   })
 
   it('surfaces deletion errors returned from the server', async () => {
@@ -121,7 +138,7 @@ describe('CollectiblesList', () => {
     mockedUseDeleteCollectible.mockReturnValue({ mutateAsync: vi.fn().mockRejectedValue(mutationError) } as any)
 
     renderComponent()
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Delete Card A/i }))
 
     await act(async () => {
       const dialog = screen.getByTestId('confirm-dialog')
