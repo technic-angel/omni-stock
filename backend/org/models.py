@@ -125,6 +125,10 @@ class VendorMember(models.Model):
         unique_together = ("vendor", "user")
         ordering = ["vendor_id", "user_id"]
         db_table = "org_membership"
+        indexes = [
+            models.Index(fields=["vendor", "user", "is_active"]),
+            models.Index(fields=["user", "is_primary"]),
+        ]
 
     def __str__(self):
         return f"{self.user} @ {self.vendor} ({self.role})"
@@ -174,6 +178,9 @@ class Store(models.Model):
         unique_together = ("vendor", "slug")
         ordering = ["name"]
         db_table = "org_store"
+        indexes = [
+            models.Index(fields=["vendor", "is_active"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.vendor})"

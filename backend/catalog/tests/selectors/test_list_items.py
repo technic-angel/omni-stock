@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from backend.catalog.selectors.get_item import get_item
 from backend.catalog.selectors.list_items import list_items
+from backend.catalog.selectors.search_items import search_items
 from backend.catalog.tests.factories import (
     CardMetadataFactory,
     CatalogItemFactory,
@@ -84,3 +85,65 @@ def test_get_item_respects_scope():
 
     with pytest.raises(ObjectDoesNotExist):
         get_item(user=intruder, item_id=collectible.pk)
+
+
+@pytest.mark.django_db
+def test_list_items_filters_by_store_and_status():
+    vendor = VendorFactory.create()
+    store_a = vendor.stores.create(name="Store A")
+    store_b = vendor.stores.create(name="Store B")
+    active_item = CatalogItemFactory.create(vendor=vendor, store=store_a, status="active", sku="STORE-A")
+    CatalogItemFactory.create(vendor=vendor, store=store_b, status="archived", sku="STORE-B")
+
+    user = UserFactory.create()
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        is_primary=True,
+    )
+
+    qs = list_items(user=user, filters={"store": store_a.id, "status": "active"})
+    assert list(qs.values_list("sku", flat=True)) == [active_item.sku]
+
+
+@pytest.mark.django_db
+def test_list_items_applies_search_text():
+    vendor = VendorFactory.create()
+    search_item = CatalogItemFactory.create(vendor=vendor, name="Charizard VMAX", sku="POKE-123")
+    CatalogItemFactory.create(vendor=vendor, name="Bulk Energy", sku="ENERGY-001")
+
+    user = UserFactory.create()
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        is_primary=True,
+    )
+
+    qs = list_items(user=user, filters={"search": "charizard"})
+    assert qs.count() == 1
+    assert qs.first().sku == search_item.sku
+
+
+@pytest.mark.django_db
+def test_search_items_enforces_min_length():
+    vendor = VendorFactory.create()
+    CatalogItemFactory.create(vendor=vendor, name="Charizard V", sku="POK-001")
+
+    user = UserFactory.create()
+    VendorMember.objects.create(
+        vendor=vendor,
+        user=user,
+        role=VendorMemberRole.ADMIN,
+        is_active=True,
+        is_primary=True,
+    )
+
+    empty_results = search_items(user=user, query=" ")
+    assert empty_results.count() == 0
+
+    results = search_items(user=user, query="Char")
+    assert results.count() == 1

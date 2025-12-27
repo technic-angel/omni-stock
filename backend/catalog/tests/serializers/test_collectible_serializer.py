@@ -22,7 +22,7 @@ def test_collectible_serializer_roundtrip():
         "name": "New Card",
         "sku": "SER-002",
         "quantity": 5,
-        "category": "TCG",
+        "category": "pokemon_card",
         "condition": "Mint",
         "price": "25.00",
         "intake_price": "10.00",
@@ -38,7 +38,7 @@ def test_collectible_serializer_roundtrip():
     obj = ser.save(store=store, vendor=store.vendor)
     assert CatalogItem.objects.filter(pk=obj.pk, sku="SER-002").exists()
     assert obj.price == Decimal("25.00")
-    assert obj.category == "TCG"
+    assert obj.category == "pokemon_card"
     assert obj.condition == "Mint"
     assert obj.variants.count() == 1
     serialized = CatalogItemSerializer(obj).data

@@ -38,6 +38,11 @@ class CatalogItem(models.Model):
         help_text="Stock Keeping Unit (Unique Identifier).",
     )
     description = models.TextField(blank=True, null=True)
+    search_text = models.TextField(
+        blank=True,
+        db_index=True,
+        help_text="Denormalized search field (name + sku + description).",
+    )
     condition = models.CharField(
         max_length=100,
         blank=True,
@@ -46,9 +51,27 @@ class CatalogItem(models.Model):
     )
     category = models.CharField(
         max_length=100,
+        choices=[
+            ("pokemon_card", "Pokémon Card"),
+            ("clothing", "Clothing"),
+            ("video_game", "Video Game"),
+            ("other", "Other Collectible"),
+        ],
         blank=True,
         null=True,
-        help_text="High-level category (e.g., TCG, Video Games, CatalogItems).",
+        help_text="High-level category used for polymorphic attributes.",
+        db_index=True,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("active", "Active"),
+            ("low_stock", "Low Stock"),
+            ("archived", "Archived"),
+        ],
+        default="active",
+        help_text="Lifecycle flag for quick filtering (UI + reports).",
+        db_index=True,
     )
     image_url = models.URLField(blank=True, null=True, help_text="Public image URL stored in Supabase.")
     quantity = models.IntegerField(default=0, help_text="Current number of units in stock.")
@@ -78,6 +101,16 @@ class CatalogItem(models.Model):
         verbose_name_plural = "Catalog Items"
         ordering = ["name"]
         db_table = "catalog_item"
+        indexes = [
+            models.Index(fields=["vendor", "store"]),
+            models.Index(fields=["vendor", "category"]),
+            models.Index(fields=["store", "category"]),
+            models.Index(fields=["name"]),
+            models.Index(fields=["sku"]),
+            models.Index(fields=["search_text"]),
+            models.Index(fields=["category", "created_at"]),
+            models.Index(fields=["vendor", "-created_at"]),
+        ]
 
     def __str__(self):
         return f"[{self.sku}] {self.name} ({self.quantity} in stock)"
@@ -86,6 +119,21 @@ class CatalogItem(models.Model):
     def card_details(self):
         """Backward compatible alias for card_metadata."""
         return getattr(self, "card_metadata", None)
+
+    @classmethod
+    def update_search_text(cls, instance):
+        """Denormalize fields into search_text for fast icontains filters."""
+        parts = [
+            instance.name or "",
+            instance.sku or "",
+            instance.description or "",
+            instance.category or "",
+        ]
+        instance.search_text = " ".join(part for part in parts if part).strip()
+
+    def save(self, *args, **kwargs):
+        self.update_search_text(self)
+        super().save(*args, **kwargs)
 
 
 class CatalogVariant(models.Model):
@@ -107,6 +155,19 @@ class CatalogVariant(models.Model):
         blank=True,
         null=True,
         help_text="Optional grading authority label.",
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        help_text="Optional variant-specific price override.",
+    )
+    media = models.ManyToManyField(
+        "CatalogMedia",
+        blank=True,
+        related_name="variants",
+        help_text="Optional images tied to this variant/condition.",
     )
     quantity = models.PositiveIntegerField(default=0)
     price_adjustment = models.DecimalField(
@@ -171,6 +232,71 @@ class CardMetadata(models.Model):
         null=True,
         help_text="Internal notes about the card",
     )
+    set_name = models.CharField(max_length=255, blank=True, null=True)
+    card_number = models.CharField(max_length=20, blank=True, null=True)
+    rarity = models.CharField(
+        max_length=50,
+        choices=[
+            ("common", "Common"),
+            ("uncommon", "Uncommon"),
+            ("rare", "Rare"),
+            ("ultra_rare", "Ultra Rare"),
+            ("secret_rare", "Secret Rare"),
+        ],
+        blank=True,
+        null=True,
+    )
+    finish = models.CharField(
+        max_length=50,
+        choices=[
+            ("non_holo", "Non-Holo"),
+            ("holo", "Holo"),
+            ("reverse_holo", "Reverse Holo"),
+            ("full_art", "Full Art"),
+        ],
+        blank=True,
+        null=True,
+    )
+    size = models.CharField(max_length=20, blank=True, null=True)
+    color = models.CharField(max_length=100, blank=True, null=True)
+    material = models.CharField(max_length=255, blank=True, null=True)
+    brand = models.CharField(max_length=255, blank=True, null=True)
+    platform = models.CharField(
+        max_length=50,
+        choices=[
+            ("nintendo_switch", "Nintendo Switch"),
+            ("ps5", "PlayStation 5"),
+            ("xbox_series_x", "Xbox Series X"),
+            ("pc", "PC"),
+            ("retro", "Retro"),
+            ("handheld", "Handheld"),
+        ],
+        blank=True,
+        null=True,
+    )
+    game_region = models.CharField(
+        max_length=50,
+        choices=[
+            ("ntsc_u", "NTSC-U"),
+            ("ntsc_j", "NTSC-J"),
+            ("pal", "PAL"),
+            ("region_free", "Region Free"),
+        ],
+        blank=True,
+        null=True,
+    )
+    completeness = models.CharField(
+        max_length=50,
+        choices=[
+            ("loose", "Loose"),
+            ("cib", "CIB"),
+            ("sealed", "Sealed"),
+            ("box_manual", "Box & Manual"),
+        ],
+        blank=True,
+        null=True,
+    )
+    game_genre = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -281,44 +407,55 @@ class CatalogMedia(models.Model):
 
 
 class StockLedger(models.Model):
-    """Track inventory movements between stores."""
+    """Track inventory movements for auditing and sales history."""
+
+    TRANSACTION_TYPES = [
+        ("add", "Added to Inventory"),
+        ("remove", "Removed from Inventory"),
+        ("adjustment", "Adjustment"),
+        ("sale", "Sold"),
+        ("transfer", "Transferred"),
+        ("write_off", "Write Off"),
+    ]
 
     item = models.ForeignKey(
         CatalogItem,
         on_delete=models.CASCADE,
         related_name="ledger_entries",
     )
-    from_store = models.ForeignKey(
-        Store,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="ledger_out",
+    transaction_type = models.CharField(
+        max_length=20,
+        choices=TRANSACTION_TYPES,
+        default="adjustment",
     )
-    to_store = models.ForeignKey(
-        Store,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="ledger_in",
+    quantity_before = models.IntegerField(default=0)
+    quantity_after = models.IntegerField(default=0)
+    quantity_delta = models.IntegerField(
+        default=0,
+        help_text="Positive for adds, negative for removals.",
     )
-    delta = models.IntegerField(help_text="Quantity change (positive or negative).")
-    reason = models.CharField(max_length=64, blank=True, null=True)
-    performed_by = models.ForeignKey(
+    reason = models.TextField(blank=True, null=True)
+    related_sale_id = models.IntegerField(blank=True, null=True)
+    created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="inventory_actions",
+        related_name="inventory_ledger_entries",
     )
     metadata = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["item", "created_at"]),
+            models.Index(fields=["transaction_type", "created_at"]),
+        ]
 
     def __str__(self):
-        return f"{self.item_id} delta {self.delta}"
+        return f"{self.item_id} {self.transaction_type} {self.quantity_delta}"
 
 
 __all__ = ["CatalogItem", "CatalogVariant", "CardMetadata", "CatalogMedia", "StockLedger"]

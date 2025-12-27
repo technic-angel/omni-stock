@@ -39,7 +39,7 @@ class CatalogItemFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Card {n}")
     sku = factory.Sequence(lambda n: f"SKU-{n:03d}")
     quantity = 1
-    category = "Cards"
+    category = "pokemon_card"
     condition = "Near Mint"
     intake_price = Decimal("5.00")
     price = Decimal("10.00")

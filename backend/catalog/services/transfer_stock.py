@@ -29,11 +29,16 @@ def transfer_stock(
 
     StockLedger.objects.create(
         item=item,
-        from_store=from_store,
-        to_store=to_store,
-        delta=item.quantity,
+        transaction_type="transfer",
+        quantity_before=getattr(item, "quantity", 0) or 0,
+        quantity_after=getattr(item, "quantity", 0) or 0,
+        quantity_delta=0,
         reason=reason or "transfer",
-        performed_by=performed_by,
+        created_by=performed_by,
+        metadata={
+            "from_store_id": getattr(from_store, "id", None),
+            "to_store_id": getattr(to_store, "id", None),
+        },
     )
     return item
 
