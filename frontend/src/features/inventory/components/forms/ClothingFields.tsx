@@ -1,6 +1,18 @@
 import React from 'react'
 
-const ClothingFields = () => {
+export type ClothingFieldValues = {
+  size?: string
+  color?: string
+  material?: string
+  brand?: string
+}
+
+type ClothingFieldsProps = {
+  values: ClothingFieldValues
+  onChange: (updates: ClothingFieldValues) => void
+}
+
+const ClothingFields: React.FC<ClothingFieldsProps> = ({ values, onChange }) => {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
@@ -10,14 +22,17 @@ const ClothingFields = () => {
         <select
           id="clothing-size"
           className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.size ?? ''}
+          onChange={(e) => onChange({ size: e.target.value })}
         >
-          <option>XS</option>
-          <option>S</option>
-          <option>M</option>
-          <option>L</option>
-          <option>XL</option>
-          <option>XXL</option>
-          <option>One Size</option>
+          <option value="">Select size…</option>
+          <option value="XS">XS</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
+          <option value="one_size">One Size</option>
         </select>
       </div>
       <div className="space-y-2">
@@ -29,6 +44,8 @@ const ClothingFields = () => {
           type="text"
           placeholder="e.g. Navy Blue"
           className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.color ?? ''}
+          onChange={(e) => onChange({ color: e.target.value })}
         />
       </div>
       <div className="space-y-2">
@@ -40,6 +57,8 @@ const ClothingFields = () => {
           type="text"
           placeholder="e.g. 100% Cotton"
           className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.material ?? ''}
+          onChange={(e) => onChange({ material: e.target.value })}
         />
       </div>
       <div className="space-y-2">
@@ -51,6 +70,8 @@ const ClothingFields = () => {
           type="text"
           placeholder="e.g. Nike, Supreme"
           className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.brand ?? ''}
+          onChange={(e) => onChange({ brand: e.target.value })}
         />
       </div>
     </div>
