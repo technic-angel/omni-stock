@@ -59,3 +59,4 @@ coverage.xml
 /frontend/frontend.pid
 /frontend/frontend-dev.log
 backend/media/
+nohup.out

@@ -7,7 +7,7 @@ import VideoGameFields from './VideoGameFields'
 
 describe('Category specific fields', () => {
   it('renders Pokémon inputs', () => {
-    render(<PokemonFields />)
+    render(<PokemonFields values={{}} onChange={() => {}} />)
     expect(screen.getByLabelText(/Set Name/i)).toBeVisible()
     expect(screen.getByLabelText(/Card Number/i)).toBeVisible()
     expect(screen.getByLabelText(/Rarity/i)).toBeVisible()
@@ -15,7 +15,7 @@ describe('Category specific fields', () => {
   })
 
   it('renders clothing inputs', () => {
-    render(<ClothingFields />)
+    render(<ClothingFields values={{}} onChange={() => {}} />)
     expect(screen.getByLabelText(/Size/i)).toBeVisible()
     expect(screen.getByLabelText(/Color/i)).toBeVisible()
     expect(screen.getByLabelText(/Material/i)).toBeVisible()
@@ -23,7 +23,7 @@ describe('Category specific fields', () => {
   })
 
   it('renders video game inputs', () => {
-    render(<VideoGameFields />)
+    render(<VideoGameFields values={{}} onChange={() => {}} />)
     expect(screen.getByLabelText(/Platform/i)).toBeVisible()
     expect(screen.getByLabelText(/Region/i)).toBeVisible()
     expect(screen.getByLabelText(/Completeness/i)).toBeVisible()

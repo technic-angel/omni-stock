@@ -2,6 +2,7 @@ import { defineConfig } from 'cypress'
 
 export default defineConfig({
   e2e: {
+    baseUrl: 'http://localhost:5173',
     specPattern: 'cypress/integration/**/*.{js,ts}',
     reporter: 'junit',
     reporterOptions: {

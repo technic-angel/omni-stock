@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import AddCollectiblePage from './AddCollectiblePage'
 import { routerFuture } from '@/app/routes/routerFuture'
@@ -16,11 +17,21 @@ vi.mock('react-router-dom', async () => {
 })
 
 describe('AddCollectiblePage', () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
+
   const renderPage = () =>
     render(
-      <MemoryRouter future={routerFuture}>
-        <AddCollectiblePage />
-      </MemoryRouter>,
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter future={routerFuture}>
+          <AddCollectiblePage />
+        </MemoryRouter>
+      </QueryClientProvider>,
     )
 
   it('renders default Pokemon fields and price insights', () => {

@@ -6,6 +6,60 @@ from django.db import models
 from backend.org.models import Store, Vendor
 
 
+class Era(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    start_year = models.IntegerField(null=True, blank=True)
+    end_year = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Set(models.Model):
+    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="sets")
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50, unique=True, help_text="e.g. SWSH01")
+    release_date = models.DateField(null=True, blank=True)
+    card_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class Product(models.Model):
+    PRODUCT_TYPES = [
+        ("booster_pack", "Booster Pack"),
+        ("booster_box", "Booster Box"),
+        ("etb", "Elite Trainer Box"),
+        ("theme_deck", "Theme Deck"),
+        ("tin", "Tin"),
+        ("other", "Other"),
+    ]
+    set = models.ForeignKey(
+        Set, on_delete=models.CASCADE, related_name="products", null=True, blank=True
+    )
+    name = models.CharField(max_length=255)
+    type = models.CharField(max_length=50, choices=PRODUCT_TYPES)
+    configuration = models.JSONField(default=dict, blank=True)
+    release_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Accessory(models.Model):
+    name = models.CharField(max_length=255)
+    type = models.CharField(max_length=100, help_text="e.g. Binder, Sleeve, Deck Box")
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Accessories"
+
+    def __str__(self):
+        return self.name
+
+
 class CatalogItem(models.Model):
     """Represents a single stockable inventory item."""
 
@@ -30,6 +84,14 @@ class CatalogItem(models.Model):
         blank=False,
         related_name="collectibles",
         help_text="Store that currently stocks this item.",
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collectibles",
+        help_text="The retail product this item came from (optional).",
     )
     name = models.CharField(max_length=255, help_text="The common name of the collectible item.")
     sku = models.CharField(

@@ -37,6 +37,7 @@ urlpatterns = [
     # Link app-level URLs to /api/v1/... so routers expose domain-specific paths
     path('api/v1/', include('backend.catalog.api.urls')),
     path('api/v1/', include('backend.org.api.urls')),
+    path('api/v1/', include('backend.inventory.api.urls')),
     # JWT token endpoints under /api/v1/auth/
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useCatalogSets } from '../../hooks/useCatalogSets'
 
 export type PokemonFieldValues = {
   set_name?: string
@@ -13,20 +14,38 @@ type PokemonFieldsProps = {
 }
 
 const PokemonFields: React.FC<PokemonFieldsProps> = ({ values, onChange }) => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const { data: setsPage } = useCatalogSets(searchTerm)
+  const sets = setsPage?.results || []
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700" htmlFor="pokemon-set-name">
           Set Name
         </label>
-        <input
-          id="pokemon-set-name"
-          type="text"
-          placeholder="e.g. Shining Fates"
-          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-          value={values.set_name ?? ''}
-          onChange={(e) => onChange({ set_name: e.target.value })}
-        />
+        <div className="relative">
+          <input
+            id="pokemon-set-name"
+            type="text"
+            list="sets-list"
+            placeholder="e.g. Shining Fates"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+            value={values.set_name ?? ''}
+            onChange={(e) => {
+              const val = e.target.value
+              onChange({ set_name: val })
+              setSearchTerm(val)
+            }}
+          />
+          <datalist id="sets-list">
+            {sets.map((set) => (
+              <option key={set.id} value={set.name}>
+                {set.code ? `${set.name} (${set.code})` : set.name}
+              </option>
+            ))}
+          </datalist>
+        </div>
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700" htmlFor="pokemon-card-number">

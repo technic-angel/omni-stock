@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { http } from '@/shared/lib/http'
 
 type InventoryOverviewStats = {
   totalSkus: number
@@ -63,8 +64,8 @@ const placeholderOverview: InventoryOverviewResponse = {
 }
 
 const fetchInventoryOverview = async (): Promise<InventoryOverviewResponse> => {
-  // TODO: replace placeholder with API call when backend endpoint is ready
-  return placeholderOverview
+  const { data } = await http.get<InventoryOverviewResponse>('/inventory/overview/')
+  return data
 }
 
 export const useInventoryOverview = () => {

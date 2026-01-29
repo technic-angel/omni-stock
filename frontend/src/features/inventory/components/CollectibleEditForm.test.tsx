@@ -1,14 +1,14 @@
 import React from 'react'
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { uploadImageToSupabase, isSupabaseConfigured } from '@/shared/lib/supabase'
 
 import CollectibleEditForm from './CollectibleEditForm'
 
 type CollectibleProp = React.ComponentProps<typeof CollectibleEditForm>['collectible']
 
 const mutateSpy = vi.fn()
-const uploadSpy = vi.fn()
-const resetUploadErrorSpy = vi.fn()
+const uploadImageSpy = vi.fn()
 
 vi.mock('../hooks/useUpdateCollectible', () => ({
   useUpdateCollectible: () => ({
@@ -19,12 +19,21 @@ vi.mock('../hooks/useUpdateCollectible', () => ({
 
 vi.mock('../hooks/useCollectibleImageUpload', () => ({
   useCollectibleImageUpload: () => ({
-    upload: uploadSpy,
+    upload: vi.fn(),
     isUploading: false,
     error: null,
-    resetError: resetUploadErrorSpy,
+    resetError: vi.fn(),
   }),
 }))
+
+vi.mock('@/shared/lib/supabase', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/lib/supabase')>()
+  return {
+    ...actual,
+    isSupabaseConfigured: vi.fn(),
+    uploadImageToSupabase: vi.fn(),
+  }
+})
 
 const renderForm = (collectibleOverrides: Partial<CollectibleProp> = {}) =>
   render(
@@ -45,7 +54,18 @@ describe('CollectibleEditForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mutateSpy.mockResolvedValue(undefined)
-    uploadSpy.mockResolvedValue('https://example.com/new-image.jpg')
+    uploadImageSpy.mockResolvedValue('https://example.com/new-image.jpg')
+    
+    // Default mocks
+    vi.mocked(isSupabaseConfigured).mockReturnValue(true)
+    vi.mocked(uploadImageToSupabase).mockImplementation(uploadImageSpy)
+    
+    // Mock createImageBitmap (browser API missing in JSDOM)
+    global.createImageBitmap = vi.fn().mockResolvedValue({ width: 100, height: 100, close: vi.fn() }) as any
+  })
+
+  afterEach(() => {
+    // optional cleanup
   })
 
   it('submits updated values', async () => {
@@ -68,27 +88,40 @@ describe('CollectibleEditForm', () => {
     renderForm({ image_url: 'https://cdn.old-image.png' })
 
     const file = new File(['img'], 'cover.png', { type: 'image/png' })
-    fireEvent.change(screen.getByLabelText(/replace image/i), { target: { files: [file] } })
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    fireEvent.change(screen.getByLabelText(/click to upload/i), { target: { files: [file] } })
 
-    await waitFor(() => expect(uploadSpy).toHaveBeenCalledWith(file))
-    expect(mutateSpy).toHaveBeenCalledWith(
+    // Wait for upload to complete
+    await waitFor(() => expect(uploadImageSpy).toHaveBeenCalledWith(file, expect.stringContaining('inventory-items/edit/1')))
+    
+    // Wait for button to be ready (enabled)
+    const saveButton = screen.getByRole('button', { name: /save changes/i })
+    await waitFor(() => expect(saveButton).not.toBeDisabled())
+    
+    const form = saveButton.closest('form') as HTMLFormElement
+    expect(form).toBeInTheDocument()
+    fireEvent.submit(form)
+
+    await waitFor(() => expect(mutateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        image_url: 'https://example.com/new-image.jpg',
+        image_payloads: expect.arrayContaining([
+            expect.objectContaining({
+                url: 'https://example.com/new-image.jpg'
+            })
+        ])
       }),
-    )
-    expect(resetUploadErrorSpy).toHaveBeenCalled()
+    ))
   })
 
   it('stops submission when upload fails', async () => {
-    uploadSpy.mockRejectedValueOnce(new Error('upload failed'))
+    uploadImageSpy.mockRejectedValueOnce(new Error('upload failed'))
     renderForm()
 
     const file = new File(['img'], 'cover.png', { type: 'image/png' })
-    fireEvent.change(screen.getByLabelText(/replace image/i), { target: { files: [file] } })
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }))
+    fireEvent.change(screen.getByLabelText(/click to upload/i), { target: { files: [file] } })
 
-    await waitFor(() => expect(uploadSpy).toHaveBeenCalled())
+    // Wait for error message
+    await waitFor(() => expect(screen.getByText(/upload failed/i)).toBeInTheDocument())
+    
     expect(mutateSpy).not.toHaveBeenCalled()
   })
 

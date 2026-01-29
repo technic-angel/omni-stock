@@ -12,6 +12,12 @@ import VideoGameFields, { type VideoGameFieldValues } from '../components/forms/
 import PriceHistory from '../components/PriceHistory'
 import { useCreateCollectible } from '../hooks/useCreateCollectible'
 import { useVendorStores } from '../../vendors/hooks/useVendorStores'
+import { useCatalogProducts } from '../hooks/useCatalogProducts'
+import {
+  uploadImageToSupabase,
+  validateImageFile,
+  isSupabaseConfigured,
+} from '@/shared/lib/supabase'
 
 type CategoryType = 'pokemon' | 'clothing' | 'videogame' | 'other'
 type BackendCategory = 'pokemon_card' | 'clothing' | 'video_game' | 'other'
@@ -29,15 +35,20 @@ type BaseFormState = {
   description: string
   category: BackendCategory
   status: InventoryStatus
+  product?: string
   quantity: number
   intakePrice: string
   price: string
   projectedPrice: string
   cardDetails: CardDetails
   media: Array<{
+    id: string
     url: string
     mediaType: 'primary' | 'gallery'
     sortOrder: number
+    width: number
+    height: number
+    sizeKb: number
   }>
   variants: Array<{
     id: string
@@ -54,15 +65,23 @@ const CATEGORY_TO_API: Record<CategoryType, BackendCategory> = {
   videogame: 'video_game',
   other: 'other',
 }
+const MAX_IMAGES = 5
 
 const AddCollectiblePage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const createCollectible = useCreateCollectible()
   const { data: stores = [], isLoading: storesLoading, error: storesError } = useVendorStores()
+  // Product Search State
+  const [productSearch, setProductSearch] = useState('')
+  const { data: productsPage } = useCatalogProducts(productSearch)
+  const products = productsPage?.results || []
+
   const noStoresAvailable = !storesLoading && !storesError && stores.length === 0
   const [category, setCategory] = useState<CategoryType>('pokemon')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [form, setForm] = useState<BaseFormState>({
     storeId: '',
     name: '',
@@ -120,6 +139,103 @@ const AddCollectiblePage = () => {
       }))
   }, [form.variants])
 
+  const imagePayloads = useMemo(
+    () =>
+      form.media.map((media, index) => ({
+        url: media.url,
+        media_type: index === 0 ? 'primary' : media.mediaType,
+        sort_order: index,
+        width: media.width,
+        height: media.height,
+        size_kb: media.sizeKb,
+      })),
+    [form.media],
+  )
+
+  const handleImageFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) {
+      return
+    }
+    setImageUploadError(null)
+    if (!isSupabaseConfigured()) {
+      setImageUploadError('Image uploads are not configured. Please contact support.')
+      event.target.value = ''
+      return
+    }
+    const remainingSlots = MAX_IMAGES - form.media.length
+    if (remainingSlots <= 0) {
+      setImageUploadError(`You can upload up to ${MAX_IMAGES} images per item.`)
+      event.target.value = ''
+      return
+    }
+    const filesToUpload = Array.from(files).slice(0, remainingSlots)
+    setIsUploadingImage(true)
+    try {
+      for (const file of filesToUpload) {
+        validateImageFile(file)
+        const uploadPath = `inventory-items/${form.storeId || 'unassigned'}`
+        const url = await uploadImageToSupabase(file, uploadPath)
+        const bitmap = await createImageBitmap(file)
+        setForm((prev) => {
+          const nextMedia = [
+            ...prev.media,
+            {
+              id: nanoid(),
+              url,
+              mediaType: prev.media.length === 0 ? 'primary' : 'gallery',
+              sortOrder: prev.media.length,
+              width: bitmap.width,
+              height: bitmap.height,
+              sizeKb: Math.max(1, Math.round(file.size / 1024)),
+            },
+          ]
+          return { ...prev, media: nextMedia }
+        })
+      }
+    } catch (error) {
+      setImageUploadError(
+        error instanceof Error ? error.message : 'Failed to upload image.',
+      )
+    } finally {
+      setIsUploadingImage(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleRemoveImage = (id: string) => {
+    setForm((prev) => {
+      const remaining = prev.media.filter((media) => media.id !== id)
+      const normalized = remaining.map((media, index) => ({
+        ...media,
+        mediaType: index === 0 ? 'primary' : 'gallery',
+        sortOrder: index,
+      }))
+      return { ...prev, media: normalized }
+    })
+  }
+
+  const handleSetPrimaryImage = (id: string) => {
+    setForm((prev) => {
+      const target = prev.media.find((media) => media.id === id)
+      if (!target) {
+        return prev
+      }
+      const others = prev.media
+        .filter((media) => media.id !== id)
+        .map((media, index) => ({
+          ...media,
+          mediaType: 'gallery',
+          sortOrder: index + 1,
+        }))
+      const reordered = [
+        { ...target, mediaType: 'primary', sortOrder: 0 },
+        ...others,
+      ]
+      return { ...prev, media: reordered }
+    })
+  }
+
   const handleSave = () => {
     setErrorMessage(null)
     if (!form.name.trim() || !form.sku.trim()) {
@@ -148,6 +264,10 @@ const AddCollectiblePage = () => {
       description: form.description,
       card_details: sanitizedCardDetails,
       variant_payloads: sanitizedVariants,
+      product: form.product ? Number(form.product) : null,
+    }
+    if (imagePayloads.length > 0) {
+      ;(payload as any).image_payloads = imagePayloads
     }
 
     createCollectible.mutate(payload, {
@@ -205,6 +325,7 @@ const AddCollectiblePage = () => {
             </Button>
             <Button
               type="button"
+              data-cy="add-item-submit"
               className="bg-brand-primary hover:bg-brand-primary-dark"
               onClick={handleSave}
               disabled={
@@ -226,21 +347,70 @@ const AddCollectiblePage = () => {
               Item Images
             </h3>
 
+            {imageUploadError && (
+              <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                {imageUploadError}
+              </div>
+            )}
+
             <div className="aspect-square w-full rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-colors hover:border-brand-primary hover:bg-brand-primary-soft/30">
               <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center p-6 text-center">
                 <div className="mb-4 rounded-full bg-white p-4 shadow-sm">
                   <ImagePlus className="h-8 w-8 text-brand-primary" />
                 </div>
-                <span className="text-sm font-medium text-gray-900">Click to upload images</span>
-                <span className="mt-1 text-xs text-gray-500">PNG, JPG or WEBP up to 10MB</span>
-                <input type="file" className="hidden" multiple accept="image/*" />
+                <span className="text-sm font-medium text-gray-900">
+                  {form.media.length >= MAX_IMAGES
+                    ? 'Maximum images reached'
+                    : 'Click to upload images'}
+                </span>
+                <span className="mt-1 text-xs text-gray-500">
+                  {form.media.length} / {MAX_IMAGES} uploaded
+                </span>
+                <input
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept="image/*"
+                  disabled={isUploadingImage || form.media.length >= MAX_IMAGES}
+                  onChange={handleImageFiles}
+                />
               </label>
             </div>
 
             <div className="mt-4 grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((i) => (
+              {form.media.map((media) => (
                 <div
-                  key={i}
+                  key={media.id}
+                  className="group relative aspect-square rounded-lg border border-gray-100 bg-gray-50 overflow-hidden"
+                >
+                  <img src={media.url} alt="Item" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(media.id)}
+                    className="absolute top-1 right-1 rounded-full bg-white/80 p-1 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-white transition-opacity"
+                    title="Remove image"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  {media.mediaType !== 'primary' && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetPrimaryImage(media.id)}
+                      className="absolute bottom-1 left-1 right-1 rounded bg-black/50 px-1 py-0.5 text-[10px] text-white opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-opacity"
+                    >
+                      Make Primary
+                    </button>
+                  )}
+                  {media.mediaType === 'primary' && (
+                    <div className="absolute bottom-1 left-1 right-1 rounded bg-brand-primary px-1 py-0.5 text-center text-[10px] font-bold text-white shadow-sm">
+                      Primary
+                    </div>
+                  )}
+                </div>
+              ))}
+              {Array.from({ length: Math.max(0, 4 - form.media.length) }).map((_, i) => (
+                <div
+                  key={`placeholder-${i}`}
                   className="aspect-square rounded-lg border border-gray-100 bg-gray-50"
                 />
               ))}
@@ -395,6 +565,7 @@ const AddCollectiblePage = () => {
                 </label>
                 <select
                   id="add-item-store"
+                  data-cy="add-item-store"
                   value={form.storeId}
                   className="bg-transparent font-bold text-gray-900 focus:outline-none"
                   disabled={storesLoading || !!storesError || stores.length === 0}
@@ -423,11 +594,38 @@ const AddCollectiblePage = () => {
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
+                 <label className="text-sm font-medium text-gray-700" htmlFor="add-item-product">
+                   Link to Catalog Product (Optional)
+                 </label>
+                 <input
+                    id="add-item-product"
+                    list="products-list"
+                    type="text"
+                    placeholder="Search for a product..."
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setProductSearch(val)
+                      const match = products.find(p => `${p.name} [ID:${p.id}]` === val)
+                      setForm(prev => ({ ...prev, product: match ? String(match.id) : undefined }))
+                    }}
+                 />
+                 <datalist id="products-list">
+                    {products.map(p => (
+                      <option key={p.id} value={`${p.name} [ID:${p.id}]`}>
+                        {p.type} - {p.set?.name}
+                      </option>
+                    ))}
+                 </datalist>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-medium text-gray-700" htmlFor="add-item-name">
                   Item Name
                 </label>
                 <input
                   id="add-item-name"
+                  data-cy="add-item-name"
                   type="text"
                   placeholder="e.g. Charizard VMAX - Shining Fates"
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
@@ -448,6 +646,7 @@ const AddCollectiblePage = () => {
                 <div className="relative">
                   <select
                     id="add-item-category"
+                    data-cy="add-item-category"
                     value={category}
                     onChange={(e) => {
                       const nextCategory = e.target.value as CategoryType
@@ -474,6 +673,7 @@ const AddCollectiblePage = () => {
                 </label>
                 <input
                   id="add-item-sku"
+                  data-cy="add-item-sku"
                   type="text"
                   placeholder="e.g. POK-SF-001"
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
