@@ -1,12 +1,13 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+import uuid
+
 from django.core.files.storage import default_storage
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
-import uuid
+from rest_framework import serializers, status
+from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 class UploadFileSerializer(serializers.Serializer):
     file = serializers.FileField()

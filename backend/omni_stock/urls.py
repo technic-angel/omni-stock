@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
+from backend.core.views import UploadFileView
 from backend.users.api.viewsets import (
     ChangePasswordView,
     CheckEmailView,
@@ -30,7 +31,6 @@ from backend.users.api.viewsets import (
     PasswordResetRequestView,
     RegisterView,
 )
-from backend.core.views import UploadFileView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
