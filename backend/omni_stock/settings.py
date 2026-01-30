@@ -228,8 +228,11 @@ DATABASES = {
         'PASSWORD': env('POSTGRES_PASSWORD'),
         'HOST': env('POSTGRES_HOST'), # This must be 'db', the service name in docker-compose.yml
         'PORT': env('POSTGRES_PORT'),
+        'CONN_MAX_AGE': 0,  # Ensure consistency with production
+        'CONN_HEALTH_CHECKS': False,
         'OPTIONS': {
             'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
+            'connect_timeout': 10,
         },
     }
 }
@@ -239,10 +242,15 @@ _database_url = env('DATABASE_URL')
 if _database_url:
     DATABASES['default'] = dj_database_url.config(
         default=_database_url,
-        conn_max_age=600,
-        conn_health_checks=True,
+        conn_max_age=0,  # Disable persistent connections to prevent timeouts/stale connections on Render
+        conn_health_checks=False,  # Disable health checks to prevent hangs in the connection pool
         ssl_require=True,
     )
+    # Add explicit timeouts to prevent workers from hanging indefinitely
+    DATABASES['default']['OPTIONS'].update({
+        'connect_timeout': 10,
+        'options': '-c statement_timeout=30000',  # 30 seconds
+    })
 
 
 # Password validation
@@ -342,6 +350,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+
+    # Add default pagination to prevent timeouts on large datasets
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
 
     # Use drf-spectacular for schema generation when installed
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'

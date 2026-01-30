@@ -23,7 +23,8 @@ def test_vendor_viewset_list_scoped_to_profile():
     resp = client.get("/api/v1/vendors/")
     assert resp.status_code == 200
     body = resp.json()
-    ids = [item["id"] for item in body]
+    results = body["results"] if isinstance(body, dict) and "results" in body else body
+    ids = [item["id"] for item in results]
     assert vendor.id in ids
     assert other_vendor.id in ids
 

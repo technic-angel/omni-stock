@@ -30,7 +30,9 @@ def test_collectible_viewset_list_and_create():
 
     resp = client.get(url)
     assert resp.status_code == 200
-    assert len(resp.json()) >= 2
+    body = resp.json()
+    results = body["results"] if isinstance(body, dict) and "results" in body else body
+    assert len(results) >= 2
 
     payload = {"name": "Created via API", "sku": "VIEW-003", "quantity": 3, "store": store.id}
     resp = client.post(url, payload, format='json')

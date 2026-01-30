@@ -83,7 +83,9 @@ class TestVendorIsolation:
         resp = client.get("/api/v1/catalog/items/")
         assert resp.status_code == 200
         
-        skus = [item["sku"] for item in resp.json()]
+        data = resp.json()
+        results = data["results"] if isinstance(data, dict) and "results" in data else data
+        skus = [item["sku"] for item in results]
         assert "V1-ITEM" in skus
         assert "V2-ITEM" not in skus
 

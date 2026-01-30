@@ -34,8 +34,11 @@ def test_collectible_list_includes_card_details():
     assert resp.status_code == 200
 
     data = resp.json()
+    # Handle pagination
+    results = data["results"] if isinstance(data, dict) and "results" in data else data
+    
     # find our collectible in the list by sku
-    found = [c for c in data if c.get("sku") == "DETAIL-001"]
+    found = [c for c in results if c.get("sku") == "DETAIL-001"]
     assert found, "Created collectible not present in list response"
     cd = found[0].get("card_details")
     assert cd is not None, "card_details should be present in list response"
@@ -63,8 +66,9 @@ def test_filter_collectibles_by_card_language():
     assert resp.status_code == 200
 
     data = resp.json()
+    results = data["results"] if isinstance(data, dict) and "results" in data else data
     # Expect only the English-language collectible to be returned
-    skus = [c.get("sku") for c in data]
+    skus = [c.get("sku") for c in results]
     assert "LANG-1" in skus
     assert "LANG-2" not in skus
 
