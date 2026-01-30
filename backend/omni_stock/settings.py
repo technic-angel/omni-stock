@@ -242,22 +242,22 @@ _database_url = env('DATABASE_URL')
 if _database_url:
     # Use the detected DATABASE_URL explicitly
     DATABASES['default'] = dj_database_url.config(
-        url=_database_url,
+        default=_database_url,
         conn_max_age=0,  # Disable persistent connections to prevent timeouts/stale connections on Render
         conn_health_checks=False,  # Disable health checks to prevent hangs in the connection pool
-        # ssl_require should be True for external Render DB URLs, but can be False for internal ones
-        ssl_require=True if 'onrender.com' in _database_url or 'render.com' in _database_url else False,
+        # Render databases generally require SSL. Forcing True is safer for production.
+        ssl_require=True,
     )
     
     # Ensure OPTIONS exist and update them
     if 'OPTIONS' not in DATABASES['default']:
         DATABASES['default']['OPTIONS'] = {}
         
-    # Add explicit timeouts to prevent workers from hanging indefinitely
-    # We use a generous 30s timeout for the initial connection on Render
+    # Add explicit timeouts and SSL settings to prevent workers from hanging
+    # increased to 60s for slow Handshakes on Render
     DATABASES['default']['OPTIONS'].update({
-        'connect_timeout': 30,
-        'options': '-c statement_timeout=30000',  # 30 seconds
+        'connect_timeout': 60,
+        'options': '-c statement_timeout=60000',  # 60 seconds
     })
 
 
