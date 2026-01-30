@@ -449,8 +449,9 @@ const AddCollectiblePage = () => {
                 <h3 className="mb-6 text-sm font-semibold uppercase tracking-wider text-gray-500">General Information</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2 md:col-span-2">
-                        <label className="text-sm font-medium text-gray-700">Item Name</label>
+                        <label htmlFor="item-name" className="text-sm font-medium text-gray-700">Item Name</label>
                         <input
+                            id="item-name"
                             type="text"
                             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm"
                             value={form.name}
@@ -461,7 +462,7 @@ const AddCollectiblePage = () => {
                     
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-gray-700">SKU</label>
+                            <label htmlFor="item-sku" className="text-sm font-medium text-gray-700">SKU</label>
                             <button
                                 onClick={handleGenerateSku}
                                 type="button"
@@ -471,6 +472,7 @@ const AddCollectiblePage = () => {
                             </button>
                         </div>
                         <input
+                            id="item-sku"
                             type="text"
                             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm"
                             value={form.sku}
@@ -480,8 +482,9 @@ const AddCollectiblePage = () => {
                     </div>
                     
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Category</label>
+                        <label htmlFor="item-category" className="text-sm font-medium text-gray-700">Category</label>
                         <select
+                            id="item-category"
                             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm"
                             value={category}
                             onChange={e => handleCategoryChange(e.target.value as CategoryType)}
@@ -494,8 +497,9 @@ const AddCollectiblePage = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Store</label>
+                        <label htmlFor="item-store" className="text-sm font-medium text-gray-700">Store</label>
                         <select
+                            id="item-store"
                             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm"
                             value={form.storeId}
                             onChange={e => setForm(prev => ({ ...prev, storeId: e.target.value }))}
