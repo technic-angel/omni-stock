@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from backend.catalog.api.viewsets import CatalogItemViewSet, SetViewSet, ProductViewSet
+from backend.catalog.api.viewsets import CatalogItemViewSet, ProductViewSet, SetViewSet
 
 router = routers.DefaultRouter()
 router.register(r'catalog/items', CatalogItemViewSet, basename='catalog-item')

@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
-from backend.catalog.api.serializers import CatalogItemSerializer, SetSerializer, ProductSerializer
-from backend.catalog.models import CatalogItem, Set, Product
+from backend.catalog.api.serializers import CatalogItemSerializer, ProductSerializer, SetSerializer
+from backend.catalog.models import CatalogItem, Product, Set
 from backend.catalog.selectors.get_item import get_item
 from backend.catalog.selectors.list_items import list_items
 from backend.catalog.services.create_item import create_item

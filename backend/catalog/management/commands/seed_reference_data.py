@@ -1,6 +1,9 @@
 from datetime import date
+
 from django.core.management.base import BaseCommand
-from backend.catalog.models import Era, Set, Product
+
+from backend.catalog.models import Era, Product, Set
+
 
 class Command(BaseCommand):
     help = 'Seeds catalog reference data (Eras, Sets, Products)'

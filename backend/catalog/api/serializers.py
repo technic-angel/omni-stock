@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from django.conf import settings
 from rest_framework import serializers
 
-from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Store, Set, Product, Era
+from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Era, Product, Set, Store
 from backend.catalog.services.create_item import create_item
 from backend.catalog.services.update_item import update_item
 

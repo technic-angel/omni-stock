@@ -9,7 +9,6 @@ from backend.catalog.models import CatalogItem
 from backend.core.permissions import resolve_user_vendor
 from backend.org.models import Store
 
-
 LOW_STOCK_THRESHOLD = 5
 
 
