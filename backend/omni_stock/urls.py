@@ -30,6 +30,7 @@ from backend.users.api.viewsets import (
     PasswordResetRequestView,
     RegisterView,
 )
+from backend.core.views import UploadFileView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,6 +39,7 @@ urlpatterns = [
     path('api/v1/', include('backend.catalog.api.urls')),
     path('api/v1/', include('backend.org.api.urls')),
     path('api/v1/', include('backend.inventory.api.urls')),
+    path('api/v1/core/upload/', UploadFileView.as_view(), name='core_upload'),
     # JWT token endpoints under /api/v1/auth/
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
