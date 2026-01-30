@@ -4,7 +4,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.files.storage import default_storage
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 import uuid
 
