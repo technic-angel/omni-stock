@@ -113,6 +113,15 @@ const AddCollectiblePage = () => {
     }))
   }
 
+  const suggestSKU = () => {
+    if (!form.name) return
+    const suggested = form.name
+      .toUpperCase()
+      .replace(/[^A-Z0-9 ]/g, '')
+      .replace(/\s+/g, '-')
+    setForm((prev) => ({ ...prev, sku: suggested }))
+  }
+
   useEffect(() => {
     if (!storesLoading && !storesError && stores.length > 0 && !form.storeId) {
       setForm((prev) => ({ ...prev, storeId: String(stores[0].id) }))
@@ -668,9 +677,18 @@ const AddCollectiblePage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700" htmlFor="add-item-sku">
-                  SKU / Identifier
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700" htmlFor="add-item-sku">
+                    SKU / Identifier
+                  </label>
+                  <button
+                    type="button"
+                    onClick={suggestSKU}
+                    className="text-xs font-medium text-brand-primary hover:text-brand-primary-dark"
+                  >
+                    Auto-generate
+                  </button>
+                </div>
                 <input
                   id="add-item-sku"
                   data-cy="add-item-sku"

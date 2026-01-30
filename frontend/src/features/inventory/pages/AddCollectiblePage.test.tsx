@@ -56,4 +56,17 @@ describe('AddCollectiblePage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Cancel/i }))
     expect(navigate).toHaveBeenCalledWith('/inventory')
   })
+
+  it('generates SKU from item name', () => {
+    renderPage()
+    const nameInput = screen.getByLabelText(/Item Name/i)
+    const skuInput = screen.getByLabelText(/SKU/i) as HTMLInputElement
+    const genButton = screen.getByRole('button', { name: /Auto-generate/i })
+
+    fireEvent.change(nameInput, { target: { value: "Charizard's Flame" } })
+    fireEvent.click(genButton)
+
+    // CHARIZARDS-FLAME (special chars ' removed, spaces to -)
+    expect(skuInput.value).toBe('CHARIZARDS-FLAME')
+  })
 })

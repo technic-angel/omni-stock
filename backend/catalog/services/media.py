@@ -26,8 +26,11 @@ def sync_item_media(
         raise ValueError(f"A maximum of {MAX_MEDIA_PER_ITEM} images are allowed per item.")
 
     CatalogMedia.objects.filter(item=item).delete()
-
+    
+    # Immediately clear image_url if payloads is empty
     if not media_payloads:
+        item.image_url = None
+        item.save(update_fields=["image_url"])
         return
 
     new_media: List[CatalogMedia] = []
@@ -51,14 +54,22 @@ def sync_item_media(
 
     CatalogMedia.objects.bulk_create(new_media)
 
+    first_media = CatalogMedia.objects.filter(item=item).order_by("sort_order", "id").first()
     has_primary = any(media.is_primary for media in new_media)
-    if not has_primary:
-        first_media = (
-            CatalogMedia.objects.filter(item=item).order_by("sort_order", "id").first()
-        )
-        if first_media:
-            first_media.is_primary = True
-            first_media.save(update_fields=["is_primary"])
+    
+    if not has_primary and first_media:
+        first_media.is_primary = True
+        first_media.save(update_fields=["is_primary"])
+    
+    # Update CatalogItem.image_url to use the primary image URL
+    primary_media = CatalogMedia.objects.filter(item=item, is_primary=True).first()
+    if primary_media:
+        item.image_url = primary_media.url
+    else:
+        # If all media cleared or no primary, clear image_url
+        item.image_url = None
+    
+    item.save(update_fields=["image_url"])
 
 
 __all__ = ["sync_item_media", "MAX_MEDIA_PER_ITEM"]

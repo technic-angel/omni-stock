@@ -2,8 +2,9 @@
 # Render build script for Django backend
 set -o errexit
 
-echo "Running database migrations..."
-python manage.py migrate --noinput
+# Note: We do NOT run migrations here because the build environment 
+# often lacks access to the production database on Render.
+# Migrations should be run in the Release Command or start.sh.
 
 echo "Collecting static files..."
 python manage.py collectstatic --noinput

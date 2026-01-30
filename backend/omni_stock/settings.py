@@ -223,13 +223,16 @@ WSGI_APPLICATION = 'backend.omni_stock.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'), # This must be 'db', the service name in docker-compose.yml
-        'PORT': env('POSTGRES_PORT'),
+        'NAME': env('POSTGRES_DB', default=''),
+        'USER': env('POSTGRES_USER', default=''),
+        'PASSWORD': env('POSTGRES_PASSWORD', default=''),
+        'HOST': env('POSTGRES_HOST', default=''), # This must be 'db', the service name in docker-compose.yml
+        'PORT': env('POSTGRES_PORT', default=''),
+        'CONN_MAX_AGE': 0,  # Ensure consistency with production
+        'CONN_HEALTH_CHECKS': False,
         'OPTIONS': {
             'sslmode': env('POSTGRES_SSL_MODE', default='prefer'),
+            'connect_timeout': 30,
         },
     }
 }
@@ -237,12 +240,25 @@ DATABASES = {
 # Handle Render's DATABASE_URL if present (overrides individual settings)
 _database_url = env('DATABASE_URL')
 if _database_url:
+    # Use the detected DATABASE_URL explicitly
     DATABASES['default'] = dj_database_url.config(
         default=_database_url,
-        conn_max_age=600,
-        conn_health_checks=True,
+        conn_max_age=0,  # Disable persistent connections to prevent timeouts/stale connections on Render
+        conn_health_checks=False,  # Disable health checks to prevent hangs in the connection pool
+        # Render databases generally require SSL. Forcing True is safer for production.
         ssl_require=True,
     )
+    
+    # Ensure OPTIONS exist and update them
+    if 'OPTIONS' not in DATABASES['default']:
+        DATABASES['default']['OPTIONS'] = {}
+        
+    # Add explicit timeouts and SSL settings to prevent workers from hanging
+    # increased to 60s for slow Handshakes on Render
+    DATABASES['default']['OPTIONS'].update({
+        'connect_timeout': 60,
+        'options': '-c statement_timeout=60000',  # 60 seconds
+    })
 
 
 # Password validation
@@ -342,6 +358,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+
+    # Add default pagination to prevent timeouts on large datasets
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
 
     # Use drf-spectacular for schema generation when installed
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'

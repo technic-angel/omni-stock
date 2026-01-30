@@ -42,9 +42,9 @@ const InventoryDetailSidebar = ({ collectible, onDelete }: Props) => {
       </div>
 
       <div className="aspect-square overflow-hidden rounded-xl bg-gray-100">
-        {collectible.image_url ? (
+        {collectible.image_url || (collectible.images && collectible.images.length > 0) ? (
           <img
-            src={collectible.image_url}
+            src={collectible.image_url || collectible.images?.[0]?.url}
             alt={collectible.name}
             className="h-full w-full object-contain"
           />

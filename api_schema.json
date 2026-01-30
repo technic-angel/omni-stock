@@ -713,6 +713,223 @@
           null
         ]
       },
+      "PaginatedCatalogItemList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedProductList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedSetList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Set"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedStoreAccessList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/StoreAccess"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedStoreList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedVendorList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Vendor"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedVendorMemberList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/VendorMember"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
       "PasswordResetConfirm": {
         "description": "Serializer for confirming password reset with token.\n\nVerifies the token and sets the new password.",
         "properties": {
@@ -2626,15 +2843,32 @@
       "get": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
         "operationId": "catalog_items_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CatalogItem"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedCatalogItemList"
                 }
               }
             },
@@ -2873,15 +3107,32 @@
       "get": {
         "description": "ReadOnly ViewSet for Products.",
         "operationId": "catalog_products_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Product"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedProductList"
                 }
               }
             },
@@ -2939,15 +3190,32 @@
       "get": {
         "description": "ReadOnly ViewSet for Sets.",
         "operationId": "catalog_sets_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Set"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedSetList"
                 }
               }
             },
@@ -3061,15 +3329,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_invites_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VendorMember"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedVendorMemberList"
                 }
               }
             },
@@ -3202,15 +3487,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_members_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VendorMember"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedVendorMemberList"
                 }
               }
             },
@@ -3494,15 +3796,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_store_access_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/StoreAccess"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedStoreAccessList"
                 }
               }
             },
@@ -3741,15 +4060,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_stores_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Store"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedStoreList"
                 }
               }
             },
@@ -4034,15 +4370,32 @@
       "get": {
         "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
         "operationId": "vendors_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Vendor"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedVendorList"
                 }
               }
             },

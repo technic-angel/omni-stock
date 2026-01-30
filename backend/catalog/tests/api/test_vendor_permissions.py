@@ -26,10 +26,11 @@ def test_list_scoped_to_user_vendor():
     resp = client.get(url)
     assert resp.status_code == 200
     data = resp.json()
+    results = data["results"] if isinstance(data, dict) and "results" in data else data
 
     # Ensure we only see items for vendor1
-    assert any(item.get('sku') == "VEND-A-001" for item in data)
-    assert not any(item.get('sku') == "VEND-B-001" for item in data)
+    assert any(item.get('sku') == "VEND-A-001" for item in results)
+    assert not any(item.get('sku') == "VEND-B-001" for item in results)
 
 
 @pytest.mark.django_db

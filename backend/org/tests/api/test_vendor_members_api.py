@@ -26,7 +26,8 @@ def test_member_viewset_lists_members(vendor_admin):
     resp = client.get("/api/v1/vendor-members/")
     assert resp.status_code == 200
     body = resp.json()
-    emails = [item["email"] for item in body]
+    results = body["results"] if isinstance(body, dict) and "results" in body else body
+    emails = [item["email"] for item in results]
     assert admin.email in emails
     assert other.email in emails
 
@@ -145,7 +146,9 @@ def test_pending_invites_list_and_accept_flow(vendor_admin):
 
     list_resp = invitee_client.get("/api/v1/vendor-invites/")
     assert list_resp.status_code == 200
-    assert len(list_resp.json()) == 1
+    body = list_resp.json()
+    results = body["results"] if isinstance(body, dict) and "results" in body else body
+    assert len(results) == 1
 
     accept_resp = invitee_client.post(f"/api/v1/vendor-invites/{membership_id}/accept/")
     assert accept_resp.status_code == 200
