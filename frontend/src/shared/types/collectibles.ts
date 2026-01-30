@@ -20,6 +20,14 @@ export interface CatalogVariant {
   price_adjustment?: string | null
 }
 
+export interface CatalogMedia {
+  id: number
+  url: string
+  media_type: 'primary' | 'gallery'
+  is_primary: boolean
+  sort_order: number
+}
+
 export interface Collectible {
   id: number
   name: string
@@ -27,6 +35,7 @@ export interface Collectible {
   quantity?: number
   category?: string
   image_url?: string | null
+  images?: CatalogMedia[]
   card_details?: CardDetails | null
   variants?: CatalogVariant[]
   created_at?: string

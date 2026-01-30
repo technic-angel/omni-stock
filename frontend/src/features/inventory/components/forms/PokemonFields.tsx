@@ -6,6 +6,8 @@ export type PokemonFieldValues = {
   card_number?: string
   rarity?: string
   finish?: string
+  psa_grade?: string
+  language?: string
 }
 
 type PokemonFieldsProps = {
@@ -93,6 +95,45 @@ const PokemonFields: React.FC<PokemonFieldsProps> = ({ values, onChange }) => {
           <option value="holo">Holo</option>
           <option value="reverse_holo">Reverse Holo</option>
           <option value="full_art">Full Art</option>
+        </select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700" htmlFor="pokemon-language">
+          Language
+        </label>
+        <select
+          id="pokemon-language"
+          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.language ?? ''}
+          onChange={(e) => onChange({ language: e.target.value })}
+        >
+          <option value="">Select...</option>
+          <option value="English">English</option>
+          <option value="Japanese">Japanese</option>
+          <option value="French">French</option>
+          <option value="German">German</option>
+          <option value="Spanish">Spanish</option>
+          <option value="Italian">Italian</option>
+          <option value="Korean">Korean</option>
+          <option value="Chinese">Chinese</option>
+        </select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-gray-700" htmlFor="pokemon-psa">
+          PSA Grade (Optional)
+        </label>
+        <select
+          id="pokemon-psa"
+          className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          value={values.psa_grade ?? ''}
+          onChange={(e) => onChange({ psa_grade: e.target.value })}
+        >
+          <option value="">Select...</option>
+          {[10, 9.5, 9, 8.5, 8, 7, 6, 5, 4, 3, 2, 1].map(g => (
+            <option key={g} value={g}>{g}</option>
+          ))}
         </select>
       </div>
     </div>

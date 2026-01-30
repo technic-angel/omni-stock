@@ -1,6 +1,7 @@
 import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Save } from 'lucide-react'
 
 import Card from '../../../shared/components/Card'
 import { useCreateCollectible } from '../hooks/useCreateCollectible'
@@ -28,6 +29,7 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
     register,
     control,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<CollectibleInput>({
@@ -45,6 +47,23 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
       variants: [],
     },
   })
+
+  const nameValue = useWatch({ control, name: 'name' })
+
+  const handleGenerateSku = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!nameValue) return
+    
+    const suggestedSku = nameValue
+      .toUpperCase()
+      .replace(/['"]/g, '')
+      .replace(/[^\w\s-]/g, '-')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') // Trim dashes
+
+    setValue('sku', suggestedSku, { shouldValidate: true, shouldDirty: true })
+  }
 
   const imageFileInput = register('image_file')
 
@@ -84,11 +103,29 @@ const CollectibleCreateForm = ({ onCreated }: Props) => {
           <input className="mt-1 w-full rounded border p-2" {...register('name')} />
           {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
         </label>
-        <label className="block text-sm">
-          SKU
-          <input className="mt-1 w-full rounded border p-2" {...register('sku')} />
+        <div>
+          <div className="flex items-center justify-between text-sm mb-1">
+            <label htmlFor="sku-input" className="block font-medium">
+              SKU
+            </label>
+            <button
+              onClick={handleGenerateSku}
+              type="button"
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50"
+              disabled={!nameValue}
+              title="Generate SKU from Name"
+            >
+              <Save className="h-3 w-3" />
+              Auto-generate
+            </button>
+          </div>
+          <input
+            id="sku-input"
+            className="w-full rounded border p-2"
+            {...register('sku')}
+          />
           {errors.sku && <p className="text-xs text-red-600">{errors.sku.message}</p>}
-        </label>
+        </div>
         <label className="block text-sm">
           Quantity
           <input
