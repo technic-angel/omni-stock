@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchCatalogSets, type CatalogSet } from '../api/collectiblesApi'
+import { fetchCatalogSets } from '../api/collectiblesApi'
 
 export const useCatalogSets = (search?: string) => {
   return useQuery({

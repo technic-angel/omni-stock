@@ -456,7 +456,7 @@ const AddCollectiblePage = () => {
             <p className="text-sm text-gray-500">No variants yet.</p>
           ) : (
             <div className="space-y-4">
-              {form.variants.map((variant, index) => (
+              {form.variants.map((variant) => (
                 <div key={variant.id} className="grid gap-4 md:grid-cols-4 items-end">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-gray-600">Condition</label>

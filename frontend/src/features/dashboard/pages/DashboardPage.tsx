@@ -5,7 +5,7 @@ import Card from '../../../shared/components/Card'
 import { useInventoryOverview } from '../../inventory/hooks/useInventoryOverview'
 
 const DashboardPage = () => {
-  const { data, isLoading, error } = useInventoryOverview()
+  const { data, isLoading } = useInventoryOverview()
 
   const stats = data?.stats || {
     totalSkus: 0,
