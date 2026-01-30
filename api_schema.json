@@ -1682,6 +1682,30 @@
         },
         "type": "object"
       },
+      "UploadFile": {
+        "properties": {
+          "file": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "UploadFileResponse": {
+        "properties": {
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
       "UserMedia": {
         "description": "Serializer for user media payloads (avatars, banners, logos).",
         "properties": {
@@ -2974,6 +2998,43 @@
         ],
         "tags": [
           "catalog"
+        ]
+      }
+    },
+    "/api/v1/core/upload/": {
+      "post": {
+        "description": "Upload a file to the configured storage backend (S3 or Local) and get a public URL.",
+        "operationId": "core_upload_create",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadFileResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "summary": "Upload a file",
+        "tags": [
+          "core"
         ]
       }
     },

@@ -4,7 +4,15 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.files.storage import default_storage
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from rest_framework import serializers
 import uuid
+
+class UploadFileSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+class UploadFileResponseSerializer(serializers.Serializer):
+    url = serializers.URLField()
 
 class UploadFileView(APIView):
     """
@@ -14,7 +22,14 @@ class UploadFileView(APIView):
     """
     parser_classes = [MultiPartParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = UploadFileSerializer
 
+    @extend_schema(
+        request=UploadFileSerializer,
+        responses={201: UploadFileResponseSerializer},
+        summary="Upload a file",
+        description="Upload a file to the configured storage backend (S3 or Local) and get a public URL."
+    )
     def post(self, request, *args, **kwargs):
         file_obj = request.FILES.get('file')
         if not file_obj:
