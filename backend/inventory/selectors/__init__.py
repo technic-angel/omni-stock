@@ -1,0 +1,1 @@
+"""Inventory selectors package."""

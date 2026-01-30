@@ -20,5 +20,6 @@ def test_transfer_stock_updates_store_and_ledger():
     assert collectible.store == store_b
     assert collectible.ledger_entries.count() == 1
     ledger = collectible.ledger_entries.first()
-    assert ledger.from_store == store_a
-    assert ledger.to_store == store_b
+    assert ledger.transaction_type == "transfer"
+    assert ledger.metadata.get("from_store_id") == store_a.id
+    assert ledger.metadata.get("to_store_id") == store_b.id

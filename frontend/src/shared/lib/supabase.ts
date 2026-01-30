@@ -1,5 +1,6 @@
 /* istanbul ignore file -- supabase client wiring exercised via higher-level hooks */
 import { createClient } from '@supabase/supabase-js'
+import { http } from './http'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -13,7 +14,7 @@ export const SUPABASE_BUCKET = supabaseBucket
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 // 2MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
-export const isSupabaseConfigured = () => isConfigured
+export const isSupabaseConfigured = () => isConfigured || import.meta.env.DEV
 
 export function validateImageFile(file: File) {
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -31,21 +32,27 @@ function buildFilename(fileName: string, pathPrefix: string) {
 }
 
 export async function uploadImageToSupabase(file: File, pathPrefix = supabaseBucket) {
-  if (!supabase || !supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase credentials are not configured')
-  }
-
   validateImageFile(file)
 
-  const filename = buildFilename(file.name, pathPrefix)
-  const { data, error } = await supabase.storage.from(supabaseBucket).upload(filename, file, {
-    upsert: false,
-  })
+  if (supabase) {
+    const filename = buildFilename(file.name, pathPrefix)
+    const { data, error } = await supabase.storage.from(supabaseBucket).upload(filename, file, {
+      upsert: false,
+    })
 
-  if (error) {
-    throw error
+    if (error) {
+      throw error
+    }
+
+    const { data: publicUrl } = supabase.storage.from(supabaseBucket).getPublicUrl(data.path)
+    return publicUrl.publicUrl
   }
 
-  const { data: publicUrl } = supabase.storage.from(supabaseBucket).getPublicUrl(data.path)
-  return publicUrl.publicUrl
+  // Fallback to local backend upload if Supabase is not configured
+  const formData = new FormData()
+  formData.append('file', file)
+  const { data } = await http.post<{ url: string }>('/core/upload/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.url
 }

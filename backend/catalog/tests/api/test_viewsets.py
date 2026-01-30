@@ -90,7 +90,7 @@ def test_collectible_create_accepts_pricing_fields():
         "name": "Pricing Item",
         "sku": "PRICE-001",
         "quantity": 10,
-        "category": "Video Games",
+        "category": "video_game",
         "condition": "Lightly Used",
         "intake_price": "12.50",
         "price": "25.00",
@@ -100,7 +100,7 @@ def test_collectible_create_accepts_pricing_fields():
     resp = client.post("/api/v1/catalog/items/", payload, format="json")
     assert resp.status_code in (200, 201)
     body = resp.json()
-    assert body["category"] == "Video Games"
+    assert body["category"] == "video_game"
     assert body["condition"] == "Lightly Used"
     assert body["price"] == "25.00"
 

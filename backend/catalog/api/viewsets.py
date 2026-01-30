@@ -5,8 +5,8 @@ from rest_framework import viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
-from backend.catalog.api.serializers import CatalogItemSerializer
-from backend.catalog.models import CatalogItem
+from backend.catalog.api.serializers import CatalogItemSerializer, ProductSerializer, SetSerializer
+from backend.catalog.models import CatalogItem, Product, Set
 from backend.catalog.selectors.get_item import get_item
 from backend.catalog.selectors.list_items import list_items
 from backend.catalog.services.create_item import create_item
@@ -15,6 +15,24 @@ from backend.catalog.services.update_item import update_item
 from backend.core.permissions import VendorScopedPermission, resolve_user_store, resolve_user_vendor
 from backend.org.api.permissions import HasStoreAccess, user_has_store_access
 from backend.org.services.store_defaults import ensure_default_store
+
+
+class SetViewSet(viewsets.ReadOnlyModelViewSet):
+    """ReadOnly ViewSet for Sets."""
+    queryset = Set.objects.all().order_by('-release_date')
+    serializer_class = SetSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['name', 'code', 'era']
+    search_fields = ['name', 'code']
+
+
+class ProductViewSet(viewsets.ReadOnlyModelViewSet):
+    """ReadOnly ViewSet for Products."""
+    queryset = Product.objects.all().order_by('name')
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['set', 'type']
+    search_fields = ['name']
 
 
 class CatalogItemViewSet(viewsets.ModelViewSet):
@@ -41,6 +59,7 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
         payload = dict(serializer.validated_data)
         card_details_data = payload.pop('card_metadata', None)
         variant_payloads = payload.pop('variant_payloads', None)
+        media_payloads = payload.pop('image_payloads', None)
         vendor = self._resolve_vendor(user=self.request.user, posted_vendor=payload.get('vendor'))
         if vendor is not None:
             payload['vendor'] = vendor
@@ -55,6 +74,7 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
             data=payload,
             card_details_data=card_details_data,
             variant_payloads=variant_payloads,
+            media_payloads=media_payloads,
         )
         serializer.instance = instance
 
@@ -62,6 +82,7 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
         payload = dict(serializer.validated_data)
         card_details_data = payload.pop('card_metadata', None)
         variant_payloads = payload.pop('variant_payloads', None)
+        media_payloads = payload.pop('image_payloads', None)
         requested_vendor = self._resolve_vendor(
             user=self.request.user,
             posted_vendor=payload.get('vendor'),
@@ -85,6 +106,7 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
             data=payload,
             card_details_data=card_details_data,
             variant_payloads=variant_payloads,
+            media_payloads=media_payloads,
         )
         serializer.instance = instance
 

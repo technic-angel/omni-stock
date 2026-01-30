@@ -1,13 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import PokemonFields from './PokemonFields'
 import ClothingFields from './ClothingFields'
 import VideoGameFields from './VideoGameFields'
 
+const queryClient = new QueryClient()
+
 describe('Category specific fields', () => {
   it('renders Pokémon inputs', () => {
-    render(<PokemonFields />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PokemonFields values={{}} onChange={() => {}} />
+      </QueryClientProvider>
+    )
     expect(screen.getByLabelText(/Set Name/i)).toBeVisible()
     expect(screen.getByLabelText(/Card Number/i)).toBeVisible()
     expect(screen.getByLabelText(/Rarity/i)).toBeVisible()
@@ -15,7 +22,7 @@ describe('Category specific fields', () => {
   })
 
   it('renders clothing inputs', () => {
-    render(<ClothingFields />)
+    render(<ClothingFields values={{}} onChange={() => {}} />)
     expect(screen.getByLabelText(/Size/i)).toBeVisible()
     expect(screen.getByLabelText(/Color/i)).toBeVisible()
     expect(screen.getByLabelText(/Material/i)).toBeVisible()
@@ -23,7 +30,7 @@ describe('Category specific fields', () => {
   })
 
   it('renders video game inputs', () => {
-    render(<VideoGameFields />)
+    render(<VideoGameFields values={{}} onChange={() => {}} />)
     expect(screen.getByLabelText(/Platform/i)).toBeVisible()
     expect(screen.getByLabelText(/Region/i)).toBeVisible()
     expect(screen.getByLabelText(/Completeness/i)).toBeVisible()

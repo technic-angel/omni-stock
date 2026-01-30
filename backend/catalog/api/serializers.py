@@ -5,9 +5,38 @@ from urllib.parse import urlparse
 from django.conf import settings
 from rest_framework import serializers
 
-from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Store
+from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Era, Product, Set, Store
 from backend.catalog.services.create_item import create_item
 from backend.catalog.services.update_item import update_item
+
+
+class EraSerializer(serializers.ModelSerializer):
+    """Serializer for Era model."""
+
+    class Meta:
+        model = Era
+        fields = ['id', 'name', 'slug', 'start_year', 'end_year']
+        read_only_fields = fields
+
+
+class SetSerializer(serializers.ModelSerializer):
+    """Serializer for Set model."""
+    era = EraSerializer(read_only=True)
+
+    class Meta:
+        model = Set
+        fields = ['id', 'name', 'code', 'release_date', 'card_count', 'era']
+        read_only_fields = fields
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    """Serializer for Product model."""
+    set = SetSerializer(read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'type', 'configuration', 'release_date', 'set']
+        read_only_fields = fields
 
 
 class CardMetadataSerializer(serializers.ModelSerializer):
@@ -25,6 +54,18 @@ class CardMetadataSerializer(serializers.ModelSerializer):
             'print_run',
             'market_region',
             'notes',
+            'set_name',
+            'card_number',
+            'rarity',
+            'finish',
+            'size',
+            'color',
+            'material',
+            'brand',
+            'platform',
+            'game_region',
+            'completeness',
+            'game_genre',
         ]
 
 
@@ -68,6 +109,17 @@ class CatalogItemSerializer(serializers.ModelSerializer):
         allow_null=False,
         help_text="Store that owns this inventory item.",
     )
+    product = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all(),
+        required=False,
+        allow_null=True,
+        help_text="Product ID to link this item to.",
+    )
+    product_details = ProductSerializer(
+        source='product', 
+        read_only=True,
+        help_text="Nested product details for display."
+    )
 
     class Meta:
         model = CatalogItem
@@ -76,16 +128,20 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             'user',
             'vendor',
             'store',
+            'product',
+            'product_details',
             'name',
             'sku',
             'description',
             'condition',
             'category',
+            'status',
             'image_url',
             'quantity',
             'intake_price',
             'price',
             'projected_price',
+            'search_text',
             'card_details',
             'image_payloads',
             'images',
@@ -98,6 +154,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             'id',
             'user',
             'vendor',
+            'search_text',
             'created_at',
             'updated_at',
         )

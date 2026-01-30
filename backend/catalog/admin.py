@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from backend.catalog.models import CardMetadata, CatalogItem, CatalogVariant
+from backend.catalog.models import (
+    Accessory,
+    CardMetadata,
+    CatalogItem,
+    CatalogVariant,
+    Era,
+    Product,
+    Set,
+)
 
 
 class CardMetadataInline(admin.StackedInline):
@@ -29,7 +37,7 @@ class CatalogItemAdmin(admin.ModelAdmin):
     list_filter = ('vendor', 'category', 'condition')
     fieldsets = (
         ('Owner & Identification', {'fields': ('user', 'vendor', 'name', 'sku')}),
-        ('Inventory & Presentation', {'fields': ('quantity', 'image_url', 'category', 'condition')}),
+        ('Inventory & Presentation', {'fields': ('product', 'quantity', 'image_url', 'category', 'condition')}),
         (
             'Pricing & Financials',
             {
@@ -51,3 +59,30 @@ class CatalogItemAdmin(admin.ModelAdmin):
 
 admin.site.register(CatalogItem, CatalogItemAdmin)
 admin.site.register(CatalogVariant)
+
+@admin.register(Era)
+class EraAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_year', 'end_year')
+    search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(Set)
+class SetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'era', 'release_date')
+    search_fields = ('name', 'code')
+    list_filter = ('era',)
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'type', 'set', 'release_date')
+    search_fields = ('name',)
+    list_filter = ('type', 'set')
+
+
+@admin.register(Accessory)
+class AccessoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'type')
+    search_fields = ('name', 'type')
+    list_filter = ('type',)

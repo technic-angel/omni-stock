@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
+from backend.core.views import UploadFileView
 from backend.users.api.viewsets import (
     ChangePasswordView,
     CheckEmailView,
@@ -37,6 +38,8 @@ urlpatterns = [
     # Link app-level URLs to /api/v1/... so routers expose domain-specific paths
     path('api/v1/', include('backend.catalog.api.urls')),
     path('api/v1/', include('backend.org.api.urls')),
+    path('api/v1/', include('backend.inventory.api.urls')),
+    path('api/v1/core/upload/', UploadFileView.as_view(), name='core_upload'),
     # JWT token endpoints under /api/v1/auth/
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
