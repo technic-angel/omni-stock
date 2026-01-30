@@ -240,8 +240,9 @@ DATABASES = {
 # Handle Render's DATABASE_URL if present (overrides individual settings)
 _database_url = env('DATABASE_URL')
 if _database_url:
+    # Use the detected DATABASE_URL explicitly
     DATABASES['default'] = dj_database_url.config(
-        default=_database_url,
+        url=_database_url,
         conn_max_age=0,  # Disable persistent connections to prevent timeouts/stale connections on Render
         conn_health_checks=False,  # Disable health checks to prevent hangs in the connection pool
         # ssl_require should be True for external Render DB URLs, but can be False for internal ones
