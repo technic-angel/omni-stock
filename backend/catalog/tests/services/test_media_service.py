@@ -59,3 +59,12 @@ def test_sync_item_media_updates_item_image_url():
     sync_item_media(item=collectible, media_payloads=[])
     collectible.refresh_from_db()
     assert collectible.image_url is None
+
+
+@pytest.mark.django_db
+def test_sync_item_media_unsupported_type():
+    collectible = CatalogItemFactory.create()
+    payloads = [{"url": "https://cdn.dev/err.png", "media_type": "invalid_type"}]
+
+    with pytest.raises(ValueError, match="Unsupported media type invalid_type"):
+        sync_item_media(item=collectible, media_payloads=payloads)

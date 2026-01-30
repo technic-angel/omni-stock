@@ -58,4 +58,32 @@ describe('CollectibleCreateForm', () => {
       }),
     )
   })
+
+  it('handles suggest SKU', () => {
+    render(<CollectibleCreateForm />)
+    const nameInput = screen.getByLabelText('Name')
+    const skuInput = screen.getByLabelText('SKU') as HTMLInputElement
+    const suggestBtn = screen.getByText('Auto-generate')
+
+    fireEvent.change(nameInput, { target: { value: 'Charizard VMAX !!!' } })
+    fireEvent.click(suggestBtn)
+    expect(skuInput.value).toBe('CHARIZARD-VMAX')
+  })
+
+  it('fails upload and stops submission', async () => {
+    uploadSpy.mockRejectedValueOnce(new Error('Upload failed'))
+    render(<CollectibleCreateForm />)
+
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Test Fail' } })
+    fireEvent.change(screen.getByLabelText('SKU'), { target: { value: 'FAIL-1' } })
+    
+    const file = new File(['data'], 'image.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText('Image'), { target: { files: [file] } })
+
+    const form = screen.getByRole('button', { name: /create/i }).closest('form') as HTMLFormElement
+    fireEvent.submit(form)
+
+    await waitFor(() => expect(uploadSpy).toHaveBeenCalled())
+    expect(mutateSpy).not.toHaveBeenCalled()
+  })
 })
