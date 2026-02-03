@@ -1127,7 +1127,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "No response body"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventoryOverview"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -3128,6 +3135,86 @@
                 ],
                 "type": "string",
                 "description": "* `ntsc_u` - NTSC-U\n* `ntsc_j` - NTSC-J\n* `pal` - PAL\n* `region_free` - Region Free"
+            },
+            "InventoryOverview": {
+                "type": "object",
+                "properties": {
+                    "stats": {
+                        "$ref": "#/components/schemas/InventoryOverviewStats"
+                    },
+                    "stores": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InventoryOverviewStore"
+                        }
+                    }
+                },
+                "required": [
+                    "stats",
+                    "stores"
+                ]
+            },
+            "InventoryOverviewStats": {
+                "type": "object",
+                "properties": {
+                    "totalSkus": {
+                        "type": "integer"
+                    },
+                    "totalUnits": {
+                        "type": "integer"
+                    },
+                    "lowStock": {
+                        "type": "integer"
+                    },
+                    "pendingTransfers": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "lowStock",
+                    "pendingTransfers",
+                    "totalSkus",
+                    "totalUnits"
+                ]
+            },
+            "InventoryOverviewStore": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "isDefault": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "totalSkus": {
+                        "type": "integer"
+                    },
+                    "unitsOnHand": {
+                        "type": "integer"
+                    },
+                    "lowStock": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "isDefault",
+                    "lowStock",
+                    "name",
+                    "status",
+                    "totalSkus",
+                    "unitsOnHand"
+                ]
             },
             "InviteStatusEnum": {
                 "enum": [
