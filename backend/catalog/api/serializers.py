@@ -90,6 +90,13 @@ class CatalogMediaSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 
+class VariantPayloadSerializer(serializers.Serializer):
+    condition = serializers.CharField(required=False, allow_blank=True, help_text="Variant condition (e.g. Raw, PSA 10)")
+    grade = serializers.CharField(required=False, allow_blank=True, help_text="Grading label or company")
+    quantity = serializers.IntegerField(required=True, help_text="Quantity for this variant")
+    price_adjustment = serializers.DecimalField(required=False, max_digits=12, decimal_places=2, coerce_to_string=True, help_text="Optional price adjustment for this variant")
+
+
 class CatalogItemSerializer(serializers.ModelSerializer):
     """Serializer for the CatalogItem model with nested card details support."""
 
@@ -97,12 +104,8 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     images = CatalogMediaSerializer(source="media", many=True, read_only=True)
     image_payloads = CatalogMediaSerializer(many=True, write_only=True, required=False)
     variants = serializers.SerializerMethodField()
-    variant_payloads = serializers.ListField(
-        child=serializers.DictField(),
-        write_only=True,
-        required=False,
-        help_text="Optional list of variant payloads (condition/grade/quantity).",
-    )
+
+    variant_payloads = VariantPayloadSerializer(many=True, write_only=True, required=False, help_text="Optional list of variant payloads (condition/grade/quantity/price_adjustment).")
     store = serializers.PrimaryKeyRelatedField(
         queryset=Store.objects.all(),
         required=False,
