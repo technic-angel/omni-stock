@@ -2,7 +2,7 @@
 
 from django.conf import settings
 from rest_framework import viewsets
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from backend.catalog.api.serializers import CatalogItemSerializer, ProductSerializer, SetSerializer
@@ -70,12 +70,15 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
         self._assert_store_permissions(store=store, vendor=vendor)
         payload['user'] = self.request.user
 
-        instance = create_item(
-            data=payload,
-            card_details_data=card_details_data,
-            variant_payloads=variant_payloads,
-            media_payloads=media_payloads,
-        )
+        try:
+            instance = create_item(
+                data=payload,
+                card_details_data=card_details_data,
+                variant_payloads=variant_payloads,
+                media_payloads=media_payloads,
+            )
+        except ValueError as exc:
+            raise ValidationError(str(exc)) from exc
         serializer.instance = instance
 
     def perform_update(self, serializer):
@@ -101,13 +104,16 @@ class CatalogItemViewSet(viewsets.ModelViewSet):
         payload['store'] = store
         self._assert_store_permissions(store=store, vendor=active_vendor)
 
-        instance = update_item(
-            instance=serializer.instance,
-            data=payload,
-            card_details_data=card_details_data,
-            variant_payloads=variant_payloads,
-            media_payloads=media_payloads,
-        )
+        try:
+            instance = update_item(
+                instance=serializer.instance,
+                data=payload,
+                card_details_data=card_details_data,
+                variant_payloads=variant_payloads,
+                media_payloads=media_payloads,
+            )
+        except ValueError as exc:
+            raise ValidationError(str(exc)) from exc
         serializer.instance = instance
 
     def perform_destroy(self, instance):
