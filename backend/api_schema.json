@@ -302,10 +302,9 @@
             "type": "integer"
           },
           "variant_payloads": {
-            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "description": "Optional list of variant payloads (condition/grade/quantity/price_adjustment).",
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/VariantPayload"
             },
             "type": "array",
             "writeOnly": true
@@ -684,6 +683,86 @@
           "region_free"
         ],
         "type": "string"
+      },
+      "InventoryOverview": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/InventoryOverviewStats"
+          },
+          "stores": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryOverviewStore"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "stats",
+          "stores"
+        ],
+        "type": "object"
+      },
+      "InventoryOverviewStats": {
+        "properties": {
+          "lowStock": {
+            "type": "integer"
+          },
+          "pendingTransfers": {
+            "type": "integer"
+          },
+          "totalSkus": {
+            "type": "integer"
+          },
+          "totalUnits": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lowStock",
+          "pendingTransfers",
+          "totalSkus",
+          "totalUnits"
+        ],
+        "type": "object"
+      },
+      "InventoryOverviewStore": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "location": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lowStock": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalSkus": {
+            "type": "integer"
+          },
+          "unitsOnHand": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "isDefault",
+          "lowStock",
+          "name",
+          "status",
+          "totalSkus",
+          "unitsOnHand"
+        ],
+        "type": "object"
       },
       "InviteStatusEnum": {
         "description": "* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
@@ -1105,10 +1184,9 @@
             "type": "integer"
           },
           "variant_payloads": {
-            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "description": "Optional list of variant payloads (condition/grade/quantity/price_adjustment).",
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/VariantPayload"
             },
             "type": "array",
             "writeOnly": true
@@ -2007,6 +2085,32 @@
           "created_at",
           "id",
           "updated_at"
+        ],
+        "type": "object"
+      },
+      "VariantPayload": {
+        "properties": {
+          "condition": {
+            "description": "Variant condition (e.g. Raw, PSA 10)",
+            "type": "string"
+          },
+          "grade": {
+            "description": "Grading label or company",
+            "type": "string"
+          },
+          "price_adjustment": {
+            "description": "Optional price adjustment for this variant",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity for this variant",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity"
         ],
         "type": "object"
       },
@@ -3312,7 +3416,14 @@
         "operationId": "inventory_overview_retrieve",
         "responses": {
           "200": {
-            "description": "No response body"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOverview"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "security": [

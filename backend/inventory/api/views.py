@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from backend.inventory.api.serializers import InventoryOverviewSerializer
 from backend.inventory.selectors.overview import get_inventory_overview
 
 
@@ -12,6 +13,7 @@ class InventoryOverviewView(APIView):
     """Returns aggregate inventory statistics for the authenticated user's vendor."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = InventoryOverviewSerializer
 
     def get(self, request):
         data = get_inventory_overview(user=request.user)

@@ -25,15 +25,37 @@ def sync_item_variants(
     if not variants_payload:
         return
 
+    # Validate payloads to avoid DB integrity errors (unique_together)
+    seen = set()
     new_variants: List[CatalogVariant] = []
     for payload in variants_payload:
+        condition = payload.get("condition")
+        grade = payload.get("grade")
+        key = (condition or None, grade or None)
+        if key in seen:
+            raise ValueError(f"Duplicate variant for condition={condition} grade={grade}")
+        seen.add(key)
+
+        quantity = payload.get("quantity", 0) or 0
+        try:
+            quantity = int(quantity)
+        except Exception:
+            raise ValueError("Variant quantity must be an integer")
+
+        price_adjustment = payload.get("price_adjustment", 0) or 0
+        try:
+            # store as Decimal via model field later; ensure numeric-ish value
+            price_adjustment = float(price_adjustment)
+        except Exception:
+            raise ValueError("Variant price_adjustment must be numeric")
+
         new_variants.append(
             CatalogVariant(
                 item=item,
-                condition=payload.get("condition"),
-                grade=payload.get("grade"),
-                quantity=payload.get("quantity", 0),
-                price_adjustment=payload.get("price_adjustment", 0),
+                condition=condition,
+                grade=grade,
+                quantity=quantity,
+                price_adjustment=price_adjustment,
             )
         )
 
