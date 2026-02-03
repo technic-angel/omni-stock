@@ -2,7 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from backend.catalog.models import CatalogItem, CatalogVariant
-from backend.catalog.tests.factories import UserFactory, VendorFactory, StoreFactory
+from backend.catalog.tests.factories import UserFactory, VendorFactory
 from backend.catalog.tests.utils import ensure_vendor_admin
 
 

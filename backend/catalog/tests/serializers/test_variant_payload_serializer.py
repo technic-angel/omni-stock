@@ -1,5 +1,3 @@
-import pytest
-
 from backend.catalog.api.serializers import VariantPayloadSerializer
 
 
