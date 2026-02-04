@@ -2,6 +2,8 @@
 
 from django.conf import settings
 from rest_framework import serializers
+from typing import List, Dict, Any
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 
 from backend.org.models import Store, StoreAccess, Vendor, VendorMember, VendorMemberRole
 from backend.org.services.create_vendor import create_vendor
@@ -66,7 +68,8 @@ class VendorSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return update_vendor(instance=instance, data=validated_data)
 
-    def get_stores(self, obj):
+    @extend_schema_field(OpenApiTypes.ARRAY)
+    def get_stores(self, obj) -> List[Dict[str, Any]]:
         if not getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
             return []
         stores = obj.stores.order_by("name")

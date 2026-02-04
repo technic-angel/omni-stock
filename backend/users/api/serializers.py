@@ -1,6 +1,8 @@
 """User domain serializers."""
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from typing import Any, Dict, Optional
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 from rest_framework.validators import UniqueValidator
 
 from backend.core.permissions import resolve_user_store, resolve_user_vendor
@@ -130,7 +132,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             return obj.username
         return obj.email
 
-    def get_active_vendor(self, obj):
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_active_vendor(self, obj) -> Optional[Dict[str, Any]]:
         vendor = resolve_user_vendor(obj)
         if vendor is None:
             return None
@@ -140,7 +143,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "slug": vendor.slug,
         }
 
-    def get_active_store(self, obj):
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_active_store(self, obj) -> Optional[Dict[str, Any]]:
         store = resolve_user_store(obj)
         if store is None:
             return None
