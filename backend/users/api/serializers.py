@@ -120,7 +120,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name", "active_vendor", "active_store"]
 
-    def get_full_name(self, obj):
+    def get_full_name(self, obj) -> str:
         # Use Django's helper to assemble first + last name, fallback to username/email
         try:
             name = obj.get_full_name()

@@ -1,5 +1,7 @@
 import pytest
 
+pytestmark = pytest.mark.django_db
+
 from backend.catalog.tests.factories import CatalogItemFactory
 from backend.catalog.services.variants import sync_item_variants
 from backend.catalog.models import CatalogVariant
@@ -27,10 +29,11 @@ def test_sync_creates_variants_and_validates_fields():
         {"condition": "PSA", "grade": "10", "quantity": "2", "price_adjustment": 0},
     ]
     sync_item_variants(item=item, variants_payload=payload)
-    variants = list(CatalogVariant.objects.filter(item=item).order_by("condition"))
+    variants = list(CatalogVariant.objects.filter(item=item))
     assert len(variants) == 2
-    assert variants[0].quantity == 3
-    assert float(variants[0].price_adjustment) == pytest.approx(1.5)
+    by_condition = {v.condition: v for v in variants}
+    assert by_condition["Raw"].quantity == 3
+    assert float(by_condition["Raw"].price_adjustment) == pytest.approx(1.5)
 
 
 def test_sync_duplicate_raises_value_error():
