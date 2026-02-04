@@ -157,12 +157,6 @@ jobs:
           add-paths: |
             backend/api_schema.json
             api_schema.json
-      - name: Upload OpenAPI check status
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: openapi-check-status
-          path: openapi-artifact/
       - name: Report OpenAPI drift (non-fatal)
         if: always()
         run: |
