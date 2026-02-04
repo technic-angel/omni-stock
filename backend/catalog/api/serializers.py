@@ -1,8 +1,11 @@
 """Inventory domain serializers."""
 
+from decimal import Decimal
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 from django.conf import settings
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Era, Product, Set, Store
@@ -167,22 +170,22 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Quantity cannot be negative.")
         return value
 
-    def validate_intake_price(self, value):
+    def validate_intake_price(self, value: Decimal) -> Decimal:
         if value < 0:
             raise serializers.ValidationError("Intake price cannot be negative.")
         return value
 
-    def validate_price(self, value):
+    def validate_price(self, value: Decimal) -> Decimal:
         if value < 0:
             raise serializers.ValidationError("Price cannot be negative.")
         return value
 
-    def validate_projected_price(self, value):
+    def validate_projected_price(self, value: Decimal) -> Decimal:
         if value < 0:
             raise serializers.ValidationError("Projected price cannot be negative.")
         return value
 
-    def validate_image_url(self, value):
+    def validate_image_url(self, value: str | None) -> str | None:
         if not value:
             return value
 
@@ -234,7 +237,8 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             variant_payloads=variant_payloads,
         )
 
-    def get_variants(self, obj):
+    @extend_schema_field({"type": "array", "items": {"type": "object"}})
+    def get_variants(self, obj) -> List[Dict[str, Any]]:
         qs = getattr(obj, "variants", None)
         if qs is None:
             return []

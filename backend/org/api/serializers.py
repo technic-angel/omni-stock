@@ -1,6 +1,9 @@
 """Vendor domain serializers."""
 
+from typing import Any, Dict, List
+
 from django.conf import settings
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from backend.org.models import Store, StoreAccess, Vendor, VendorMember, VendorMemberRole
@@ -66,7 +69,8 @@ class VendorSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return update_vendor(instance=instance, data=validated_data)
 
-    def get_stores(self, obj):
+    @extend_schema_field({"type": "array", "items": {"type": "object"}})
+    def get_stores(self, obj) -> List[Dict[str, Any]]:
         if not getattr(settings, "ENABLE_VENDOR_REFACTOR", False):
             return []
         stores = obj.stores.order_by("name")

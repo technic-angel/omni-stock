@@ -368,8 +368,23 @@ REST_FRAMEWORK = {
 }
 
 # Optional drf-spectacular settings can be added here if needed later
-# SPECTACULAR_SETTINGS = {
-# }
+SPECTACULAR_SETTINGS = {
+    # Basic metadata for generated schema (keeps baseline stable)
+    'TITLE': 'Omni-Stock API',
+    'DESCRIPTION': 'OpenAPI schema for Omni-Stock backend',
+    'VERSION': '1.0.0',
+    # Normalize enum component names to avoid collision warnings during generation
+    'ENUM_NAME_OVERRIDES': {
+        # Use fully-qualified TextChoices / enum class paths to normalize component names
+        'backend.users.models.UserMediaType': ('UserMediaType',),
+        'backend.org.models.VendorMember.InviteStatus': ('VendorMemberInviteStatus',),
+        'backend.org.models.VendorMemberRole': ('VendorMemberRole',),
+        'backend.users.models.UserRole': ('UserRole',),
+        'backend.org.models.StoreAccessRole': ('StoreAccessRole',),
+        'backend.org.models.StoreType': ('StoreType',),
+        'backend.catalog.models.CatalogMediaType': ('CatalogMediaType',),
+    },
+}
 
 SIMPLE_JWT = {
     # JWT lifespan settings

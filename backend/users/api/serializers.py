@@ -1,5 +1,8 @@
 """User domain serializers."""
+from typing import Any, Dict, Optional
+
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -118,7 +121,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "email", "role", "profile_completed", "tos_accepted_at", "full_name", "active_vendor", "active_store"]
 
-    def get_full_name(self, obj):
+    def get_full_name(self, obj) -> str:
         # Use Django's helper to assemble first + last name, fallback to username/email
         try:
             name = obj.get_full_name()
@@ -130,7 +133,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             return obj.username
         return obj.email
 
-    def get_active_vendor(self, obj):
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_active_vendor(self, obj) -> Optional[Dict[str, Any]]:
         vendor = resolve_user_vendor(obj)
         if vendor is None:
             return None
@@ -140,7 +144,8 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "slug": vendor.slug,
         }
 
-    def get_active_store(self, obj):
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_active_store(self, obj) -> Optional[Dict[str, Any]]:
         store = resolve_user_store(obj)
         if store is None:
             return None
