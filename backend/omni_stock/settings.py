@@ -375,16 +375,13 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     # Normalize enum component names to avoid collision warnings during generation
     'ENUM_NAME_OVERRIDES': {
-        # Use fully-qualified paths so drf-spectacular can import the enum classes directly
+        # Use fully-qualified TextChoices / enum class paths to normalize component names
         'backend.users.models.UserMediaType': ('UserMediaType',),
         'backend.org.models.VendorMember.InviteStatus': ('VendorMemberInviteStatus',),
-        # Field-level overrides to resolve ambiguous 'role' choice collisions
-        'backend.org.models.VendorMember.role': ('VendorMemberRole',),
-        'backend.users.models.User.role': ('UserRole',),
-        'backend.org.models.StoreAccess.role': ('StoreAccessRole',),
-        # Serializer-field-level overrides (help drf-spectacular when serializers patch/rename classes)
-        'backend.org.models.StoreType': ('StoreType',),
+        'backend.org.models.VendorMemberRole': ('VendorMemberRole',),
+        'backend.users.models.UserRole': ('UserRole',),
         'backend.org.models.StoreAccessRole': ('StoreAccessRole',),
+        'backend.org.models.StoreType': ('StoreType',),
         'backend.catalog.models.CatalogMediaType': ('CatalogMediaType',),
     },
 }
