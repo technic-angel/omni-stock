@@ -381,6 +381,10 @@ SPECTACULAR_SETTINGS = {
         # Field-level overrides to resolve ambiguous 'role' choice collisions
         'backend.org.models.VendorMember.role': ('VendorMemberRole',),
         'backend.users.models.User.role': ('UserRole',),
+        # Serializer-field-level overrides (help drf-spectacular when serializers patch/rename classes)
+        'backend.users.api.serializers.CurrentUser.role': ('UserRole',),
+        'backend.org.api.serializers.VendorMember.role': ('VendorMemberRole',),
+        'backend.org.api.serializers.PatchedVendorMemberUpdate.role': ('VendorMemberRole',),
         'backend.org.models.StoreType': ('StoreType',),
         'backend.org.models.StoreAccessRole': ('StoreAccessRole',),
         'backend.catalog.models.CatalogMediaType': ('CatalogMediaType',),
