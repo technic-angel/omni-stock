@@ -143,6 +143,11 @@ jobs:
             cp tmp/normalized_generated.json api_schema.json
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+            # Clean up potential volatile tmp/artifact files so they are not staged
+            git clean -ffdx tmp openapi-artifact || true
+            git rm -rf --ignore-unmatch tmp openapi-artifact || true
+            git reset -- tmp/* || true
+            # Stage only the baseline files explicitly
             git add backend/api_schema.json api_schema.json
             # Create a commit only if there are changes
             git commit -m "chore(openapi): update normalized API schema baseline [skip ci]" || echo "No baseline changes to commit"
