@@ -310,8 +310,11 @@
             "writeOnly": true
           },
           "variants": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "vendor": {
             "nullable": true,
@@ -518,12 +521,14 @@
         "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
         "properties": {
           "active_store": {
+            "additionalProperties": {},
             "readOnly": true,
-            "type": "string"
+            "type": "object"
           },
           "active_vendor": {
+            "additionalProperties": {},
             "readOnly": true,
-            "type": "string"
+            "type": "object"
           },
           "birthdate": {
             "description": "Birthdate (used for age verification).",
@@ -1192,8 +1197,11 @@
             "writeOnly": true
           },
           "variants": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "vendor": {
             "nullable": true,
@@ -1449,8 +1457,11 @@
             "type": "string"
           },
           "stores": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "updated_at": {
             "format": "date-time",
@@ -2148,8 +2159,11 @@
             "type": "string"
           },
           "stores": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "updated_at": {
             "format": "date-time",
@@ -2298,7 +2312,7 @@
     }
   },
   "info": {
-    "title": ""
+    "title": "Omni-Stock API"
   },
   "openapi": "3.0.3",
   "paths": {
