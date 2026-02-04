@@ -151,6 +151,7 @@ jobs:
             git add backend/api_schema.json api_schema.json
             # Create a commit only if there are changes
             git commit -m "chore(openapi): update normalized API schema baseline [skip ci]" || echo "No baseline changes to commit"
+          fi
 
       - name: Create baseline update Pull Request
         if: always()
