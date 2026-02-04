@@ -115,14 +115,19 @@ jobs:
           fi
           python3 scripts/normalize_openapi.py generated_schema.json generated_schema.json
 
-      - name: Check for schema drift
+      - name: Check for schema drift (normalize then compare)
         run: |
           set -e
           DRIFT=0
-          mkdir -p openapi-artifact
-          if ! git diff --no-index --quiet backend/api_schema.json generated_schema.json; then
-            echo "OpenAPI schema differs from committed baseline." > openapi-artifact/failed
-            git --no-pager diff --no-index -- backend/api_schema.json generated_schema.json || true
+          mkdir -p openapi-artifact tmp
+          # Normalize the generated schema into a tmp file
+          python3 scripts/normalize_openapi.py generated_schema.json tmp/normalized_generated.json
+          # Normalize the committed baseline into a tmp file (do not overwrite baseline)
+          python3 scripts/normalize_openapi.py backend/api_schema.json tmp/normalized_baseline.json
+          # Compare the two normalized files
+          if ! git diff --no-index --quiet tmp/normalized_baseline.json tmp/normalized_generated.json; then
+            echo "OpenAPI schema differs from committed baseline (normalized comparison)." > openapi-artifact/failed
+            git --no-pager diff --no-index -- tmp/normalized_baseline.json tmp/normalized_generated.json || true
             DRIFT=1
           else
             echo "passed" > openapi-artifact/passed
