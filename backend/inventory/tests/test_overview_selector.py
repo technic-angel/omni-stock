@@ -1,6 +1,11 @@
-from backend.catalog.tests.factories import CatalogItemFactory, StoreFactory, VendorFactory, UserFactory
-from backend.org.models import VendorMember
+from backend.catalog.tests.factories import (
+    CatalogItemFactory,
+    StoreFactory,
+    UserFactory,
+    VendorFactory,
+)
 from backend.inventory.selectors.overview import get_inventory_overview
+from backend.org.models import VendorMember
 
 
 def test_get_inventory_overview_counts_and_store_breakdown(db):

@@ -2,13 +2,13 @@ import pytest
 
 from backend.catalog.tests.factories import UserFactory, VendorFactory
 from backend.org.models import VendorMemberRole
-from backend.org.services.store_defaults import ensure_default_store, DEFAULT_STORE_NAME
 from backend.org.services.memberships import (
-    set_active_vendor,
-    set_active_store,
     ensure_owner_membership,
     invite_member,
+    set_active_store,
+    set_active_vendor,
 )
+from backend.org.services.store_defaults import DEFAULT_STORE_NAME, ensure_default_store
 
 
 @pytest.mark.django_db

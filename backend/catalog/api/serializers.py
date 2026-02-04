@@ -1,12 +1,12 @@
 """Inventory domain serializers."""
 
+from decimal import Decimal
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 from django.conf import settings
-from rest_framework import serializers
-from decimal import Decimal
-from typing import Any, Dict, List
 from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
 
 from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Era, Product, Set, Store
 from backend.catalog.services.create_item import create_item

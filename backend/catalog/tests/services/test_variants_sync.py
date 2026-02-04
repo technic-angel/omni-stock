@@ -1,9 +1,8 @@
 import pytest
 
-from backend.catalog.tests.factories import CatalogItemFactory
-from backend.catalog.services.variants import sync_item_variants
 from backend.catalog.models import CatalogVariant
-
+from backend.catalog.services.variants import sync_item_variants
+from backend.catalog.tests.factories import CatalogItemFactory
 
 pytestmark = pytest.mark.django_db
 

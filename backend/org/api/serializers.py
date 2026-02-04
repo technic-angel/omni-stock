@@ -1,9 +1,10 @@
 """Vendor domain serializers."""
 
+from typing import Any, Dict, List
+
 from django.conf import settings
-from rest_framework import serializers
-from typing import List, Dict, Any
 from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
 
 from backend.org.models import Store, StoreAccess, Vendor, VendorMember, VendorMemberRole
 from backend.org.services.create_vendor import create_vendor
