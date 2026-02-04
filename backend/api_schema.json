@@ -9,6 +9,35 @@
       "CardMetadata": {
         "description": "Serializer for the CardMetadata nested object.",
         "properties": {
+          "brand": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "card_number": {
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "completeness": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CompletenessEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
+          },
           "condition": {
             "description": "Human-readable condition (e.g., Mint, Near Mint).",
             "maxLength": 50,
@@ -19,6 +48,39 @@
             "description": "JSON string of external IDs (portable across DBs)",
             "nullable": true,
             "type": "string"
+          },
+          "finish": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FinishEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
+          },
+          "game_genre": {
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "game_region": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GameRegionEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
           },
           "language": {
             "maxLength": 50,
@@ -35,10 +97,29 @@
             "nullable": true,
             "type": "string"
           },
+          "material": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
           "notes": {
             "description": "Internal notes about the card",
             "nullable": true,
             "type": "string"
+          },
+          "platform": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PlatformEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
           },
           "print_run": {
             "description": "Optional print run or edition info.",
@@ -53,8 +134,32 @@
             "pattern": "^-?\\d{0,2}(?:\\.\\d{0,1})?$",
             "type": "string"
           },
+          "rarity": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RarityEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
+          },
           "release_date": {
             "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "set_name": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "size": {
+            "maxLength": 20,
             "nullable": true,
             "type": "string"
           }
@@ -68,10 +173,19 @@
             "$ref": "#/components/schemas/CardMetadata"
           },
           "category": {
-            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
-            "maxLength": 100,
+            "description": "High-level category used for polymorphic attributes.\n\n* `pokemon_card` - Pokémon Card\n* `clothing` - Clothing\n* `video_game` - Video Game\n* `other` - Other Collectible",
             "nullable": true,
-            "type": "string"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CategoryEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
           },
           "condition": {
             "description": "Human-readable condition (e.g., Mint, Near Mint).",
@@ -130,6 +244,20 @@
             "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
             "type": "string"
           },
+          "product": {
+            "description": "Product ID to link this item to.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "product_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ],
+            "description": "Nested product details for display.",
+            "readOnly": true
+          },
           "projected_price": {
             "description": "The projected price based on market trends.",
             "format": "decimal",
@@ -140,10 +268,23 @@
             "description": "Current number of units in stock.",
             "type": "integer"
           },
+          "search_text": {
+            "description": "Denormalized search field (name + sku + description).",
+            "readOnly": true,
+            "type": "string"
+          },
           "sku": {
             "description": "Stock Keeping Unit (Unique Identifier).",
             "maxLength": 50,
             "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatusEnum"
+              }
+            ],
+            "description": "Lifecycle flag for quick filtering (UI + reports).\n\n* `active` - Active\n* `low_stock` - Low Stock\n* `archived` - Archived"
           },
           "store": {
             "description": "Store that owns this inventory item.",
@@ -161,17 +302,19 @@
             "type": "integer"
           },
           "variant_payloads": {
-            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "description": "Optional list of variant payloads (condition/grade/quantity/price_adjustment).",
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/VariantPayload"
             },
             "type": "array",
             "writeOnly": true
           },
           "variants": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "vendor": {
             "nullable": true,
@@ -184,6 +327,8 @@
           "id",
           "images",
           "name",
+          "product_details",
+          "search_text",
           "sku",
           "updated_at",
           "user",
@@ -270,6 +415,16 @@
         ],
         "type": "string"
       },
+      "CategoryEnum": {
+        "description": "* `pokemon_card` - Pokémon Card\n* `clothing` - Clothing\n* `video_game` - Video Game\n* `other` - Other Collectible",
+        "enum": [
+          "pokemon_card",
+          "clothing",
+          "video_game",
+          "other"
+        ],
+        "type": "string"
+      },
       "ChangePassword": {
         "description": "Serializer for password change.\n\nRequires current password verification before allowing password change.\nValidates new password against Django's password validators.",
         "properties": {
@@ -352,16 +507,28 @@
         ],
         "type": "object"
       },
+      "CompletenessEnum": {
+        "description": "* `loose` - Loose\n* `cib` - CIB\n* `sealed` - Sealed\n* `box_manual` - Box & Manual",
+        "enum": [
+          "loose",
+          "cib",
+          "sealed",
+          "box_manual"
+        ],
+        "type": "string"
+      },
       "CurrentUser": {
         "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
         "properties": {
           "active_store": {
+            "additionalProperties": {},
             "readOnly": true,
-            "type": "string"
+            "type": "object"
           },
           "active_vendor": {
+            "additionalProperties": {},
             "readOnly": true,
-            "type": "string"
+            "type": "object"
           },
           "birthdate": {
             "description": "Birthdate (used for age verification).",
@@ -466,6 +633,142 @@
         ],
         "type": "object"
       },
+      "Era": {
+        "description": "Serializer for Era model.",
+        "properties": {
+          "end_year": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "start_year": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "end_year",
+          "id",
+          "name",
+          "slug",
+          "start_year"
+        ],
+        "type": "object"
+      },
+      "FinishEnum": {
+        "description": "* `non_holo` - Non-Holo\n* `holo` - Holo\n* `reverse_holo` - Reverse Holo\n* `full_art` - Full Art",
+        "enum": [
+          "non_holo",
+          "holo",
+          "reverse_holo",
+          "full_art"
+        ],
+        "type": "string"
+      },
+      "GameRegionEnum": {
+        "description": "* `ntsc_u` - NTSC-U\n* `ntsc_j` - NTSC-J\n* `pal` - PAL\n* `region_free` - Region Free",
+        "enum": [
+          "ntsc_u",
+          "ntsc_j",
+          "pal",
+          "region_free"
+        ],
+        "type": "string"
+      },
+      "InventoryOverview": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/InventoryOverviewStats"
+          },
+          "stores": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryOverviewStore"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "stats",
+          "stores"
+        ],
+        "type": "object"
+      },
+      "InventoryOverviewStats": {
+        "properties": {
+          "lowStock": {
+            "type": "integer"
+          },
+          "pendingTransfers": {
+            "type": "integer"
+          },
+          "totalSkus": {
+            "type": "integer"
+          },
+          "totalUnits": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lowStock",
+          "pendingTransfers",
+          "totalSkus",
+          "totalUnits"
+        ],
+        "type": "object"
+      },
+      "InventoryOverviewStore": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "location": {
+            "nullable": true,
+            "type": "string"
+          },
+          "lowStock": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalSkus": {
+            "type": "integer"
+          },
+          "unitsOnHand": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "isDefault",
+          "lowStock",
+          "name",
+          "status",
+          "totalSkus",
+          "unitsOnHand"
+        ],
+        "type": "object"
+      },
       "InviteStatusEnum": {
         "description": "* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
         "enum": [
@@ -493,6 +796,223 @@
         "enum": [
           null
         ]
+      },
+      "PaginatedCatalogItemList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedProductList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedSetList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Set"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedStoreAccessList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/StoreAccess"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedStoreList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Store"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedVendorList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/Vendor"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
+      },
+      "PaginatedVendorMemberList": {
+        "properties": {
+          "count": {
+            "example": 123,
+            "type": "integer"
+          },
+          "next": {
+            "example": "http://api.example.org/accounts/?offset=400&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "previous": {
+            "example": "http://api.example.org/accounts/?offset=200&limit=100",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/VendorMember"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "results"
+        ],
+        "type": "object"
       },
       "PasswordResetConfirm": {
         "description": "Serializer for confirming password reset with token.\n\nVerifies the token and sets the new password.",
@@ -540,10 +1060,19 @@
             "$ref": "#/components/schemas/CardMetadata"
           },
           "category": {
-            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
-            "maxLength": 100,
+            "description": "High-level category used for polymorphic attributes.\n\n* `pokemon_card` - Pokémon Card\n* `clothing` - Clothing\n* `video_game` - Video Game\n* `other` - Other Collectible",
             "nullable": true,
-            "type": "string"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CategoryEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
           },
           "condition": {
             "description": "Human-readable condition (e.g., Mint, Near Mint).",
@@ -602,6 +1131,20 @@
             "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
             "type": "string"
           },
+          "product": {
+            "description": "Product ID to link this item to.",
+            "nullable": true,
+            "type": "integer"
+          },
+          "product_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ],
+            "description": "Nested product details for display.",
+            "readOnly": true
+          },
           "projected_price": {
             "description": "The projected price based on market trends.",
             "format": "decimal",
@@ -612,10 +1155,23 @@
             "description": "Current number of units in stock.",
             "type": "integer"
           },
+          "search_text": {
+            "description": "Denormalized search field (name + sku + description).",
+            "readOnly": true,
+            "type": "string"
+          },
           "sku": {
             "description": "Stock Keeping Unit (Unique Identifier).",
             "maxLength": 50,
             "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatusEnum"
+              }
+            ],
+            "description": "Lifecycle flag for quick filtering (UI + reports).\n\n* `active` - Active\n* `low_stock` - Low Stock\n* `archived` - Archived"
           },
           "store": {
             "description": "Store that owns this inventory item.",
@@ -633,17 +1189,19 @@
             "type": "integer"
           },
           "variant_payloads": {
-            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "description": "Optional list of variant payloads (condition/grade/quantity/price_adjustment).",
             "items": {
-              "additionalProperties": {},
-              "type": "object"
+              "$ref": "#/components/schemas/VariantPayload"
             },
             "type": "array",
             "writeOnly": true
           },
           "variants": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "vendor": {
             "nullable": true,
@@ -712,7 +1270,7 @@
             "nullable": true,
             "oneOf": [
               {
-                "$ref": "#/components/schemas/TypeEnum"
+                "$ref": "#/components/schemas/StoreTypeEnum"
               },
               {
                 "$ref": "#/components/schemas/BlankEnum"
@@ -899,8 +1457,11 @@
             "type": "string"
           },
           "stores": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "updated_at": {
             "format": "date-time",
@@ -926,6 +1487,88 @@
           }
         },
         "type": "object"
+      },
+      "PlatformEnum": {
+        "description": "* `nintendo_switch` - Nintendo Switch\n* `ps5` - PlayStation 5\n* `xbox_series_x` - Xbox Series X\n* `pc` - PC\n* `retro` - Retro\n* `handheld` - Handheld",
+        "enum": [
+          "nintendo_switch",
+          "ps5",
+          "xbox_series_x",
+          "pc",
+          "retro",
+          "handheld"
+        ],
+        "type": "string"
+      },
+      "Product": {
+        "description": "Serializer for Product model.",
+        "properties": {
+          "configuration": {
+            "readOnly": true
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "release_date": {
+            "format": "date",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "set": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Set"
+              }
+            ],
+            "readOnly": true
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductTypeEnum"
+              }
+            ],
+            "readOnly": true
+          }
+        },
+        "required": [
+          "configuration",
+          "id",
+          "name",
+          "release_date",
+          "set",
+          "type"
+        ],
+        "type": "object"
+      },
+      "ProductTypeEnum": {
+        "description": "* `booster_pack` - Booster Pack\n* `booster_box` - Booster Box\n* `etb` - Elite Trainer Box\n* `theme_deck` - Theme Deck\n* `tin` - Tin\n* `other` - Other",
+        "enum": [
+          "booster_pack",
+          "booster_box",
+          "etb",
+          "theme_deck",
+          "tin",
+          "other"
+        ],
+        "type": "string"
+      },
+      "RarityEnum": {
+        "description": "* `common` - Common\n* `uncommon` - Uncommon\n* `rare` - Rare\n* `ultra_rare` - Ultra Rare\n* `secret_rare` - Secret Rare",
+        "enum": [
+          "common",
+          "uncommon",
+          "rare",
+          "ultra_rare",
+          "secret_rare"
+        ],
+        "type": "string"
       },
       "Register": {
         "description": "Serializer for user registration.",
@@ -991,6 +1634,60 @@
         ],
         "type": "string"
       },
+      "Set": {
+        "description": "Serializer for Set model.",
+        "properties": {
+          "card_count": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "code": {
+            "description": "e.g. SWSH01",
+            "readOnly": true,
+            "type": "string"
+          },
+          "era": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Era"
+              }
+            ],
+            "readOnly": true
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "release_date": {
+            "format": "date",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "card_count",
+          "code",
+          "era",
+          "id",
+          "name",
+          "release_date"
+        ],
+        "type": "object"
+      },
+      "StatusEnum": {
+        "description": "* `active` - Active\n* `low_stock` - Low Stock\n* `archived` - Archived",
+        "enum": [
+          "active",
+          "low_stock",
+          "archived"
+        ],
+        "type": "string"
+      },
       "Store": {
         "properties": {
           "address": {
@@ -1050,7 +1747,7 @@
             "nullable": true,
             "oneOf": [
               {
-                "$ref": "#/components/schemas/TypeEnum"
+                "$ref": "#/components/schemas/StoreTypeEnum"
               },
               {
                 "$ref": "#/components/schemas/BlankEnum"
@@ -1121,6 +1818,16 @@
         ],
         "type": "string"
       },
+      "StoreTypeEnum": {
+        "description": "* `retail` - Retail\n* `online` - Online\n* `popup` - Pop-up\n* `warehouse` - Warehouse",
+        "enum": [
+          "retail",
+          "online",
+          "popup",
+          "warehouse"
+        ],
+        "type": "string"
+      },
       "TokenObtainPair": {
         "properties": {
           "access": {
@@ -1175,16 +1882,6 @@
           "token"
         ],
         "type": "object"
-      },
-      "TypeEnum": {
-        "description": "* `retail` - Retail\n* `online` - Online\n* `popup` - Pop-up\n* `warehouse` - Warehouse",
-        "enum": [
-          "retail",
-          "online",
-          "popup",
-          "warehouse"
-        ],
-        "type": "string"
       },
       "UpdateProfile": {
         "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
@@ -1291,6 +1988,30 @@
         },
         "type": "object"
       },
+      "UploadFile": {
+        "properties": {
+          "file": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "type": "object"
+      },
+      "UploadFileResponse": {
+        "properties": {
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object"
+      },
       "UserMedia": {
         "description": "Serializer for user media payloads (avatars, banners, logos).",
         "properties": {
@@ -1378,6 +2099,32 @@
         ],
         "type": "object"
       },
+      "VariantPayload": {
+        "properties": {
+          "condition": {
+            "description": "Variant condition (e.g. Raw, PSA 10)",
+            "type": "string"
+          },
+          "grade": {
+            "description": "Grading label or company",
+            "type": "string"
+          },
+          "price_adjustment": {
+            "description": "Optional price adjustment for this variant",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,10}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity for this variant",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity"
+        ],
+        "type": "object"
+      },
       "Vendor": {
         "description": "Serializer for vendor CRUD.",
         "properties": {
@@ -1412,8 +2159,11 @@
             "type": "string"
           },
           "stores": {
+            "items": {
+              "type": "object"
+            },
             "readOnly": true,
-            "type": "string"
+            "type": "array"
           },
           "updated_at": {
             "format": "date-time",
@@ -1562,7 +2312,7 @@
     }
   },
   "info": {
-    "title": ""
+    "title": "Omni-Stock API"
   },
   "openapi": "3.0.3",
   "paths": {
@@ -2211,15 +2961,32 @@
       "get": {
         "description": "Inventory CRUD viewset with vendor scoping rules.",
         "operationId": "catalog_items_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CatalogItem"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedCatalogItemList"
                 }
               }
             },
@@ -2454,19 +3221,265 @@
         ]
       }
     },
-    "/api/v1/vendor-invites/": {
+    "/api/v1/catalog/products/": {
       "get": {
-        "description": "Gate new viewsets behind the vendor refactor flag.",
-        "operationId": "vendor_invites_list",
+        "description": "ReadOnly ViewSet for Products.",
+        "operationId": "catalog_products_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VendorMember"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedProductList"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/catalog/products/{id}/": {
+      "get": {
+        "description": "ReadOnly ViewSet for Products.",
+        "operationId": "catalog_products_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this product.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/catalog/sets/": {
+      "get": {
+        "description": "ReadOnly ViewSet for Sets.",
+        "operationId": "catalog_sets_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedSetList"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/catalog/sets/{id}/": {
+      "get": {
+        "description": "ReadOnly ViewSet for Sets.",
+        "operationId": "catalog_sets_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this set.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Set"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/core/upload/": {
+      "post": {
+        "description": "Upload a file to the configured storage backend (S3 or Local) and get a public URL.",
+        "operationId": "core_upload_create",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadFileResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "summary": "Upload a file",
+        "tags": [
+          "core"
+        ]
+      }
+    },
+    "/api/v1/inventory/overview/": {
+      "get": {
+        "description": "Returns aggregate inventory statistics for the authenticated user's vendor.",
+        "operationId": "inventory_overview_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryOverview"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedVendorMemberList"
                 }
               }
             },
@@ -2599,15 +3612,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_members_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/VendorMember"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedVendorMemberList"
                 }
               }
             },
@@ -2891,15 +3921,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_store_access_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/StoreAccess"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedStoreAccessList"
                 }
               }
             },
@@ -3138,15 +4185,32 @@
       "get": {
         "description": "Gate new viewsets behind the vendor refactor flag.",
         "operationId": "vendor_stores_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Store"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedStoreList"
                 }
               }
             },
@@ -3431,15 +4495,32 @@
       "get": {
         "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
         "operationId": "vendors_list",
+        "parameters": [
+          {
+            "description": "Number of results to return per page.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "The initial index from which to return the results.",
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Vendor"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/PaginatedVendorList"
                 }
               }
             },
