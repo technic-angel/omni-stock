@@ -6,7 +6,7 @@ from django.conf import settings
 from rest_framework import serializers
 from decimal import Decimal
 from typing import Any, Dict, List
-from drf_spectacular.utils import extend_schema_field, OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 
 from backend.catalog.models import CardMetadata, CatalogItem, CatalogMedia, Era, Product, Set, Store
 from backend.catalog.services.create_item import create_item
@@ -237,7 +237,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             variant_payloads=variant_payloads,
         )
 
-    @extend_schema_field(OpenApiTypes.ARRAY)
+    @extend_schema_field({"type": "array", "items": {"type": "object"}})
     def get_variants(self, obj) -> List[Dict[str, Any]]:
         qs = getattr(obj, "variants", None)
         if qs is None:
