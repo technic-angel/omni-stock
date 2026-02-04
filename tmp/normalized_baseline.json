@@ -1,0 +1,3678 @@
+{
+  "components": {
+    "schemas": {
+      "BlankEnum": {
+        "enum": [
+          ""
+        ]
+      },
+      "CardMetadata": {
+        "description": "Serializer for the CardMetadata nested object.",
+        "properties": {
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string"
+          },
+          "external_ids": {
+            "description": "JSON string of external IDs (portable across DBs)",
+            "nullable": true,
+            "type": "string"
+          },
+          "language": {
+            "maxLength": 50,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_estimated_at": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "market_region": {
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "notes": {
+            "description": "Internal notes about the card",
+            "nullable": true,
+            "type": "string"
+          },
+          "print_run": {
+            "description": "Optional print run or edition info.",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "psa_grade": {
+            "description": "Numeric grade, e.g. 8.5 or 10.0",
+            "format": "decimal",
+            "nullable": true,
+            "pattern": "^-?\\d{0,2}(?:\\.\\d{0,1})?$",
+            "type": "string"
+          },
+          "release_date": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CatalogItem": {
+        "description": "Serializer for the CatalogItem model with nested card details support.",
+        "properties": {
+          "card_details": {
+            "$ref": "#/components/schemas/CardMetadata"
+          },
+          "category": {
+            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "image_url": {
+            "description": "Public image URL stored in Supabase.",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogMedia"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "intake_price": {
+            "description": "The price paid for the item (cost basis).",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "name": {
+            "description": "The common name of the collectible item.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "price": {
+            "description": "The current market value or selling price.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "projected_price": {
+            "description": "The projected price based on market trends.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Current number of units in stock.",
+            "type": "integer"
+          },
+          "sku": {
+            "description": "Stock Keeping Unit (Unique Identifier).",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "store": {
+            "description": "Store that owns this inventory item.",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "user": {
+            "description": "The user/vendor who owns this inventory item.",
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "variant_payloads": {
+            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "variants": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "vendor": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "images",
+          "name",
+          "sku",
+          "updated_at",
+          "user",
+          "variants",
+          "vendor"
+        ],
+        "type": "object"
+      },
+      "CatalogMedia": {
+        "description": "Serializer for media associated with collectibles.",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "height": {
+            "description": "Height of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_primary": {
+            "description": "Whether this media is the primary display image.",
+            "type": "boolean"
+          },
+          "media_type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CatalogMediaMediaTypeEnum"
+              }
+            ],
+            "description": "Classify this media (primary vs gallery).\n\n* `primary` - Primary Image\n* `gallery` - Gallery Image"
+          },
+          "metadata": {
+            "description": "Additional metadata about the media"
+          },
+          "size_kb": {
+            "description": "Size of the media file in kilobytes.",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "sort_order": {
+            "description": "Order of media files for display purposes.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "url": {
+            "description": "Public URL of the media file.",
+            "format": "uri",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "width": {
+            "description": "Width of the media in pixels (if applicable).",
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at",
+          "url"
+        ],
+        "type": "object"
+      },
+      "CatalogMediaMediaTypeEnum": {
+        "description": "* `primary` - Primary Image\n* `gallery` - Gallery Image",
+        "enum": [
+          "primary",
+          "gallery"
+        ],
+        "type": "string"
+      },
+      "ChangePassword": {
+        "description": "Serializer for password change.\n\nRequires current password verification before allowing password change.\nValidates new password against Django's password validators.",
+        "properties": {
+          "new_password": {
+            "description": "New password (min 8 characters)",
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "old_password": {
+            "description": "Current password for verification",
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "new_password",
+          "old_password"
+        ],
+        "type": "object"
+      },
+      "CheckEmailExists": {
+        "description": "Serializer to check if an email is already registered.\n\nUsed for client-side validation during registration.",
+        "properties": {
+          "email": {
+            "description": "Email address to check",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "CompleteProfile": {
+        "description": "Serializer used during onboarding to capture the rest of the user's profile details.",
+        "properties": {
+          "birthdate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "phone_number": {
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/RoleF85Enum"
+          },
+          "username": {
+            "maxLength": 150,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "CurrentUser": {
+        "description": "Serializer for the current authenticated user.\n\nThis combines User model fields with the nested UserProfile data.\nUses nested serialization to include profile data in the response.",
+        "properties": {
+          "active_store": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "active_vendor": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Optional invite code to link this user to an existing company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Display name for the vendor or company.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "readOnly": true,
+            "title": "Email address",
+            "type": "string"
+          },
+          "first_name": {
+            "maxLength": 150,
+            "type": "string"
+          },
+          "full_name": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "last_name": {
+            "maxLength": 150,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Contact phone number in E.164 format.",
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserProfile"
+              }
+            ],
+            "readOnly": true
+          },
+          "profile_completed": {
+            "description": "Indicates whether the user has finished the onboarding form.",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleF85Enum"
+              }
+            ],
+            "description": "Controls the user's permissions within a company.\n\n* `admin` - Administrator\n* `vendor_manager` - Vendor Manager\n* `staff` - Staff\n* `solo` - Solo\n* `viewer` - Viewer",
+            "readOnly": true
+          },
+          "tos_accepted_at": {
+            "description": "Timestamp when the user accepted terms of service.",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "username": {
+            "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+            "maxLength": 150,
+            "pattern": "^[\\w.@+-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "active_store",
+          "active_vendor",
+          "email",
+          "full_name",
+          "id",
+          "profile",
+          "profile_completed",
+          "role",
+          "tos_accepted_at",
+          "username"
+        ],
+        "type": "object"
+      },
+      "InviteStatusEnum": {
+        "description": "* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
+        "enum": [
+          "pending",
+          "accepted",
+          "declined",
+          "revoked"
+        ],
+        "type": "string"
+      },
+      "Logout": {
+        "description": "Serializer for logout (token blacklisting).\n\nAccepts a refresh token and blacklists it to prevent further use.",
+        "properties": {
+          "refresh": {
+            "description": "Refresh token to blacklist",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh"
+        ],
+        "type": "object"
+      },
+      "NullEnum": {
+        "enum": [
+          null
+        ]
+      },
+      "PasswordResetConfirm": {
+        "description": "Serializer for confirming password reset with token.\n\nVerifies the token and sets the new password.",
+        "properties": {
+          "new_password": {
+            "description": "New password (min 8 characters)",
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "token": {
+            "description": "Reset token from email link",
+            "type": "string"
+          },
+          "uid": {
+            "description": "User ID from reset link",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "new_password",
+          "token",
+          "uid"
+        ],
+        "type": "object"
+      },
+      "PasswordResetRequest": {
+        "description": "Serializer for requesting a password reset.\n\nSends an email with reset link if the email exists.\nAlways succeeds to prevent email enumeration.",
+        "properties": {
+          "email": {
+            "description": "Email address associated with your account",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "PatchedCatalogItem": {
+        "description": "Serializer for the CatalogItem model with nested card details support.",
+        "properties": {
+          "card_details": {
+            "$ref": "#/components/schemas/CardMetadata"
+          },
+          "category": {
+            "description": "High-level category (e.g., TCG, Video Games, CatalogItems).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "condition": {
+            "description": "Human-readable condition (e.g., Mint, Near Mint).",
+            "maxLength": 100,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "image_payloads": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogMedia"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "image_url": {
+            "description": "Public image URL stored in Supabase.",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogMedia"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "intake_price": {
+            "description": "The price paid for the item (cost basis).",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "name": {
+            "description": "The common name of the collectible item.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "price": {
+            "description": "The current market value or selling price.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "projected_price": {
+            "description": "The projected price based on market trends.",
+            "format": "decimal",
+            "pattern": "^-?\\d{0,8}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Current number of units in stock.",
+            "type": "integer"
+          },
+          "sku": {
+            "description": "Stock Keeping Unit (Unique Identifier).",
+            "maxLength": 50,
+            "type": "string"
+          },
+          "store": {
+            "description": "Store that owns this inventory item.",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "user": {
+            "description": "The user/vendor who owns this inventory item.",
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          },
+          "variant_payloads": {
+            "description": "Optional list of variant payloads (condition/grade/quantity).",
+            "items": {
+              "additionalProperties": {},
+              "type": "object"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "variants": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "vendor": {
+            "nullable": true,
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedStore": {
+        "properties": {
+          "address": {
+            "nullable": true,
+            "type": "string"
+          },
+          "banner_url": {
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "currency": {
+            "maxLength": 8,
+            "nullable": true,
+            "type": "string"
+          },
+          "default_tax_rate": {
+            "format": "decimal",
+            "nullable": true,
+            "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "logo_url": {
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "metadata": {},
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TypeEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "vendor_id": {
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedStoreAccess": {
+        "properties": {
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "member": {
+            "type": "integer"
+          },
+          "member_email": {
+            "format": "email",
+            "readOnly": true,
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/StoreAccessRoleEnum"
+          },
+          "store": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedUpdateProfile": {
+        "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
+        "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
+          "bio": {
+            "description": "User bio/description",
+            "nullable": true,
+            "type": "string"
+          },
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Invite code tying this user to a company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Company/vendor name displayed in the app.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
+          "email": {
+            "description": "Email address (must be unique)",
+            "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number in E.164 format.",
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
+          "username": {
+            "description": "Username (must be unique)",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "PatchedVendor": {
+        "description": "Serializer for vendor CRUD.",
+        "properties": {
+          "contact_info": {
+            "description": "Free-form contact metadata (JSON string ok).",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "stores": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedVendorMemberUpdate": {
+        "properties": {
+          "is_active": {
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role62bEnum"
+          },
+          "title": {
+            "description": "Optional display title for rosters (e.g., Lead Buyer).",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Register": {
+        "description": "Serializer for user registration.",
+        "properties": {
+          "birthdate": {
+            "description": "Birthdate collected during registration.",
+            "format": "date",
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Optional invite code to join an existing company.",
+            "maxLength": 40,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Optional vendor/company name shown in the app.",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string",
+            "writeOnly": true
+          },
+          "username": {
+            "maxLength": 150,
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthdate",
+          "email",
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "Role62bEnum": {
+        "description": "* `owner` - Owner\n* `admin` - Admin\n* `manager` - Manager\n* `member` - Member\n* `staff` - Staff\n* `billing` - Billing\n* `viewer` - Viewer",
+        "enum": [
+          "owner",
+          "admin",
+          "manager",
+          "member",
+          "staff",
+          "billing",
+          "viewer"
+        ],
+        "type": "string"
+      },
+      "RoleF85Enum": {
+        "description": "* `admin` - Administrator\n* `vendor_manager` - Vendor Manager\n* `staff` - Staff\n* `solo` - Solo\n* `viewer` - Viewer",
+        "enum": [
+          "admin",
+          "vendor_manager",
+          "staff",
+          "solo",
+          "viewer"
+        ],
+        "type": "string"
+      },
+      "Store": {
+        "properties": {
+          "address": {
+            "nullable": true,
+            "type": "string"
+          },
+          "banner_url": {
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "currency": {
+            "maxLength": 8,
+            "nullable": true,
+            "type": "string"
+          },
+          "default_tax_rate": {
+            "format": "decimal",
+            "nullable": true,
+            "pattern": "^-?\\d{0,3}(?:\\.\\d{0,2})?$",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "logo_url": {
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "metadata": {},
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TypeEnum"
+              },
+              {
+                "$ref": "#/components/schemas/BlankEnum"
+              },
+              {
+                "$ref": "#/components/schemas/NullEnum"
+              }
+            ]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "vendor_id": {
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "name",
+          "slug",
+          "updated_at",
+          "vendor_id"
+        ],
+        "type": "object"
+      },
+      "StoreAccess": {
+        "properties": {
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "member": {
+            "type": "integer"
+          },
+          "member_email": {
+            "format": "email",
+            "readOnly": true,
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/StoreAccessRoleEnum"
+          },
+          "store": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "member",
+          "member_email",
+          "store"
+        ],
+        "type": "object"
+      },
+      "StoreAccessRoleEnum": {
+        "description": "* `manager` - Manager\n* `sales` - Sales\n* `view_only` - View Only",
+        "enum": [
+          "manager",
+          "sales",
+          "view_only"
+        ],
+        "type": "string"
+      },
+      "TokenObtainPair": {
+        "properties": {
+          "access": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "refresh": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "username": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "access",
+          "password",
+          "refresh",
+          "username"
+        ],
+        "type": "object"
+      },
+      "TokenRefresh": {
+        "properties": {
+          "access": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "refresh": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "refresh"
+        ],
+        "type": "object"
+      },
+      "TokenVerify": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "TypeEnum": {
+        "description": "* `retail` - Retail\n* `online` - Online\n* `popup` - Pop-up\n* `warehouse` - Warehouse",
+        "enum": [
+          "retail",
+          "online",
+          "popup",
+          "warehouse"
+        ],
+        "type": "string"
+      },
+      "UpdateProfile": {
+        "description": "Serializer for updating user profile via PUT/PATCH.\n\nHandles all profile fields including:\n- User fields: username, email\n- Profile fields: phone, bio, profile_picture, vendor\n\nSupports multipart/form-data for file uploads.",
+        "properties": {
+          "avatar": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
+          "bio": {
+            "description": "User bio/description",
+            "nullable": true,
+            "type": "string"
+          },
+          "birthdate": {
+            "description": "Birthdate (used for age verification).",
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "company_code": {
+            "description": "Invite code tying this user to a company.",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_name": {
+            "description": "Company/vendor name displayed in the app.",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "company_site": {
+            "description": "Public website for the company (optional).",
+            "format": "uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "delete_profile_picture": {
+            "default": false,
+            "description": "Set to true to delete the existing profile picture.",
+            "type": "boolean"
+          },
+          "email": {
+            "description": "Email address (must be unique)",
+            "format": "email",
+            "type": "string"
+          },
+          "first_name": {
+            "description": "First name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "last_name": {
+            "description": "Last name",
+            "maxLength": 150,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone number",
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "Phone number in E.164 format.",
+            "maxLength": 20,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture_url": {
+            "description": "Supabase-hosted profile image URL.",
+            "format": "uri",
+            "nullable": true,
+            "type": "string",
+            "writeOnly": true
+          },
+          "storefront_banner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          },
+          "username": {
+            "description": "Username (must be unique)",
+            "maxLength": 150,
+            "type": "string"
+          },
+          "vendor_logo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserMedia"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "type": "object"
+      },
+      "UserMedia": {
+        "description": "Serializer for user media payloads (avatars, banners, logos).",
+        "properties": {
+          "height": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "media_type": {
+            "$ref": "#/components/schemas/UserMediaMediaTypeEnum"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "size_kb": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          },
+          "width": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "media_type",
+          "url"
+        ],
+        "type": "object"
+      },
+      "UserMediaMediaTypeEnum": {
+        "description": "* `profile_avatar` - Profile Avatar\n* `vendor_logo` - Vendor Logo\n* `storefront_banner` - Storefront Banner\n* `user_banner` - User Banner",
+        "enum": [
+          "profile_avatar",
+          "vendor_logo",
+          "storefront_banner",
+          "user_banner"
+        ],
+        "type": "string"
+      },
+      "UserProfile": {
+        "description": "Serializer for UserProfile model.\n\nThis handles the profile-specific fields like bio, phone, and profile_picture.\nThe profile_picture field is automatically converted to a full URL by DRF.",
+        "properties": {
+          "bio": {
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "phone": {
+            "maxLength": 40,
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture": {
+            "description": "User's profile picture URL (stored in Supabase)",
+            "format": "uri",
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "Vendor": {
+        "description": "Serializer for vendor CRUD.",
+        "properties": {
+          "contact_info": {
+            "description": "Free-form contact metadata (JSON string ok).",
+            "nullable": true,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "slug": {
+            "pattern": "^[-a-zA-Z0-9_]+$",
+            "readOnly": true,
+            "type": "string"
+          },
+          "stores": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "created_at",
+          "id",
+          "name",
+          "slug",
+          "stores",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "VendorMember": {
+        "properties": {
+          "active_store": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Store"
+              }
+            ],
+            "readOnly": true
+          },
+          "email": {
+            "format": "email",
+            "readOnly": true,
+            "type": "string"
+          },
+          "id": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "invite_status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InviteStatusEnum"
+              }
+            ],
+            "description": "Lifecycle state for invitations and membership activation.\n\n* `pending` - Pending\n* `accepted` - Accepted\n* `declined` - Declined\n* `revoked` - Revoked",
+            "readOnly": true
+          },
+          "invited_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "joined_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "responded_at": {
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "revoked_at": {
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role62bEnum"
+          },
+          "title": {
+            "description": "Optional display title for rosters (e.g., Lead Buyer).",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          },
+          "user": {
+            "readOnly": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "active_store",
+          "email",
+          "id",
+          "invite_status",
+          "invited_at",
+          "joined_at",
+          "responded_at",
+          "revoked_at",
+          "user"
+        ],
+        "type": "object"
+      },
+      "VendorMemberInvite": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "type": "string"
+          },
+          "role": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role62bEnum"
+              }
+            ],
+            "default": "member"
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "VendorMemberUpdate": {
+        "properties": {
+          "is_active": {
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role62bEnum"
+          },
+          "title": {
+            "description": "Optional display title for rosters (e.g., Lead Buyer).",
+            "maxLength": 255,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "jwtAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": ""
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/v1/auth/logout/": {
+      "post": {
+        "description": "POST /api/v1/auth/logout/\n\nLogout by blacklisting the refresh token.\n\n- Requires authentication (JWT token)\n- Blacklists the provided refresh token\n- After logout, the refresh token can no longer be used to get new access tokens\n\nRequest body:\n    {\n        \"refresh\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJI...\"\n    }\n\nResponse:\n    {\"detail\": \"Successfully logged out.\"}",
+        "operationId": "auth_logout_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Logout"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Logout"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me/": {
+      "get": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      },
+      "patch": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_partial_update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "UserWithProfile": {
+                  "summary": "User with Profile",
+                  "value": {
+                    "email": "melissa@example.com",
+                    "id": 1,
+                    "profile": {
+                      "bio": "Django developer",
+                      "created_at": "2025-11-29T10:00:00Z",
+                      "id": 1,
+                      "phone": "555-1234",
+                      "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                      "updated_at": "2025-11-29T10:00:00Z"
+                    },
+                    "username": "melissa"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedUpdateProfile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      },
+      "put": {
+        "description": "GET /api/v1/auth/me/\nPUT/PATCH /api/v1/auth/me/\n\nReturns and updates the currently authenticated user's data including their profile.\n\n- Requires authentication (JWT token)\n- Uses selector pattern to optimize database queries\n- Returns nested profile data with full profile_picture URL\n- Accepts Supabase-hosted profile picture URLs via JSON payloads\n\nResponse:\n    {\n        \"id\": 1,\n        \"username\": \"melissa\",\n        \"email\": \"melissa@example.com\",\n        \"profile\": {\n            \"id\": 1,\n            \"phone\": \"555-1234\",\n            \"bio\": \"Django developer\",\n            \"profile_picture\": \"http://localhost:8000/media/profile_pictures/melissa.jpg\",\n            \"created_at\": \"2025-11-29T10:00:00Z\",\n            \"updated_at\": \"2025-11-29T10:00:00Z\"\n        }\n    }",
+        "operationId": "auth_me_update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "UserWithProfile": {
+                  "summary": "User with Profile",
+                  "value": {
+                    "email": "melissa@example.com",
+                    "id": 1,
+                    "profile": {
+                      "bio": "Django developer",
+                      "created_at": "2025-11-29T10:00:00Z",
+                      "id": 1,
+                      "phone": "555-1234",
+                      "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                      "updated_at": "2025-11-29T10:00:00Z"
+                    },
+                    "username": "melissa"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfile"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UserWithProfile": {
+                    "summary": "User with Profile",
+                    "value": {
+                      "email": "melissa@example.com",
+                      "id": 1,
+                      "profile": {
+                        "bio": "Django developer",
+                        "created_at": "2025-11-29T10:00:00Z",
+                        "id": 1,
+                        "phone": "555-1234",
+                        "profile_picture": "https://example.com/media/profile_pictures/melissa.jpg",
+                        "updated_at": "2025-11-29T10:00:00Z"
+                      },
+                      "username": "melissa"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/change/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/change/\n\nChange password for the authenticated user.\n\nRequires:\n- Authentication (JWT token)\n- Current password for verification\n- New password (min 8 characters, validated against Django password validators)\n\nRequest body:\n    {\n        \"old_password\": \"current_password\",\n        \"new_password\": \"new_secure_password\"\n    }\n\nResponse:\n    {\"detail\": \"Password changed successfully.\"}",
+        "operationId": "auth_password_change_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePassword"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/reset/\n\nRequest a password reset email.\n\n- Public endpoint (no authentication required)\n- Rate limited to 1 request per 5 minutes per user\n- Always returns success to prevent email enumeration\n\nRequest body:\n    {\n        \"email\": \"user@example.com\"\n    }\n\nResponse:\n    {\"detail\": \"If an account with that email exists, a password reset link has been sent.\"}",
+        "operationId": "auth_password_reset_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequest"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset/confirm/": {
+      "post": {
+        "description": "POST /api/v1/auth/password/reset/confirm/\n\nConfirm password reset with token and set new password.\n\n- Public endpoint (no authentication required)\n- Requires valid reset token from email\n- Token expires after 24 hours\n\nRequest body:\n    {\n        \"uid\": 1,\n        \"token\": \"abc123...\",\n        \"new_password\": \"new_secure_password\"\n    }\n\nResponse:\n    {\"detail\": \"Password has been reset successfully.\"}",
+        "operationId": "auth_password_reset_confirm_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetConfirm"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/profile/complete/": {
+      "post": {
+        "description": "Authenticated endpoint for completing the onboarding profile form.",
+        "operationId": "auth_profile_complete_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteProfile"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteProfile"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/": {
+      "post": {
+        "description": "Public endpoint for registering a new user account.",
+        "operationId": "auth_register_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Register"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register/check-email/": {
+      "post": {
+        "description": "POST /api/v1/auth/register/check-email/\n\nCheck if an email is already registered.\n\n- Public endpoint (no authentication required)\n\nRequest body:\n    {\n        \"email\": \"user@example.com\"\n    }",
+        "operationId": "auth_register_check_email_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEmailExists"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEmailExists"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          },
+          {}
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/": {
+      "post": {
+        "description": "Takes a set of user credentials and returns an access and refresh JSON web\ntoken pair to prove the authentication of those credentials.",
+        "operationId": "auth_token_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenObtainPair"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenObtainPair"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/refresh/": {
+      "post": {
+        "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
+        "operationId": "auth_token_refresh_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefresh"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRefresh"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/verify/": {
+      "post": {
+        "description": "Takes a token and indicates if it is valid.  This view provides no\ninformation about a token's fitness for a particular use.",
+        "operationId": "auth_token_verify_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenVerify"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenVerify"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/catalog/items/": {
+      "get": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogItem"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      },
+      "post": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogItem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/catalog/items/{id}/": {
+      "delete": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Catalog Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      },
+      "get": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Catalog Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogItem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      },
+      "patch": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Catalog Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCatalogItem"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCatalogItem"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedCatalogItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogItem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      },
+      "put": {
+        "description": "Inventory CRUD viewset with vendor scoping rules.",
+        "operationId": "catalog_items_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Catalog Item.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogItem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VendorMember"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/{id}/accept/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_accept_create",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMember"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
+        ]
+      }
+    },
+    "/api/v1/vendor-invites/{id}/decline/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_invites_decline_create",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMember"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMember"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-invites"
+        ]
+      }
+    },
+    "/api/v1/vendor-members/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VendorMember"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      },
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMemberInvite"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      }
+    },
+    "/api/v1/vendor-members/select/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_select_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberInvite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMemberInvite"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      }
+    },
+    "/api/v1/vendor-members/{id}/": {
+      "delete": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      },
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMember"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      },
+      "patch": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendorMemberUpdate"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendorMemberUpdate"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendorMemberUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMemberUpdate"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      },
+      "put": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_members_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this vendor member.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberUpdate"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberUpdate"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorMemberUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VendorMemberUpdate"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-members"
+        ]
+      }
+    },
+    "/api/v1/vendor-store-access/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoreAccess"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      },
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAccess"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      }
+    },
+    "/api/v1/vendor-store-access/{id}/": {
+      "delete": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store access.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      },
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store access.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAccess"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      },
+      "patch": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store access.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStoreAccess"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStoreAccess"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStoreAccess"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAccess"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      },
+      "put": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_store_access_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store access.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAccess"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAccess"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-store-access"
+        ]
+      }
+    },
+    "/api/v1/vendor-stores/": {
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Store"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      },
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      }
+    },
+    "/api/v1/vendor-stores/select/": {
+      "post": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_select_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      }
+    },
+    "/api/v1/vendor-stores/{id}/": {
+      "delete": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      },
+      "get": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      },
+      "patch": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStore"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStore"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedStore"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      },
+      "put": {
+        "description": "Gate new viewsets behind the vendor refactor flag.",
+        "operationId": "vendor_stores_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this store.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Store"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendor-stores"
+        ]
+      }
+    },
+    "/api/v1/vendors/": {
+      "get": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Vendor"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "post": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/{id}/": {
+      "delete": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_destroy",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "get": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_retrieve",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "patch": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_partial_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedVendor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      },
+      "put": {
+        "description": "Vendor CRUD with basic scoping to the user's vendor profile.",
+        "operationId": "vendors_update",
+        "parameters": [
+          {
+            "description": "A unique integer value identifying this Vendor.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Vendor"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "jwtAuth": []
+          }
+        ],
+        "tags": [
+          "vendors"
+        ]
+      }
+    }
+  }
+}

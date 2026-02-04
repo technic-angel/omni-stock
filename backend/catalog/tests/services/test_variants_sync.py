@@ -1,10 +1,11 @@
 import pytest
 
-pytestmark = pytest.mark.django_db
-
 from backend.catalog.tests.factories import CatalogItemFactory
 from backend.catalog.services.variants import sync_item_variants
 from backend.catalog.models import CatalogVariant
+
+
+pytestmark = pytest.mark.django_db
 
 
 def test_sync_none_leaves_variants():

@@ -1,4 +1,3 @@
-import os
 import pytest
 
 from backend.core import storage_backends
