@@ -380,6 +380,9 @@ SPECTACULAR_SETTINGS = {
         'backend.users.models.UserMediaType': ('UserMediaType',),
         'backend.org.models.VendorMemberRole': ('VendorMemberRole',),
         'backend.org.models.VendorMember.InviteStatus': ('VendorMemberInviteStatus',),
+        # Field-level overrides to resolve ambiguous 'role' choice collisions
+        'backend.org.models.VendorMember.role': ('VendorMemberRole',),
+        'backend.users.models.User.role': ('UserRole',),
         'backend.org.models.StoreType': ('StoreType',),
         'backend.org.models.StoreAccessRole': ('StoreAccessRole',),
         'backend.catalog.models.CatalogMediaType': ('CatalogMediaType',),
