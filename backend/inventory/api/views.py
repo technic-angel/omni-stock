@@ -17,4 +17,5 @@ class InventoryOverviewView(APIView):
 
     def get(self, request):
         data = get_inventory_overview(user=request.user)
-        return Response(data, status=status.HTTP_200_OK)
+        serializer = self.serializer_class(data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
